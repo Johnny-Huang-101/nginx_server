@@ -47,8 +47,9 @@ import requests
 from lims.narratives.forms import AISummary as NarrativeAddForm
 from lims.models import Narratives 
 from pathlib import Path
-from threading import Lock
-case_locks = {}
+# from threading import Lock
+# case_locks = {}
+from lims.redis_lock import DistributedRedisLock
 
 
 # Set item global variables
@@ -3577,10 +3578,10 @@ def call_and_split_ai(narrative, url):
 
 
 
-def get_case_lock(case_id):
-    if case_id not in case_locks:
-        case_locks[case_id] = Lock()
-    return case_locks[case_id]
+# def get_case_lock(case_id):
+#     if case_id not in case_locks:
+#         case_locks[case_id] = Lock()
+#     return case_locks[case_id]
 
 
 
@@ -3595,9 +3596,9 @@ def get_ai_combined():
     case_id = data.get('caseNumber', '').strip()
     narrative_type = "Summary (AI)"
     
-    lock = get_case_lock(case_id)
+    lock_name = f"ai_narrative_{case_id}"
 
-    with lock:
+    with DistributedRedisLock(lock_name):
 
         if not narrative or not case_id:
             return jsonify({'success': False, 'error': 'Narrative or case ID missing from frontend.'}), 400

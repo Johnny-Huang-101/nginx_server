@@ -22,18 +22,19 @@ import re
 from collections import defaultdict
 
 
-# Multi threading/processing
-try:
-    from app import process_lock
-except (ImportError, RuntimeError):
-    # Fallback dummy lock so alembic migrations don't crash
-    class _NoopLock:
-        def __enter__(self): return self
-        def __exit__(self, *a): return False
-        def acquire(self, *a, **k): return True
-        def release(self): pass
+# # Multi threading/processing
+# try:
+#     # from app import process_lock
+#     process_lock = ""
+# except (ImportError, RuntimeError):
+#     # Fallback dummy lock so alembic migrations don't crash
+#     class _NoopLock:
+#         def __enter__(self): return self
+#         def __exit__(self, *a): return False
+#         def acquire(self, *a, **k): return True
+#         def release(self): pass
 
-    process_lock = _NoopLock()
+#     process_lock = _NoopLock()
 
 
 def get_form_choices(form, case_id=None, discipline=None, result_statuses=None):

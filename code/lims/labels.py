@@ -8,13 +8,14 @@ from flask import render_template, current_app, jsonify
 from sqlalchemy import or_
 from win32com.client import Dispatch
 # from app import com_lock
-com_lock= ""
+# com_lock= ""
 from lims.models import *
 from lims import db, current_user
 from lims.specimens.forms import Approve, Edit
 from lims.view_templates.views import approve_item, edit_item
 from lims.specimen_audit.views import add_specimen_audit
 from lims.evidence_comments.functions import add_comments
+from lims.redis_lock import DistributedRedisLock
 
 # fields_dict is imported into each module that uses the print function, it is passed in as label_attributes below
 fields_dict = {
@@ -80,7 +81,8 @@ def print_label(printer, label_attributes, dual_printer=False, roll=None):
 
     """
 
-    with com_lock:
+    # with com_lock:
+    with DistributedRedisLock("dymo_global"):
         # Uninitialize
         pythoncom.CoUninitialize()
 

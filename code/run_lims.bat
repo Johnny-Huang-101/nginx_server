@@ -17,36 +17,35 @@ set REDIS_EXE=redis-server.exe
 set REDIS_CONF=redis.windows.conf
 :: ---------------------
 
-@REM echo Starting Redis Cache...
-@REM cd /d "%REDIS_DIR%"
-@REM if exist "%REDIS_EXE%" (
-@REM     start "Redis Server" /min "%REDIS_EXE%" "%REDIS_CONF%"
-@REM ) else (
-@REM     echo CRITICAL ERROR: Redis not found.
-@REM     pause
-@REM     exit
-@REM )
+echo Starting Redis Cache...
+cd /d "%REDIS_DIR%"
+if exist "%REDIS_EXE%" (
+    start "Redis Server" /min "%REDIS_EXE%" "%REDIS_CONF%"
+) else (
+    echo CRITICAL ERROR: Redis not found.
+    pause
+    exit
+)
 
 echo Starting Nginx...
 cd /d D:\nginx-1.28.0
 start nginx.exe
 
 ::echo Launching Background Services...
-::cd /d D:\NGINX_SERVER\code
+cd /d D:\NGINX_SERVER\code
 ::start "LIMS Services" /min "%PYTHON_PATH%" services.py
 
 echo Launching Web Workers...
-cd /d D:\NGINX_SERVER\code
 
 
 :: We use --threads=4 so you don't overload the CPU while doing PDF work
 @REM start "DEBUG SHELL" cmd /k "echo Type: D:\envs\sflims\python.exe && echo Then try: import app"
-start "Worker 1" cmd /k "%PYTHON_PATH%" -m waitress --port=8001 --threads=4 app:app
+@REM start "Worker 1" cmd /k "%PYTHON_PATH%" -m waitress --port=8001 --threads=32 app:app
 
 
 
-::start "Worker 1" /min "%PYTHON_PATH%" -m waitress --port=8001 --threads=4 app:app
-::start "Worker 2" /min "%PYTHON_PATH%" -m waitress --port=8002 --threads=4 app:app
+start "Worker 1" /min "%PYTHON_PATH%" -m waitress --port=8001 --threads=64 app:app
+start "Worker 2" /min "%PYTHON_PATH%" -m waitress --port=8002 --threads=64 app:app
 :: start "Worker 3" /min "%PYTHON_PATH%" -m waitress --port=8003 --threads=4 app:app
 :: start "Worker 4" /min "%PYTHON_PATH%" -m waitress --port=8004 --threads=4 app:app
 :: Uncomment these lines if you need more power later:

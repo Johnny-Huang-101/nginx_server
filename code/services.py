@@ -28,7 +28,7 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"Error starting watcher: {e}")
         
-        print("Initializing report generator...")
+        print("Initializing litpacket generator...")
         try:
             background_worker()
         except Exception as e:
