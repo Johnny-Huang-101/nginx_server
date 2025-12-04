@@ -1,0 +1,64 @@
+{% extends "form_template.html" %}
+
+<!-- ALERTS -->
+{% block alerts %}
+{% endblock %}
+
+<!-- HEADER -->
+{% block header %}
+{% endblock %}
+
+{% block form %}
+    <div class="form-group">
+        {{form.name.label}}
+
+        {{form.name}}
+    </div>
+    <div class="form-group">
+        {{form.pm_rank.label}}
+        <a href="#" data-toggle="tooltip" tabindex="-1"
+           title="Drug class rank for PM cases. If N/A, enter '99'." style="display:inline-block">
+            <i class="fa-solid fa-circle-question"></i>
+        </a>
+
+        {{form.pm_rank}}
+    </div>
+    <div class="form-group">
+        {{form.m_d_rank.label}}
+        <a href="#" data-toggle="tooltip" tabindex="-1"
+           title="Drug class rank for D/M/P cases. If N/A, enter '99'." style="display:inline-block">
+            <i class="fa-solid fa-circle-question"></i>
+        </a>
+        {{form.m_d_rank}}
+    </div>
+    <div class="form-group">
+        {{form.x_rank.label}}
+        <a href="#" data-toggle="tooltip" tabindex="-1"
+           title="Drug class rank for X cases. If N/A, enter '99'." style="display:inline-block">
+            <i class="fa-solid fa-circle-question"></i>
+        </a>
+        {{form.x_rank}}
+    </div>
+    <div class="form-group">
+        {{form.q_rank.label}}
+        <a href="#" data-toggle="tooltip" tabindex="-1"
+           title="Drug class rank for Q cases. If N/A, enter '99'." style="display:inline-block">
+            <i class="fa-solid fa-circle-question"></i>
+        </a>
+        {{form.q_rank}}
+    </div>
+    <div class="form-group">
+        {{form.scope_rank.label}}
+        <a href="#" data-toggle="tooltip" tabindex="-1"
+           title="Order in report appendix" style="display:inline-block">
+            <i class="fa-solid fa-circle-question"></i>
+        </a>
+        {{form.scope_rank}}
+    </div>
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

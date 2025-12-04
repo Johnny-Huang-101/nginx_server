@@ -1,0 +1,145 @@
+{% extends "form_template.html" %}
+{% block form %}
+
+<div class="row form-group mb-4">
+    <div class="col-md-4">
+        {{form.case_type.label}}
+        {{form.case_type}}
+    </div>
+    <div class="col">
+        {{form.priority.label}}
+         <a href="#!" data-toggle="tooltip" tabindex="-1"
+            title="Cases with 'High' priority will appear at the start of the batch when using the optimum filter.">
+            <i class="fa-solid fa-circle-question"></i>
+        </a>
+        {{form.priority}}
+    </div>
+    <div class="col">
+        {{form.sensitivity.label}}
+        {{form.sensitivity}}
+    </div>
+</div>
+<div class="row form-group my-4">
+    <div class="col">
+        {{form.date_of_incident.label}}
+        {{form.date_of_incident}}
+    </div>
+    <div class="col">
+        {{form.time_of_incident.label}}
+        <a href="#!" data-toggle="tooltip" tabindex="-1"
+           title="Time should be given as HHMM in 24-hour time i.e., 0925 or 1756.">
+            <i class="fa-solid fa-circle-question" ></i>
+        </a>
+        {{form.time_of_incident}}
+    </div>
+</div>
+<hr style="border-width:3px">
+<div class="row form-group my-4">
+    <div class="col">
+        {{form.last_name.label}}
+         <a href="#!" data-toggle="tooltip" tabindex="-1"
+           title="Last name is capitalized by default.">
+            <i class="fa-solid fa-circle-question" ></i>
+        </a>
+        {{form.last_name}}
+    </div>
+    <div class="col">
+        {{form.middle_name.label}}
+        {{form.middle_name}}
+    </div>
+        <div class="col">
+        {{form.first_name.label}}
+        {{form.first_name}}
+    </div>
+</div>
+<div class="row form-group my-4">
+    <div class="col">
+        {{form.date_of_birth.label}}
+        {{form.date_of_birth}}
+    </div>
+    <div class="col-md-2">
+        {{form.age.label}}
+         <a href="#!" data-toggle="tooltip" tabindex="-1"
+           title="Age will be calculated automatically if <b>Date of Birth</b> and <b>Date of Incident/Death</b> are provided.<br>
+            If entering age manually, use the following formats:
+            <ul>
+                <li>>5 years - year (y) only (i.e., 32y).</li>
+                <li>Between 1 and 5 years - year (y), month (m) (i.e., 4y, 3m).</li>
+                <li>Between 1 month and 1 year  month (m), day (d) (i.e., 6m, 23d).</li>
+                <li><1 month - day (d) only (i.e., 15d).</li>
+            </ul>">
+            <i class="fa-solid fa-circle-question" ></i>
+        </a>
+        {{form.age}}
+    </div>
+
+    <div class="col">
+        {{form.gender_id.label}}
+        {{form.gender_id}}
+    </div>
+    <div class="col">
+        {{form.birth_sex.label}}
+        {{form.birth_sex}}
+    </div>
+    <div class="col">
+        {{form.race_id.label}}
+        {{form.race_id}}
+    </div>
+</div>
+<hr style="border-width:3px">
+<div class="row form-group my-4">
+    <div class="col">
+        {{form.submitting_agency.label}}
+        {{form.submitting_agency}}
+    </div>
+    <div class="col">
+        {{form.submitting_division.label}}
+        {{form.submitting_division}}
+    </div>
+</div>
+<div class="row form-group my-4">
+    <div class="col">
+        {{form.submitter_case_reference_number.label}}
+        {{form.submitter_case_reference_number}}
+    </div>
+    <div class="col">
+        {{form.alternate_case_reference_number_1.label}}
+        {{form.alternate_case_reference_number_1}}
+    </div>
+    <div class="col">
+        {{form.alternate_case_reference_number_2.label}}
+        {{form.alternate_case_reference_number_2}}
+    </div>
+</div>
+<hr style="border-width:3px">
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.testing_requested.label}}<span style="color:red">*</span>
+        {{form.testing_requested}}
+        <div class="form-group mb-0">
+            {{form.no_testing_requested(class="")}}
+            {{form.no_testing_requested.label}}
+        </div>
+    </div>
+    <div class="col">
+        {{form.submitter_requests.label}}
+        {{form.submitter_requests}}
+    </div>
+</div>
+
+
+
+{% endblock %}
+
+
+{% block buttons %}
+{% endblock %}
+
+{% block modals %}
+
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/cases.js"></script>
+{% endblock %}

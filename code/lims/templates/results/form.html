@@ -1,0 +1,102 @@
+{% extends "form_template.html" %}
+
+{% block content %}
+<h1>Approve Result - {{ item.test.test_name }}</h1>
+
+<form method="POST">
+    {{ form.hidden_tag() }}
+
+    <table class="table table-bordered table-sm">
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Current Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Component</td>
+                <td>{{ item.component_name }}</td>
+            </tr>
+            <tr>
+                <td>Result Status</td>
+                <td {% if 'result_status' in pending_fields %}style="background-color: #ffeeba;"{% endif %} style="background-color: #ffeeba;">
+                    {% if 'result_status' in pending_fields and mod_dict.get('result_status') %}
+                        {% set mod = mod_dict['result_status'] %}
+                        <div class="mt-1">
+                            {{ mod.original_value or 'None' }} → {{ mod.new_value or 'None' }}
+                        </div>
+                    {% else %}
+                        {{ item.result_status or '—' }}
+                    {% endif %}
+                </td>
+            </tr>
+
+            <tr>
+                <td>Status Update Reason</td>
+                <td style="background-color: #ffeeba;">{{ item.result_status_update_reason or '—' }}</td>
+            </tr>
+            <tr>
+                <td>Result Type</td>
+                <td>{{ item.result_type or '—' }}</td>
+            </tr>
+            <tr>
+                <td>Result</td>
+                <td>{{ item.result or '—' }}</td>
+            </tr>
+            <tr>
+                <td>Supplementary Result</td>
+                <td>{{ item.supplementary_result or '—' }}</td>
+            </tr>
+            <tr>
+                <td>Unit</td>
+                <td>{{ item.unit.name if item.unit else '—' }}</td>
+            </tr>
+            <tr>
+                <td>Concentration</td>
+                <td>{{ item.concentration or '—' }}</td>
+            </tr>
+            <tr>
+                <td>Measurement Uncertainty</td>
+                <td>{{ item.measurement_uncertainty or '—' }}</td>
+            </tr>
+            <tr>
+                <td>Qualitative</td>
+                <td>{{ item.qualitative or '—' }}</td>
+            </tr>
+            <tr>
+                <td>Qualitative Reason</td>
+                <td>{{ item.qualitative_reason or '—' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3 class="mt-4">Case Comments</h3>
+    <table class="table table-bordered table-sm">
+        <thead>
+            <tr>
+                <th>Comment</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if case_comments and case_comments|length > 0 %}
+                {% for c in case_comments %}
+                    <tr>
+                        <td style="background-color:#ffeeba;">{{ c.comment_text or '—' }}</td>
+                        
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="4" class="text-muted">No case comments found for this case.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <div class="mt-3">
+        <button type="submit" class="btn btn-success">Approve</button>
+        <a href="{{ exit_route }}" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

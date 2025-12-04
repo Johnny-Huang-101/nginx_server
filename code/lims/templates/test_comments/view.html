@@ -1,0 +1,44 @@
+{% extends "view_template.html" %}
+
+{% block view %}
+
+<div class="card">
+    <div class="card-header" id="details_heading">
+        <h5>Comments</h5>
+    </div>
+    <div class="card-body">
+        <div class="table display">
+            <div class="table-responsive">
+                <table class="table-striped table-hover small display nowrap" style="width:100%" id="batch_constituents">
+                    <thead>
+                        <tr>
+                            <th>Comment</th>
+                            <th>Created By</th>
+                            <th>Create Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for comment in items %}
+                            <tr>
+                                <td>{{comment.test_comment}}</td>
+                                <td>{{comment.created_by}}</td>
+                                <td>{{comment.create_date.strftime('%m/%d/%Y')}}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block alerts %}
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

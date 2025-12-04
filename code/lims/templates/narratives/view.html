@@ -1,0 +1,40 @@
+{% extends "view_template.html" %}
+
+{% block alerts %}
+{% endblock %}
+
+{% block header %}
+    <a href="{{url_for('cases.view', item_id=item.id)}}">
+        {{item.case.case_number}}
+    </a>
+    - {{item.narrative_type}}
+{% endblock %}
+
+{% block buttons %}
+{% endblock %}
+
+{% block view %}
+{% endblock %}
+
+{% block accordion %}
+<div class="card">
+    <div class="card-header view-card-header" id="narrative">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#narrative-collapse" aria-expanded="false" aria-controls="narratives">
+            <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Narrative
+        </button>
+    </div>
+    <div id="narrative-collapse" class="collapse show" aria-labelledby="narrative-heading">
+        <div class="card-body">
+           {{item.narrative | safe }}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

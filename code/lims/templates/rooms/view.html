@@ -1,0 +1,12 @@
+{% extends "view_template.html" %}
+
+{% block buttons %}
+    <a href="{{url_for(table_name~'.print_labels', item_id = item.id)}}" class="btn btn-secondary">Print Label</a>
+{% endblock %}
+
+{% block view %}
+{% endblock %}
+
+
+{% block scripts %}
+{% endblock %}

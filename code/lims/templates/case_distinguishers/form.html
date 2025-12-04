@@ -1,0 +1,26 @@
+{% extends "form_template.html" %}
+
+<!--Form fields-->
+{% block form %}
+    <div class="form-group">
+        {{form.name.label}}
+        {{form.name}}
+    </div>
+    <div class="form-group">
+        {{form.case_type_id.label}}
+        {{form.case_type_id}}
+    </div>
+{% endblock %}
+
+<!--Alerts-->
+{% block alerts %}
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}
+

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    .rows {
+
+   line-height: 3px;
+   min-height: 3px;
+   height: 3px;
+}
+</style>
+
+<head>
+    <title>FLDB/{{item.batch_id}}/Assign Tandem Batch</title>
+</head>
+<div class="container-fluid">
+     <hr style="border-width:5px">
+        <h1 align="center">
+            Assign Tandem Batch to {{item.batch_id}}
+        </h1>
+     <hr style="border-width:5px">
+    <form method="POST" id="form" novalidate="novalidate">
+        {{form.hidden_tag()}}
+
+        <div>
+            {{form.tandem_id.label}}
+            {{form.tandem_id (class="selectpicker")}}
+        </div>
+
+            <div class="form-group">
+                {{form.submit(class='btn btn-primary')}}
+                <a type="button" class="btn btn-secondary" href="{{url_for(table_name~'.view', item_id=item.id)}}">Exit</a>
+            </div>
+    </form>
+</div>
+
+
+
+
+{% endblock %}

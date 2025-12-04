@@ -1,0 +1,137 @@
+{% extends "view_template.html" %}
+
+{% block alerts %}
+{% endblock %}
+
+{% block buttons %}
+    <a class="btn btn-primary" href="{{url_for(table_name~'.export_attachments', item_id=item.id)}}">Export Attachments</a>
+    <a href="{{ url_for(table_name ~ '.print_labels', item_id=item.id) }}" class="btn btn-secondary">Print Label</a>
+
+    <div class="btn-group">
+        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Manifest Actions
+        </button>
+        <ul class="dropdown-menu">
+            <li>
+                <a href="{{ url_for(table_name ~ '.view_manifestonly', item_id=item.id) }}" class="dropdown-item">
+                    View Manifest (Read Only)
+                </a>
+                {% if kwargs['manifest_exists'] %}
+                    <button type="button" class="dropdown-item" data-toggle="modal" data-target="#confirmReplaceModal">
+                        New Audit Manifest
+                    </button>
+                {% else %}
+                    <form action="{{ url_for(table_name ~ '.generate_manifest_raw', item_id=item.id) }}"
+                          method="post" style="margin: 0;">
+                        <button type="submit" class="dropdown-item">New Audit Manifest</button>
+                    </form>
+                {% endif %}
+            </li>
+
+            {% if not (permissions != 'Admin' and kwargs['manifest_attached']) %}
+                <li>
+                    <a class="dropdown-item" href="{{ url_for(table_name ~ '.edit_manifest', item_id=item.id) }}">
+                        Edit Manifest
+                    </a>
+                </li>
+                <li>
+                    <form id="update-manifest-form" action="{{ url_for(table_name + '.update_manifest', item_id=item.id) }}" method="POST" style="margin: 0;">
+                        <button type="submit" class="dropdown-item">&#10227; Sync Manifest</button>
+                    </form>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+{% endblock %}
+
+
+{% block modals %}
+<div class="modal fade" id="confirmReplaceModal" tabindex="-1" role="dialog" aria-labelledby="confirmReplaceLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <form id="replaceManifestForm" action="{{ url_for(table_name ~ '.generate_manifest_raw', item_id=item.id) }}" method="POST">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="confirmReplaceLabel">Create New Manifest</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-body">
+            A manifest already exists. Creating a new audit will <strong>overwrite the existing manifest</strong>.
+            Are you sure you want to continue?
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-danger">Yes, Replace</button>
+            </div>
+        </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block view %}
+{% endblock %}
+
+{% block accordion %}
+          <div class="card">
+                <div class="card-header view-card-header" id="services-heading">
+                    <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#services-collapse" aria-expanded="false" aria-controls="services">
+                        <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+                        Service History
+                    </button>
+                </div>
+                <div id="services-collapse" class="collapse" aria-labelledby="services-heading">
+                    <div class="card-body">
+                        <div class="table display" id="table-div">
+                            <div class="table-responsive">
+                                <table class="display table-striped table-hover nowrap small datatable" style="width:100%;" id="services-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Service Type</th>
+                                        <th>Vendor Personnel</th>
+                                        <th>Issue</th>
+                                        <th>Resolution</th>
+                                        <th>Notes</th>
+                                        <th>Date Created</th>
+                                        <th>Created By</th>
+                                        <th>Modify Date</th>
+                                        <th>Modified By Date</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for item in services %}
+                                    <tr>
+                                        <td>{{item.service_date.strftime('%m/%d/%Y')}}</td>
+                                        <td>
+                                            <a href="{{url_for('services.view', item_id=item.id)}}">
+                                               {{item.service_types}}
+                                            </a>
+                                        </td>
+                                        <td>{{item.vendor.full_name}}</td>
+                                        <td>{{item.issue}}</td>
+                                        <td>{{item.resolution}}</td>
+                                        <td>{{item.notes}}</td>
+                                        <td>{{item.create_date.strftime('%m/%d/%Y %H:%M')}}</td>
+                                        <td>{{item.created_by}}</td>
+                                        <td>
+                                            {% if item.modify_date %}
+                                            {{item.modify_date.strftime('%m/%d/%Y %H:%M')}}
+                                            {% endif %}
+                                        </td>
+                                        <td>{{item.modified_by}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

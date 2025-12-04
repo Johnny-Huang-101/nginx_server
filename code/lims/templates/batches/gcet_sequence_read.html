@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+
+    .rows {
+
+    line-height: 3px;
+    min-height: 3px;
+    height: 3px;
+    }
+
+    .directive-other {
+
+    text-align:center;
+    background: #f9ad40;
+    width: 10%;
+    margin: auto
+    }
+
+    .directive-HV {
+
+    text-align:center;
+    background: #fdfd96;
+    width: 10%;
+    margin: auto
+    }
+
+    .directive-2 {
+
+    text-align:center;
+    background: #ff66ff;
+    width: 10%;
+    margin: auto
+    }
+
+    .directive-5 {
+
+    text-align:center;
+    background: #0099ff;
+    width: 10%;
+    margin: auto
+    }
+
+    .correct {
+        background-color: green
+    }
+
+    .incorrect{
+        background-color: yellow
+    }
+
+    .selected {
+    border: 2px solid blue;
+    background-color: #D7F2FF;
+    }
+
+    .table-hover td:nth-child(6n+6), /* Targets columns 4, 10, 16, etc. */
+    .table-hover th:nth-child(6n+6) {
+        border-right: 2px solid black;
+    }
+
+    /* Remove the border from the last column */
+    .table-hover tbody td:last-child {
+        border-right: none;
+    }
+
+    /* Ensure the header cells are not affected */
+    .table-hover thead th {
+        border-right: none;
+    }
+
+</style>
+
+<div class="container-fluid">
+    <hr style="border-width:5px">
+    <h1 align="center">
+        Sequence Check
+    </h1>
+    <h3 align="center">
+        Do not refresh this page!
+    </h3>
+    <hr style="border-width:5px">
+</div>
+
+<div>
+    <form method="POST" id="form" novalidate="novalidate">
+        {{form.hidden_tag()}}
+        <table class="table-hover table-striped nowrap" width="100%">
+            <thead>
+                <tr>
+                    <th colspan="18" style="text-align: center"><h1>Reference Tray</h1></th>
+                </tr>
+                <tr>
+                    <th scope="col" colspan="2">Col 1</th>
+                    <th scope="col" colspan="2">Col 2</th>
+                    <th scope="col" colspan="2">Col 3</th>
+                    <th scope="col" colspan="2">Col 4</th>
+                    <th scope="col" colspan="2">Col 5</th>
+                    <th scope="col" colspan="2" style="border-right: none">Col 6</th>
+                    <th scope="col" colspan="2">Col 7</th>
+                    <th scope="col" colspan="2">Col 8</th>
+                    <th scope="col" colspan="2">Col 9</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in range(12) %}
+                    <tr>
+                        {% for column in columns %}
+                            <td><b>{{locals[column][i]}}</b></td>
+                            {% for x in unique_seq %}
+                                {% if x[1] == locals[column][i] %}
+                                    {% if x[1] in seq_check %}
+                                        <td id="source{{locals[column][i]}}" data-value="{{x[2]}}" style="background-color: #A9A9A9">
+                                            {{x[0] | replace(' ', '<br/>' | safe)}}
+                                        </td>
+                                    {% else %}
+                                        <td id="source{{locals[column][i]}}" data-value="{{x[2]}}">
+                                            {{x[0] | replace(' ', '<br/>' | safe)}}
+                                        </td>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                            {% if locals[column][i] in empty_positions %}
+                                <td></td>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <table class="table-hover table-striped nowrap" width="100%">
+            <thead>
+                <tr>
+                    <th colspan="14" style="text-align: center"><h1>Scan Tray</h1></th>
+                </tr>
+                <tr>
+                    <th scope="col" colspan="2">Col 1</th>
+                    <th scope="col" colspan="2">Col 2</th>
+                    <th scope="col" colspan="2">Col 3</th>
+                    <th scope="col" colspan="2">Col 4</th>
+                    <th scope="col" colspan="2">Col 5</th>
+                    <th scope="col" colspan="2" style="border-right: none">Col 6</th>
+                    <th scope="col" colspan="2">Col 7</th>
+                    <th scope="col" colspan="2">Col 8</th>
+                    <th scope="col" colspan="2">Col 9</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in range(12) %}
+                    <tr>
+                        {% for column in columns %}
+                            <td id="scan{{locals[column][i]}}"><b>{{locals[column][i]}}</b></td>
+                            {% for field in form %}
+                                {% if field.name[-2:] != 'te' %}
+                                    {% if field.name | int == locals[column][i] %}
+                                        {% if field.name | int in seq_check %}
+                                            <td>{{field(disabled='true')}}</td>
+                                        {% else %}
+                                            <td>{{field(disabled='true')}}</td>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% for field in form %}
+            {% if '_date' in field.name %}
+                {{field(disabled='true')}}
+            {% endif %}
+        {% endfor %}
+        <div class="container-fluid text-center" style="padding-top: 20px">
+            {{form.submit(class='btn btn-primary ml-1')}}
+            <a href="{{url_for('batches.view', item_id=item.id)}}" class="btn btn-secondary ml-1">Exit</a>
+        </div>
+    </form>
+    <table id="refTable" class="table-hover table-striped nowrap" style="width: 100%; margin-top: 1%">
+        <tbody>
+            <tr data-specimen-check="Skipped">
+                <th>Vial Position</th>
+                <th>Test Name</th>
+                <th>Comment</th>
+            </tr>
+            {% for entry in ref_table %}
+                <tr>
+                    <td>{{entry[0]}}</td>
+                    <td>{{entry[1]}}</td>
+                    <td>{{entry[2]}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+
+function getCurrentDateTime() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+// Test values
+let scanInputP1 = "";
+
+// Attach change event handler to all input fields
+$('input').change(function() {
+    console.log('INPUT TRIGGERED');
+
+    // Get the ID of the current input field
+    const id = $(this).attr('id');
+    console.log('Input field ID:', id);
+
+    // Check if the id is undefined or null
+    if (!id) {
+        console.error('The ID of the input field is not defined');
+        return;
+    }
+
+    // Extract numerical ID (assuming format is a number between 1 and 105)
+    const match = id.match(/^(\d+)$/);
+    if (!match) {
+        console.error('The ID does not match the expected format:', id);
+        return;
+    }
+
+    const numId = match[1];
+
+    if ($(this).val() !== '' && $(this).val() !== undefined) {
+        scanInputP1 = $(this).val().split(": ")[1];
+        qrCheck = $(this).val().split(": ")[0];
+    } else {
+        scanInputP1 = "";
+    }
+
+    // Construct the ID of the corresponding source input field
+    const sourceInputId = "source" + numId;
+    console.log('SOURCE ID', sourceInputId);
+    let sourceInputP1 = $("#" + sourceInputId).attr('data-value');
+
+    if (qrCheck === 'qr_reference') {
+        console.log('QR REF');
+        $("#" + sourceInputId).removeClass('incorrect');
+        $(this).removeClass('incorrect');
+        $("#" + sourceInputId).addClass('correct');
+        $(this).addClass('correct');
+
+    } else if(scanInputP1 !== '' && scanInputP1 === sourceInputP1) {
+        $("#" + sourceInputId).removeClass('incorrect');
+        $(this).removeClass('incorrect');
+        $("#" + sourceInputId).addClass('correct');
+        $(this).addClass('correct');
+
+        const dateFieldId = id + '_date';
+        const dateField = $("#" + dateFieldId);
+
+        if (dateField.length > 0) {
+            dateField.val(getCurrentDateTime());
+            console.log('SUCCESS');
+            console.log('DATE', dateField.val());
+        } else {
+            console.log('DATE FIELD NOT FOUND:', dateFieldId);
+        }
+    } else if (scanInputP1 === '') {
+        $("#" + sourceInputId).removeClass('incorrect');
+        $(this).removeClass('incorrect');
+        $("#" + sourceInputId).removeClass('correct');
+        $(this).removeClass('correct');
+    } else {
+        $("#" + sourceInputId).removeClass('correct');
+        $(this).removeClass('correct');
+        $("#" + sourceInputId).addClass('incorrect');
+        $(this).addClass('incorrect');
+    }
+
+    console.log('SCAN P1', scanInputP1);
+    console.log('SOURCE P1', sourceInputP1);
+
+    // Repeat the same process for other scan and source input fields
+});
+
+$('input').focus(function() {
+    const id = $(this).attr('id');
+    const match = id.match(/^(\d+)$/);
+    if (match) {
+        const numId = match[1];
+        const sourceInputId = "source" + numId;
+        $("#" + sourceInputId).addClass('selected');
+    }
+}).blur(function() {
+    const id = $(this).attr('id');
+    const match = id.match(/^(\d+)$/);
+    if (match) {
+        const numId = match[1];
+        const sourceInputId = "source" + numId;
+        $("#" + sourceInputId).removeClass('selected');
+    }
+});
+
+
+
+</script>
+
+{% endblock %}

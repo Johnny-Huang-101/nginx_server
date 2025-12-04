@@ -1,0 +1,1814 @@
+{% extends "view_template.html" %}
+{% block style %}
+.remove-x-btn {
+    background: none;
+    border: none;
+    color: red;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+    padding: 0;
+    margin-right: 6px;
+    line-height: 1;
+}
+
+.remove-x-btn:hover {
+    transform: scale(1.4);
+}
+
+{% endblock %}
+{% block alerts %}
+{% endblock %}
+
+{% block buttons %}
+{% if item.status != 'Incomplete Request' %}
+<!--<a class="btn btn-primary" data-target="#collet-specimen" data-toggle="modal" href="">Collect Specimens</a>-->
+{% endif %}
+<!-- Adds withdraw button -->
+{% if item.status != 'Finalized' %}
+    <a
+    id="withdraw-btn"
+    href="#!"
+    role="button"
+    class="btn btn-primary"
+    data-target="#withdraw-request"
+    data-toggle="modal"
+    data-placement="right"
+    title="
+        Withdraw Request: Use this when the requester retracts their own request.
+    ">
+    Withdraw Request
+    </a>
+{% endif %}
+<!-- Adds cancel button -->
+{% if item.status != 'Finalized' %}
+    <a
+    id="cancel-btn"
+    href="#!"
+    role="button"
+    class="btn btn-primary"
+    data-target="#cancel-request"
+    data-toggle="modal"
+    data-placement="right"
+    title="
+        Cancel Request: Use this when FLD decides the request will not proceed.
+    ">
+    Cancel Request
+    </a>
+{% endif %}
+{% endblock %}
+
+
+
+{% block view %}
+<div id="cases-pdf">
+    <div id="header-two">
+        <div id="body-two">
+            <div id="case_accordion">
+                <div class="card">
+                    <div class="card-header" id="details_heading"
+                         style="height:50px; padding:0px; display:flex;align-items:center;">
+                        <button aria-controls="details" aria-expanded="false"
+                                class="btn btn-link chevron-btn"
+                                data-target="#details" id="case_details_btn">
+                            Details
+                        </button>
+                    </div>
+                    <div aria-labelledby="details_heading" class="collapse show" id="details">
+                        <div class="card-body">
+                            <div class="row">
+                                <!-- First Table -->
+                                <div class="col-md-4">
+                                    <table class="table table-hover table-striped details-table table-md">
+                                        <tbody>
+                                            <tr>
+                                                <th>Subject's Name</th>
+                                                <td>{{kwargs['subject_name']}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Request Type</th>
+                                                <td>{{item.request_type.name}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Intake User</th>
+                                                <td>{{item.intake_user_id.initials}} {% if item.intake_date %}
+                                                    {{item.intake_date.strftime('%m/%d/%Y %H:%M')}} {% endif %}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Due Date</th>
+                                                {% if item.due_date %}
+                                                <td>{{item.due_date.strftime('%m/%d/%Y')}}</td>
+                                                {% else %}
+                                                <td></td>
+                                                {% endif %}
+                                            </tr>
+                                            <tr>
+                                                <th>Case Number(s) (ME)</th>
+                                                <td>{{ kwargs.case_number_str }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Item(s) Requested</th>
+                                                <td>{{item.requested_items}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Requesting Agency</th>
+                                                <td>
+                                                    <a href="{{url_for('agencies.view', item_id=item.agency_req.id)}}">
+                                                        {{item.agency_req.name}}
+                                                    </a>
+
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Requesting Division</th>
+                                                <td>
+                                                    <a href="{{url_for('divisions.view', item_id=item.division_req.id)}}">
+                                                        {{item.division_req.name}}
+                                                    </a>
+
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Requesting Personnel</th>
+                                                <td>
+                                                    <a href="{{url_for('personnel.view', item_id=item.personnel_req.id)}}">
+                                                        {{item.personnel_req.full_name}}
+                                                    </a>
+
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Destination Agency</th>
+                                                <td>
+                                                    {% if item.dest_agency %}
+                                                    <a href="{{url_for('agencies.view', item_id=item.dest_agency.id)}}">
+                                                        {{item.dest_agency.name}}
+                                                    </a>
+                                                    {% else %}
+                                                    N/A
+                                                    {% endif %}
+
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Destination Division</th>
+                                                <td>
+                                                    {% if item.dest_division %}
+                                                    <a href="{{url_for('divisions.view', item_id=item.dest_division.id)}}">
+                                                        {{item.dest_division.name}}
+                                                    </a>
+                                                    {% else %}
+                                                    N/A
+                                                    {% endif %}
+
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Destination Address</th>
+                                                <td>
+                                                    {% if item.dest_division %}
+                                                    {{item.dest_division.full_address}}
+                                                    {% else %}
+                                                    N/A
+                                                    {% endif %}
+                                                </td>
+
+                                            </tr>
+                                            {% if item.status in ['Incomplete Request', 'Pending Request', 'Ready for Authorization' ] %}
+                                            <tr id="nok-row">
+                                                <th>
+                                                    Subject/NOK Request
+                                                    <a class="text-decoration-none" data-html="true" data-toggle="tooltip"
+                                                       href="#!"
+                                                       title="
+                                                   <p>When applicable, ensure that the following are included in the request email:</p>
+                                                   <ul>
+                                                       <li>The purpose of the request</li>
+                                                       <li>Specimen instructions (type, volume, preservative, etc.)</li>
+                                                       <li>Account number of prepaid courier service </li>
+                                                       <li>Next-of-kin letter</li>
+                                                   </ul>
+                                                   <p>Additionally for non Law Enforcement requests, if requesting party is not next-of-kin, a subsequent letter from the next-of-kin confirming consent is required.</p>
+                                                   ">
+                                                        <i class="fa-solid fa-circle-question" style="font-size:16px"></i>
+                                                    </a>
+                                                </th>
+                                                <td>
+                                                    <div style="display: flex; flex-direction: row; align-items: flex-start;">
+                                                        <!-- Left: Checkboxes -->
+                                                        <div style="text-align: left; margin-right: 20px;">
+                                                            <!-- Labels and checkboxes -->
+                                                            <div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-start;">
+                                                                <div style="display: flex; align-items: center; gap: 10px;">                                                        
+                                                                    <a href="{{ url_for('requests.update_nok_status', item_id=item.id, status='verify') }}">
+                                                                        <span style="color: #007bff;">Verify</span>
+                                                                        <i class="fa-regular {{ 'fa-square-check' if item.next_of_kin_confirmation == current_user.initials else 'fa-square' if item.next_of_kin_confirmation != 'No' else 'fa-square' }}"
+                                                                           style="cursor: pointer; font-size: 18px; color: #007bff;"
+                                                                           title="Verify"></i>
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Right: Initials Display -->
+                                                        <div style="align-self: center;">
+                                                            {% if item.next_of_kin_confirmation != 'N/A' and
+                                                            item.next_of_kin_confirmation != 'No' %}
+                                                            {{ item.next_of_kin_confirmation }}
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% else %}
+                                            <tr>
+                                                <th>Subject/NOK Request</th>
+                                                <td>
+                                                    {% if item.next_of_kin_confirmation != 'NA' %}
+                                                        {{item.next_of_kin_confirmation}}
+                                                        {% if item.next_of_kin_date %}
+                                                            {{item.next_of_kin_date.strftime('%m/%d/%Y %H:%M')}}
+                                                        {% endif %}
+                                                    {% else %}
+                                                        N/A
+                                                    {% endif %}
+                                                </td>
+
+                                            </tr>
+                                            {% endif %}
+
+                                            {% if item.status in ['Incomplete Request', 'Pending Request', 'Ready for Authorization'] %}
+                                                <tr id="payment-row">
+                                                    <th>
+                                                        Payment Confirmation
+                                                        <a class="text-decoration-none" data-html="true" data-toggle="tooltip"
+                                                           href="#!"
+                                                           title="
+                   <p>A charge is required for non Law Enforcement releases. Seek supervisory input and the SFOCME fee schedule for payment.</p>
+                   ">
+                                                            <i class="fa-solid fa-circle-question" style="font-size:16px"></i>
+                                                        </a>
+                                                    </th>
+                                                    <td>
+                                                        <div style="display: flex; flex-direction: row; align-items: flex-start;">
+                                                            <!-- Left: Checkboxes -->
+                                                            <div style="text-align: left; margin-right: 20px;">
+                                                                <!-- Labels and checkboxes -->
+                                                                <div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-start;">
+                                                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                                                        <a href="{{ url_for('requests.update_payment_status', item_id=item.id, status='verify') }}">
+                                                                            <span style="color: #007bff;">Verify</span>
+                                                                            <i class="fa-regular {{ 'fa-square-check' if item.payment_confirmation == current_user.initials else 'fa-square' if item.payment_confirmation != 'No' else 'fa-square' }}"
+                                                                               style="cursor: pointer; font-size: 18px; color: #007bff;"
+                                                                               title="Verify"></i>
+                                                                        </a>
+                                                                    </div>
+                                                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                                                        <a href="{{ url_for('requests.update_payment_status', item_id=item.id, status='na') }}">
+                                                                            <span style="color: #007bff;">N/A</span>
+                                                                            <i class="fa-regular {{ 'fa-square-check' if item.payment_confirmation == 'N/A' else 'fa-square' if item.payment_confirmation != 'No' else 'fa-square' }}"
+                                                                               style="cursor: pointer; font-size: 18px; color: #007bff;"
+                                                                               title="N/A"></i>
+                                                                        </a>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Right: Initials Display -->
+                                                            <div style="align-self: center;">
+                                                                {% if item.payment_confirmation != 'N/A' and
+                                                                item.payment_confirmation != 'No' %}
+                                                                {{ item.payment_confirmation }}
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% else %}
+                                                <tr>
+                                                    <th>Payment Confirmation</th>
+                                                    <td>
+                                                        {% if item.payment_confirmation != 'NA' %}
+                                                        {{item.payment_confirmation}}
+                                                        {% if item.payment_confirmation_date %}
+                                                        {{ item.payment_confirmation_date.strftime('%m/%d/%Y %H:%M') }}
+                                                        {% endif %}
+                                                        {% else %}
+                                                        N/A
+                                                        {% endif %}
+                                                    </td>
+
+                                                </tr>
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Second Table -->
+                                <div class="col-md-4">
+                                <!-- Second Table: NON-LEGACY -->
+                                {% if item.legacy_case is none %}
+                                    <!-- Selects the specimens for request -->
+                                     {% if item.status == 'Pending Request' %} <!-- Users are unable to add specimens after authorization. -->
+                                        <table class="table table-hover table-striped details-table table-sm">
+                                        <tr>
+                                            <th>Specimens</th>                                        
+                                            <td>
+                                                <a class="" data-target="#specimen_add" data-toggle="modal" href="">Add</a> 
+                                                {% if item.legacy_case is none and item.status == 'Pending Request' and item.specimens is none%} <!-- User can select Not Available only if specimens is empty -->
+                                                <span> | </span>
+                                                <a href="" data-target="#no-evidence" data-toggle="modal">Not Available</a>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th style="background-color: #fdfd96;">Pending Specimens</th>
+                                            <td style="background-color: #fdfd96;">{{kwargs.selected_specimens|length}}
+                                            </td>
+                                        </tr>
+                                        </table>
+                                        {% endif %}
+
+                                    
+                                    <!-- Display the selected specimens -->
+                                    {% if item.specimens %}
+                                        <table class="table table-hover table-striped details-table table-sm">
+                                            <thead>
+                                            <tr>
+                                                <th></th>
+                                                <th>Case Numbers</th>
+                                                <th>Type</th>
+                                                <th>Accession Number</th>
+                                                <th>Custody</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for specimen in kwargs.selected_specimens %}
+                                            <tr id="specimen-row-{{ specimen.id }}">
+                                                <td style="width: 30px;">
+                                                    <form method="POST"
+                                                        action="{{ url_for('requests.remove_specimen', item_id=item.id) }}"
+                                                        class="remove-specimen-form"
+                                                        data-specimen-id="{{ specimen.id }}"
+                                                        style="display:inline;">
+                                                        <input type="hidden" name="specimen_id" value="{{ specimen.id }}">
+                                                        {% if item.status in ['Pending Request'] %}
+                                                        <button type="submit" title="Remove" class="remove-x-btn">×</button>
+                                                        {% endif %}
+                                                    </form>
+                                                </td>                                                                                                                   
+                                                <td><a href="{{url_for('cases.view', item_id=specimen.case.id)}}">{{specimen.case.case_number}}</a></td>
+                                                <td>[{{specimen.type.code}}] {{specimen.type.name}}</td>
+                                                <td>{{specimen.accession_number}}</td>
+                                                <td>{{specimen.custody}}</td>
+                                            </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    {% endif %}
+                                {% endif %}
+                                
+                                <!-- Second Table: LEGACY -->
+                                {% if item.legacy_case %}
+                                    <!-- Manually add the specimens for the request -->
+                                    {% if  item.status == 'Pending Request' %} <!-- Users are unable to add specimens after authorization. -->
+                                        <a class="" data-target="#specimen_add_legacy" data-toggle="modal" href="">Add Legacy Specimens</a><span> | </span>
+                                        <a href="" data-target="#no-evidence" data-toggle="modal">Not Available</a>
+                                    {% endif %}
+                                    <!-- Display the added specimens  -->
+                                    <table class="table table-hover table-striped details-table table-sm">
+                                    <thead>
+                                        <tr>
+                                        <th></th>
+                                        <th>Case Number</th>
+                                        <th>Description</th>
+                                        <th>Accession Number</th>
+                                        <th>Date Collected</th>
+                                        <th>Received By</th>
+                                        <th>Checked By</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% if item.legacy_accession_number %}
+                                        {% set codes = (item.legacy_code or '').split(',') %}
+                                        {% set accessions = (item.legacy_accession_number or '').split(',') %}
+                                        {% set dates = (item.legacy_date_created or '').split(',') %}
+                                        {% set created_bys = (item.legacy_created_by or '').split(',') %}
+                                        {% set checked_bys = (item.legacy_checked_by or '').split(',') %}
+
+                                        {% for i in range(accessions | length) %}
+                                        <tr id="legacy-specimen-row-{{ i }}">
+                                        <td style="width: 30px;">
+                                            <form method="POST"
+                                                action="{{ url_for('requests.remove_legacy_specimen', item_id=item.id) }}"
+                                                style="display:inline;">
+                                            <input type="hidden" name="legacy_index" value="{{ i }}">
+                                            {% if item.status in ['Pending Request'] %}
+                                            <button type="submit" title="Remove" class="remove-x-btn">×</button>
+                                            {% endif %}
+                                            </form>
+                                        </td>
+                                        <td>{{ item.legacy_case }}</td>
+                                        <td>{{ codes[i].strip() if codes | length > i else '' }}</td>
+                                        <td>{{ accessions[i].strip() }}</td>
+                                        <td>{{ dates[i].strip() if dates | length > i else '' }}</td>
+                                        <td>{{ created_bys[i].strip() if created_bys | length > i else '' }}</td>
+                                        <td>{{ checked_bys[i].strip() if checked_bys | length > i else '' }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                        <td colspan="7" class="text-center text-muted">No legacy specimens added.</td>
+                                        </tr>
+                                    {% endif %}
+                                    </tbody>
+                                    </table>
+                                {% endif %}
+
+                                <!-- Second Table: No Available Evidence, Withdrawn, and Canceled display-->
+                                {% if item.release_status in ['No Available Evidence', 'Withdrawn','Canceled']  %}
+                                    <table class="table table-hover table-striped details-table table-sm">
+                                        <tbody>
+                                            <tr>
+                                                <th>
+                                                Finalization Reason
+                                                <a href="#!" 
+                                                    class="text-decoration-none" 
+                                                    data-toggle="tooltip" 
+                                                    data-html="true"
+                                                    title="
+                                                        {% if item.release_status == 'Withdrawn' %}
+                                                        This request was formally withdrawn by the requesting agency. Supporting correspondence should be attached.
+                                                        {% elif item.release_status == 'Canceled' %}
+                                                        This request was not authorized to continue and has been canceled by FLD.
+                                                        {% elif item.release_status == 'No Available Evidence' %}
+                                                        No evidence was available to fulfill this request. The requesting agency and CFT/FTS should be notified accordingly.
+                                                        {% endif %}">
+                                                    <i class="fa-solid fa-circle-question" style="font-size: 14px; margin-left: 6px;"></i>
+                                                </a>
+                                                </th>
+                                                <td>{{ item.release_status }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>                   
+                                {% endif %}
+                                </div>           
+                                
+                                <!-- Third Table -->
+                                <div class="col-md-4">
+                                    <table class="table table-hover table-striped details-table table-md">
+                                        <tbody>
+                                        {% if item.status in ['Incomplete Request', 'Pending Request', 'Ready for Authorization'] and item.legacy_case is none %}
+                                        <tr id="submission-agency-row">
+                                            <th>
+                                                Submission Agency Authorization
+                                                <a class="text-decoration-none" data-html="true" data-toggle="tooltip"
+                                                   href="#!"
+                                                   title="
+                                                       <ul>
+                                                           <li>For Post Mortem releases, seek authorization from the Medical Examiner.</li>
+                                                           <li>For Human Performance releases, obtain authorization from the Submission Agency and District Attorney(if applicable)</li>
+                                                       </ul>
+                                                       ">
+                                                    <i class="fa-solid fa-circle-question" style="font-size:16px"></i>
+                                                </a>
+                                            </th>
+                                            {% if item.release_status != 'N/A' %}
+                                            <td>
+                                                {% if item.status in ['Incomplete Request', 'Pending Request', 'Ready for Authorization'] and item.specimens is not none %}
+                                                <div style="display: flex; flex-direction: row; align-items: flex-start;">
+                                                    <!-- Left: Checkboxes -->
+                                                    <div style="text-align: left; margin-right: 20px;">
+                                                        <!-- Labels and checkboxes -->
+                                                        <div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-start;">
+                                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                                <a href="{{ url_for('requests.update_submission_status', item_id=item.id, status='verify') }}">
+                                                                    <span style="color: #007bff;">Verify</span>
+                                                                    <i class="fa-regular {{ 'fa-square-check' if item.me_confirmation == current_user.initials else 'fa-square' if item.me_confirmation != 'No' else 'fa-square' }}"
+                                                                       style="cursor: pointer; font-size: 18px; color: #007bff;"
+                                                                       title="Verify"></i>
+                                                                </a>
+                                                            </div>
+                                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                                <a href="{{ url_for('requests.update_submission_status', item_id=item.id, status='na') }}">
+                                                                    <span style="color: #007bff;">N/A</span>
+                                                                    <i class="fa-regular {{ 'fa-square-check' if item.me_confirmation == 'N/A' else 'fa-square' if item.me_confirmation != 'No' else 'fa-square' }}"
+                                                                       style="cursor: pointer; font-size: 18px; color: #007bff;"
+                                                                       title="N/A"></i>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Right: Initials Display -->
+                                                <div style="align-self: center;">
+                                                    {% if item.me_confirmation != 'N/A' and item.me_confirmation !=
+                                                    'No' %}
+                                                    {{ item.me_confirmation }}
+
+                                                    {% endif %}
+                                                </div>
+                                </div>
+                                {% endif %}
+                                </td>
+                                {% elif item.release_status != 'None' %}
+                                <td>N/A</td>
+                                {% endif %}
+
+                                </tr>
+                                {% elif item.status in ['Incomplete Request', 'Pending Request', 'Ready for
+                                Authorization'] and item.legacy_case %}
+                                <tr id="submission-agency-row">
+                                    <th>
+                                        Submission Agency Authorization
+                                        <a class="text-decoration-none" data-html="true" data-toggle="tooltip"
+                                           href="#!"
+                                           title="
+                                                       <ul>
+                                                           <li>For Post Mortem releases seek authorization from the Medical Examiner</li>
+                                                           <li>For Human Performance releases seek authorization from the Submission Agency</li>
+                                                       </ul>
+                                                       ">
+                                            <i class="fa-solid fa-circle-question" style="font-size:16px"></i>
+                                        </a>
+                                    </th>
+
+                                    <td>
+                                        {% if item.status in ['Incomplete Request', 'Pending Request', 'Ready for
+                                        Authorization'] %}
+                                        <div style="display: flex; flex-direction: row; align-items: flex-start;">
+                                            <!-- Left: Checkboxes -->
+                                            <div style="text-align: left; margin-right: 20px;">
+                                                <!-- Labels and checkboxes -->
+                                                <div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-start;">
+                                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                                        <a href="{{ url_for('requests.update_submission_status', item_id=item.id, status='verify') }}">
+                                                            <span style="color: #007bff;">Verify</span>
+                                                            <i class="fa-regular {{ 'fa-square-check' if item.me_confirmation == current_user.initials else 'fa-square' if item.me_confirmation != 'No' else 'fa-square' }}"
+                                                               style="cursor: pointer; font-size: 18px; color: #007bff;"
+                                                               title="Verify"></i>
+                                                        </a>
+                                                    </div>
+                                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                                        <span style="color: #007bff;">N/A</span>
+                                                        <a href="{{ url_for('requests.update_submission_status', item_id=item.id, status='na') }}">
+                                                            <i class="fa-regular {{ 'fa-square-check' if item.me_confirmation == 'N/A' else 'fa-square' if item.me_confirmation != 'No' else 'fa-square' }}"
+                                                               style="cursor: pointer; font-size: 18px; color: #007bff;"
+                                                               title="N/A"></i>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Right: Initials Display -->
+                                        <div style="align-self: center;">
+                                            {% if item.me_confirmation != 'N/A' and item.me_confirmation !=
+                                            'No' %}
+                                            {{ item.me_confirmation }}
+
+                                            {% endif %}
+                                        </div>
+                            </div>
+                            {% endif %}
+                            </td>
+
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <th>Submission Agency Authorization</th>
+                                <td>
+                                    {% if item.me_confirmation != 'N/A' %}
+                                    {{item.me_confirmation}}
+                                    {% if item.me_confirmation_date %}
+                                    {{ item.me_confirmation_date.strftime('%m/%d/%Y %H:%M') }}
+                                    {% endif %}
+                                    {% else %}
+                                    N/A
+                                    {% endif %}
+                                </td>
+
+                            </tr>
+                            {% endif %}
+
+
+                            <tr>
+                                <th style="">CFT/FTS Authorization</th>
+                                {% if item.release_status in ['N/A', 'No Available Evidence', 'Withdrawn', 'Canceled'] and item.approver is none %}
+                                <td>N/A</td>
+                                {% elif item.legacy_case is none %}
+                                {% if item.approver %}
+                                <td style="">{{item.approver.initials}} {% if item.approve_date %}
+                                    {{item.approve_date.strftime('%m/%d/%Y %H:%M') if item.approve_date else 'N/A'}} {% endif %}
+                                </td>
+                                {% else %}
+                                <td style="">{% if item.status == 'Ready for Authorization' and
+                                    current_user.permissions in ['Admin', 'Owner'] %}<a
+                                            data-target="#specimen_review" data-toggle="modal"
+                                            href="">Authorize</a>{% endif %}
+                                </td>
+                                {% endif %}
+
+                                {% else %}
+                                {% if item.approver %}
+                                <td style="">{{item.approver.initials}} {% if item.approve_date %}
+                                    {{item.approve_date.strftime('%m/%d/%Y %H:%M') if item.approve_date else 'N/A'}} {% endif %}
+                                </td>
+                                {% else %}
+                                <td style="">{% if item.status == 'Ready for Authorization' and
+                                    current_user.permissions in ['Admin', 'Owner'] %}<a
+                                            href="{{url_for(table_name~'.approver_legacy', item_id=item.id, submit_status='approver')}}">Verify</a>{%
+                                    endif %}
+                                </td>
+                                {% endif %}
+                                {% endif %}
+
+                            </tr>
+
+                            <tr>
+                                <th>Preparer</th>
+
+                                {% if item.legacy_case is none %}
+                                {% if item.prepare_status == 'N/A' %}
+                                <td>N/A</td>
+                                {% elif item.prepare_status == 'None' %}
+                                    <td>
+                                        {% if item.status not in ['Incomplete Request', 'Pending Request', 'Ready for Authorization'] %}
+                                        <a
+                                                data-target="#prepared-specimen"
+                                                data-toggle="modal"
+                                                href="">
+                                            Start and Collect
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                    {% elif item.prepare_status == 'Return' %}
+                                    <td>
+                                        {% if item.status not in ['Incomplete Request', 'Pending Request'] %}
+                                        <a data-target="#return-prepared-specimen" data-toggle="modal" href="">
+                                            Return and Complete
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                    {% elif item.prepare_status == 'Complete' %}
+                                    <td>
+                                        {% if item.status not in ['Incomplete Request', 'Pending Request'] %}
+                                        {{item.preparing_user.initials}}
+                                        {{item.prepare_date.strftime('%m/%d/%Y %H:%M')if item.prepare_date else 'N/A'}}
+                                        {% endif %}
+                                    </td>
+                                    {% endif %}
+                                {% elif item.prepare_status == 'N/A' %}
+                                <td>N/A</td>
+                                {% else %}
+                                    <td>
+                                        {% if item.status == 'Ready for Preparation' %}
+                                        <a
+                                                href="{{url_for(table_name~'.approver_legacy', item_id=item.id, submit_status='preparer')}}">
+                                            Verify
+                                        </a>
+                                        {% elif item.status in ['Ready for Finalization', 'Finalized', 'Ready for Check'] %}
+                                            {% if item.status not in ['Incomplete Request', 'Pending Request'] %}
+                                            {{item.preparing_user.initials}}
+                                            {{ item.prepare_date.strftime('%m/%d/%Y %H:%M') if item.prepare_date else 'N/A' }}
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                {% endif %}
+                            </tr>
+                            <tr>
+                                <th>Checker</th>
+                                {% if item.legacy_case is none %}
+                                {% if item.check_status == 'N/A' %}
+                                    <td>N/A</td>
+                                {% elif item.check_status == 'None' and item.preparer is not none %}
+                                    <td>
+                                        {% if item.status not in ['Incomplete Request', 'Pending Request', 'Ready for
+                                        Authorization'] %}
+                                        <a
+                                                data-target="#specimen-check"
+                                                data-toggle="modal"
+                                                href="">
+                                            Start and Collect
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                {% elif item.check_status == 'Return' %}
+                                    <td>
+                                        {% if item.status not in ['Incomplete Request', 'Pending Request'] %}
+                                        <a data-target="#return-checked-specimen" data-toggle="modal" href="">
+                                            Return and Complete
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                {% elif item.check_status == 'Complete' %}
+                                    <td>
+                                        {% if item.status not in ['Incomplete Request', 'Pending Request'] %}
+                                        {{item.checking_user.initials}}
+                                        {{item.check_date.strftime('%m/%d/%Y %H:%M') if item.check_date else ''}}
+                                        {% endif %}
+                                    </td>
+                                {% else %}
+                                    <td></td>
+                                {% endif %}
+                                {% else %}
+                                <td>
+                                    {% if item.check_status == 'N/A' %}
+                                        <p>N/A</p>
+                                    {% endif %}
+                                    {% if item.status == 'Ready for Check' %}
+                                        <a
+                                                href="{{url_for(table_name~'.approver_legacy', item_id=item.id, submit_status='checker')}}">
+                                            Verify
+                                        </a>
+                                    {% elif item.status in ['Ready for Finalization', 'Finalized'] %}
+                                        {% if item.status not in ['Incomplete Request', 'Pending Request'] %}
+                                            {{item.checking_user.initials}}
+                                            {{ item.check_date.strftime('%m/%d/%Y %H:%M') if item.check_date else 'N/A' }}
+                                        {% endif %}
+                                    {% endif %}
+                                    </td>
+                                {% endif %}
+                            </tr>
+                            <tr>
+                                <th>Releaser</th>
+                                {% if item.legacy_case is none %}
+                                {% if item.release_status in ['N/A', 'No Available Evidence', 'Withdrawn', 'Canceled'] and item.approver is none %}
+                                <td>N/A</td>
+                                    {% elif item.release_status == 'None' and item.checker is not none %}
+                                    <td>
+                                        {% if item.status not in ['Incomplete Request', 'Pending Request', 'Ready for
+                                        Authorization'] %}
+                                        <a data-target="#release-specimen" data-toggle="modal" href="">
+                                            Start and Collect
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                    {% elif item.release_status == 'Return' %}
+                                    <td>
+                                        {% if item.status not in ['Incomplete Request', 'Pending Request'] and not item.release_date %}
+                                        <a data-target="#return-released-specimen" data-toggle="modal" href="">
+                                            Release
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                    {% elif item.release_status == 'Complete' %}
+                                    <td>
+                                        {% if item.status not in ['Incomplete Request', 'Pending Request'] %}
+                                        {{item.releasing_user.initials}}
+                                        {{item.release_date.strftime('%m/%d/%Y %H:%M') if item.release_date else 'N/A'}}
+                                        {% endif %}
+                                    </td>
+                                    {% else %}
+                                    <td></td>
+                                    {% endif %}
+                                {% else %}
+                                    <td>
+                                         {% if item.release_status == 'N/A' %}
+                                        <p>N/A</p>
+                                        {% endif %}
+                                        {% if item.status == 'Ready for Finalization'and not item.release_date %}
+                                        <a data-target="#return-released-specimen" data-toggle="modal" href="">
+                                            Release
+                                        </a>
+                                        {% elif item.release_date %}
+                                            {{item.releasing_user.initials}}
+                                        {{ item.check_date.strftime('%m/%d/%Y %H:%M') if item.check_date else 'N/A' }}
+                                        {% endif %}
+                                    </td>
+                                {% endif %}
+                            </tr>
+                            <tr>
+                                <th>Release Date</th>
+                                {% if item.release_status in ['N/A', 'No Available Evidence', 'Withdrawn', 'Canceled'] and item.approver is none %}
+                                <td>N/A</td>
+                                {% else %}
+                                <td>
+                                    {{item.release_date.strftime('%m/%d/%Y %H:%M') if item.release_date else ''}} 
+                                </td>
+                                {% endif %}
+                            </tr>
+                            <tr>
+                                <th>Receiving Agency</th>
+                                {% if item.release_status in ['N/A', 'No Available Evidence', 'Withdrawn', 'Canceled'] and item.approver is none %}
+                                <td>N/A</td>
+                                {% else %}
+                                <td>
+                                    {{item.agency_rec.name}}
+                                </td>
+                                {% endif %}
+                            </tr>
+                            <tr>
+                                <th>Receiving Division</th>
+                                {% if item.release_status in ['N/A', 'No Available Evidence', 'Withdrawn', 'Canceled'] and item.approver is none %}
+                                <td>N/A</td>
+                                {% else %}
+                                <td>
+                                    {{item.division_rec.name}}
+                                </td>
+                                {% endif %}
+                            </tr>
+                            <tr>
+                                <th>Receiving Personnel</th>
+                                {% if item.release_status in ['N/A', 'No Available Evidence', 'Withdrawn', 'Canceled'] and item.approver is none %}
+                                <td>N/A</td>
+                                {% else %}
+                                <td>
+                                    {{item.personnel_rec.full_name}}
+                                </td>
+                                {% endif %}
+                            </tr>
+                            <tr>
+                                <th>Date Received by Destination Agency</th>
+                                <td>
+                                {# Case 1: No available evidence or canceled, no approver #}
+                                {% if item.release_status in ['N/A', 'No Available Evidence', 'Withdrawn', 'Canceled'] and item.approver is none %}
+                                N/A
+                                {# Case 2: When status = 'Ready For Finalization' #}
+                                {% elif item.status not in ['Incomplete Request', 'Pending Request', 'Ready for Authorization', 'Ready for Preparation', 'Ready for Check'] %}
+                                    {% if item.received_date %}
+                                        {{ item.received_date.strftime('%m/%d/%Y %H:%M') }}
+                                    {% elif item.release_status == 'Complete' %}
+                                        <a data-toggle="modal" data-target="#update-received-date" href="">
+                                            Complete
+                                        </a>
+                                    {% else %}
+                                {% endif %}
+                                </td>
+                                 {% endif %}
+                            </tr>
+
+                            </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <hr>
+                         <table class="table table-hover table-striped details-table table-md"
+                           style="padding-top: 5vh;">
+                        <tbody>
+                        <tr>
+                            <th style="white-space: nowrap; width: 1%;">
+                               Communications
+                                <a href="#communication-add" data-toggle="modal" style="color: #007bff; text-decoration: none; margin-left: 10px;">
+                                    Add Communication
+                                </a>
+                            </th>
+                            {% if item.communications %}
+                            <td>
+                                {{ item.communications|replace('\n', '<br>')|safe }}
+                            </td>
+                            {% else %}
+                            <td></td>
+                            {% endif %}
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+{% endblock %}
+
+{% block accordion %}
+
+{% endblock %}
+
+{% block modals %}
+
+
+<div class="modal" id="specimen_add" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select specimen(s)</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form enctype="multipart/form-data" id="specimen_add_form" method="POST">
+                    {{ kwargs.specimen_add_form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ kwargs.specimen_add_form.specimens.label(class="form-label") }}
+                        {{ kwargs.specimen_add_form.specimens(class="selectpicker", data_width="20vw",
+                        data_height="50vh", multiple=True) }}
+                    </div>
+                    <div id="selected-items" style="margin-top: 10px;"></div>
+                    <div class="modal-footer" style="justify-content: center">
+                        {{ kwargs.specimen_add_form.specimens_submit(class='btn btn-primary') }}
+                        <button class="btn btn-secondary" data-dismiss="modal" type="button">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="specimen_review" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select specimen(s) to review:</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form enctype="multipart/form-data" id="specimen_review_form" method="POST">
+                    {{ kwargs.specimen_review_form.hidden_tag()}}
+
+                    <div id="no-specimens-message" style="display: none; color: red;">Evidence not available.</div>
+
+                    <div class="form-group">
+                        {{ kwargs.specimen_review_form.approved_specimens.label(class="form-label") }}
+                        {{ kwargs.specimen_review_form.approved_specimens(class="selectpicker", data_width="20vw",
+                        data_height="20vh", multiple=True) }}
+                    </div>
+                    <div class="modal-footer" style="justify-content: center">
+                        <div id="button-div">
+                            {{ kwargs.specimen_review_form.approved_submit(class='btn btn-primary') }}
+                        </div>
+
+                        <button class="btn btn-secondary" data-dismiss="modal" type="button">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="collet-specimen" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Collect specimen(s):</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <p style="padding-left: 18px; padding-top: 5px;">Custody will be moved to {{current_user.initials}}</p>
+            <div class="modal-body">
+                <form enctype="multipart/form-data" id="collect-specimen" method="POST">
+                    {{ kwargs.collected_specimen_form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ kwargs.collected_specimen_form.collected_specimen.label(class="form-label") }}
+                        {{ kwargs.collected_specimen_form.collected_specimen(class="selectpicker", data_width="20vw",
+                        data_height="20vh", multiple=True) }}
+                    </div>
+                    <div class="modal-footer" style="justify-content: center">
+                        {{ kwargs.collected_specimen_form.collected_submit(class='btn btn-primary') }}
+                        <button class="btn btn-secondary" data-dismiss="modal" type="button">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Prepare and collect-->
+<div class="modal" id="prepared-specimen" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Collect specimen(s):</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <p style="padding-left: 18px; padding-top: 5px;">Custody will be moved to {{current_user.initials}}</p>
+            <div class="modal-body">
+                <form enctype="multipart/form-data" id="prepared-specimen-form" method="POST">
+                    {{ kwargs.prepared_specimen_form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ kwargs.prepared_specimen_form.prepared_specimen.label(class="form-label") }}
+                        {{ kwargs.prepared_specimen_form.prepared_specimen(class="selectpicker", data_width="20vw",
+                        data_height="20vh", multiple=True) }}
+                    </div>
+                    <div class="modal-footer" style="justify-content: center">
+                        {{ kwargs.prepared_specimen_form.prepared_submit(class='btn btn-primary') }}
+                        <button class="btn btn-secondary" data-dismiss="modal" type="button">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for returning ALL specimen for prepared -->
+<div class="modal" id="return-prepared-specimen" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Return specimen(s):</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-striped details-table table-sm">
+                    <thead>
+                    <tr>
+                        <th>Case Number</th>
+                        <th>Type</th>
+                        <th>Accession Number</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for specimen in kwargs.prepared_specimens %}
+                    <tr>
+                        <td>{{specimen.case.case_number}}</td>
+                        <td>[{{specimen.type.code}}] {{specimen.type.name}}</td>
+                        <td>{{specimen.accession_number}}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <form enctype="multipart/form-data" id="return-prepared-specimen-form" method="POST">
+                    {{ kwargs.return_prepared_specimen_form.hidden_tag() }}
+                    <!-- ADD A LOOP OF ALL SPECIMENS FOR USER TO SEE (CASE_NUM-ACC[TYPE] JUST USE <P> -->
+                    <div class="form-group">
+                        {{ kwargs.return_prepared_specimen_form.custody_type.label(style='margin-right: 10%') }}
+                        {{ kwargs.return_prepared_specimen_form.custody_type(class='form-control') }}
+                    </div>
+                    <div class="form-group">
+                        {{ kwargs.return_prepared_specimen_form.custody.label(style='margin-right: 10%') }}
+                        {{ kwargs.return_prepared_specimen_form.custody(class='form-control') }}
+                    </div>
+                    <div class="modal-footer" style="justify-content: center">
+                        {{ kwargs.return_prepared_specimen_form.return_prepared_submit(class='btn btn-primary') }}
+                        <button class="btn btn-secondary" data-dismiss="modal" type="button">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- check and collect -->
+
+<div class="modal" id="specimen-check" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Collect specimen(s):</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <p style="padding-left: 18px; padding-top: 5px;">Custody will be moved to {{current_user.initials}}</p>
+            <div class="modal-body">
+                <form enctype="multipart/form-data" id="specimen-check-form" method="POST">
+                    {{ kwargs.collect_checked_specimen_form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ kwargs.collect_checked_specimen_form.checked_specimen.label(class="form-label") }}
+                        {{ kwargs.collect_checked_specimen_form.checked_specimen(class="selectpicker",
+                        data_width="20vw",
+                        data_height="20vh", multiple=True) }}
+                    </div>
+                    <div class="modal-footer" style="justify-content: center">
+                        {{ kwargs.collect_checked_specimen_form.checked_specimen_submit(class='btn btn-primary') }}
+                        <button class="btn btn-secondary" data-dismiss="modal" type="button">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal for returning ALL specimen for checked -->
+<div class="modal" id="return-checked-specimen" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Return specimen(s):</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-striped details-table table-sm">
+                    <thead>
+                    <tr>
+                        <th>Case Number</th>
+                        <th>Type</th>
+                        <th>Accession Number</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for specimen in kwargs.prepared_specimens %}
+                    <tr>
+                        <td>{{specimen.case.case_number}}</td>
+                        <td>[{{specimen.type.code}}] {{specimen.type.name}}</td>
+                        <td>{{specimen.accession_number}}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <form enctype="multipart/form-data" id="return-checked-specimen-form" method="POST">
+                    {{ kwargs.return_checked_specimen_form.hidden_tag() }}
+                    <!-- ADD A LOOP OF ALL SPECIMENS FOR USER TO SEE (CASE_NUM-ACC[TYPE] JUST USE <P> -->
+                    <div class="form-group">
+                        {{ kwargs.return_checked_specimen_form.custody_type_checked.label(style='margin-right: 10%') }}
+                        {{ kwargs.return_checked_specimen_form.custody_type_checked(class='form-control') }}
+                    </div>
+                    <div class="form-group">
+                        {{ kwargs.return_checked_specimen_form.custody_checked.label(style='margin-right: 10%') }}
+                        {{ kwargs.return_checked_specimen_form.custody_checked(class='form-control') }}
+                    </div>
+                    <div class="modal-footer" style="justify-content: center">
+                        {{ kwargs.return_checked_specimen_form.return_checked_submit(class='btn btn-primary') }}
+                        <button class="btn btn-secondary" data-dismiss="modal" type="button">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- release and collect -->
+
+<div class="modal" id="release-specimen" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Collect specimen(s):</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <p style="padding-left: 18px; padding-top: 5px;">Custody will be moved to {{current_user.initials}}</p>
+            <div class="modal-body">
+                <form enctype="multipart/form-data" id="release-specimen-form" method="POST">
+                    {{ kwargs.collect_released_specimen_form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ kwargs.collect_released_specimen_form.released_specimen.label(class="form-label") }}
+                        {{ kwargs.collect_released_specimen_form.released_specimen(class="selectpicker",
+                        data_width="20vw",
+                        data_height="20vh", multiple=True) }}
+                    </div>
+                    <div class="modal-footer" style="justify-content: center">
+                        {{ kwargs.collect_released_specimen_form.released_specimen_submit(class='btn btn-primary') }}
+                        <button class="btn btn-secondary" data-dismiss="modal" type="button">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- RELEASE SPECIMENS MODAL -->
+<div class="modal" id="return-released-specimen" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-xl" role="document" style="height: 90%;">
+        <div class="modal-content" style="height: 100%; overflow-y: auto;">
+            <div class="modal-header">
+                <h5 class="modal-title">Release specimen(s):</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-striped details-table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Case Number</th>
+                            <th>Type</th>
+                            <th>Accession Number</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for specimen in kwargs.prepared_specimens %}
+                        <tr>
+                            <td>{{ specimen.case.case_number }}</td>
+                            <td>[{{ specimen.type.code }}] {{ specimen.type.name }}</td>
+                            <td>{{ specimen.accession_number }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <form enctype="multipart/form-data" id="return-released-specimen-form" method="POST">
+                    {{ kwargs.return_released_specimen_form.hidden_tag() }}
+           <div class="form-row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                    <label><strong>Picked up in-person, mark checkbox:</strong></label>
+                    {{ kwargs.return_released_specimen_form.in_person(id="in_person", class_="") }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                    <label><strong>Picked up by courier, select drop-off location:</strong></label>
+                    {{ kwargs.return_released_specimen_form.drop_off_location(class="form-control", id="drop_off_location") }}
+                    </div>
+                </div>
+            </div>
+                    <div class="form-group">
+                        {{ kwargs.return_released_specimen_form.receiving_agency.label }}
+                        {{ kwargs.return_released_specimen_form.receiving_agency(class="form-control", id="receiving_agency") }}
+                    </div>
+                    <div class="form-group">
+                        {{ kwargs.return_released_specimen_form.receiving_division.label }}
+                        {{ kwargs.return_released_specimen_form.receiving_division(class="form-control", id="receiving_division") }}
+                    </div>
+                    <div class="form-group">
+                        {{ kwargs.return_released_specimen_form.receiving_personnel.label }}
+                        {{ kwargs.return_released_specimen_form.receiving_personnel(class="form-control", id="receiving_personnel") }}
+                    </div>
+                    <div class="modal-footer" style="justify-content: center">
+                        {{ kwargs.return_released_specimen_form.return_released_submit(class='btn btn-primary') }}
+                        <button class="btn btn-secondary" data-dismiss="modal" type="button">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- NO EVIDENCE FOUND MODAL -->
+<div class="modal" id="no-evidence" role="dialog" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Evidence Not Available</h5>
+        <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <p class="mb-0" style="padding-left: 18px; padding-top: 5px;">
+        Click "Confirm" to finalize the request. Notify the requesting agency and CFT/FTS that there is no available evidence.
+      </p>
+
+      <div class="modal-body">
+        <form id="no-evidence-form" method="POST" action="{{ url_for(table_name ~ '.mark_no_evidence', item_id=item.id) }}">
+          {{ kwargs.no_evidence_form.hidden_tag() }}
+          <div class="modal-footer" style="justify-content: center">
+            {{ kwargs.no_evidence_form.evidence_confirm(class='btn btn-primary') }}
+            <button class="btn btn-secondary" data-dismiss="modal" type="button">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ADD LEGACY SPECIMENS -->
+<div class="modal" id="specimen_add_legacy" role="dialog" tabindex="-1">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+        <h5 class="modal-title">
+          Enter Legacy Specimen 
+          <a href="#!" data-toggle="tooltip"
+             title="Use this form to submit an existing or newly created legacy specimen. For existing specimens, use legacy logs (e.g., EVIDENCE LOG, YY-YY.xlsx) for reference only. Submit only one evidence entry per form submission.">
+            <i class="fa-solid fa-circle-question" style="font-size:16px; margin-left:8px;"></i>
+          </a>
+        </h5>
+        <span style="font-weight:normal; color:#6c757d;">If no records for a field exists, enter 'No recorded data'.</span>
+        </div>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="mb-3">
+          <form
+            id="legacy_specimen_add_form"
+            method="POST"
+            enctype="multipart/form-data"
+            action="{{ url_for('requests.add_legacy_specimen', item_id=item.id) }}"
+          >
+            {{ kwargs.legacy_specimen_add_form.hidden_tag() }}
+
+            <div class="mb-3">
+              {{ kwargs.legacy_specimen_add_form.legacy_code.label.text }}
+              <span style="font-weight:normal; color:#6c757d;">
+                – i.e.,
+                <a href="javascript:void(0);" onclick="insertLegacyCode('Bloodspot Envelope 2')">Bloodspot</a>,
+                <a href="javascript:void(0);" onclick="insertLegacyCode('Hair Evidence:')">Hair</a>,
+                <a href="javascript:void(0);" onclick="insertLegacyCode('Item Other Evidence:')">Other Evidence</a>
+                (do not enter commas)
+              </span>
+              {{ kwargs.legacy_specimen_add_form.legacy_code(id='legacy_code', class="form-control w-100") }}
+            </div>
+
+            <div class="mb-3">
+              {{ kwargs.legacy_specimen_add_form.legacy_accession_number.label }}
+              {{ kwargs.legacy_specimen_add_form.legacy_accession_number(class="form-control w-100") }}
+            </div>
+
+            <div class="mb-3">
+              {{ kwargs.legacy_specimen_add_form.legacy_date_created.label.text }}
+              <span style="font-weight:normal; color:#6c757d;"> – the original collection date of the evidence, if created by FLD enter the date prepared</span>
+              {{ kwargs.legacy_specimen_add_form.legacy_date_created(class="form-control w-100") }}
+            </div>
+
+            <div class="mb-3">
+              {{ kwargs.legacy_specimen_add_form.legacy_created_by.label }}
+              <span style="font-weight:normal; color:#6c757d;"> – the initials of the personnel who received the evidence, if created by FLD enter initials of the preparer</span>
+              {{ kwargs.legacy_specimen_add_form.legacy_created_by(class="form-control w-100") }}
+            </div>
+
+            <div class="mb-3">
+              {{ kwargs.legacy_specimen_add_form.legacy_checked_by.label }}
+              <span style="font-weight:normal; color:#6c757d;"> – the initials of the personnel who verified the evidence at intake,if evidence created by FLD enter initials of the checker</span>
+              {{ kwargs.legacy_specimen_add_form.legacy_checked_by(class="form-control w-100") }}
+            </div>
+
+            <div class="modal-footer" style="justify-content:center">
+              {{ kwargs.legacy_specimen_add_form.legacy_specimens_submit(class='btn btn-primary') }}
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ADD COMMUNICATIONS MODAL -->
+<div class="modal" id="communication-add" tabindex="-1" role="dialog" aria-labelledby="communicationAddLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="communicationAddLabel">Add Communication</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form
+          id="communication-add-form"
+          method="POST"
+          action="{{ url_for(table_name ~ '.add_communication', item_id=item.id) }}"
+        >
+          {{ kwargs.communication_add_form.hidden_tag() }}
+
+          <div class="form-group" id="comm-desc">
+            <div class="mb-2">
+              <a href="javascript:void(0);" onclick="insertCommText('FRM-0133 created on MM/DD/YYYY')">FRM-0133 created</a>
+              &nbsp;|&nbsp;
+              <a href="javascript:void(0);" onclick="insertCommText('Ready for release, notified [name] via email/phone.')">Ready for release</a>
+              &nbsp;|&nbsp;
+              <a href="javascript:void(0);" onclick="insertCommText('Notified [name] via email/phone for follow up regarding pickup.')">Follow-up</a>
+            </div>
+
+            {{ kwargs.communication_add_form.communications(class="form-control", id="communication-textarea") }}
+          </div>
+ 
+          <div class="modal-footer" style="justify-content:center">
+            {{ kwargs.communication_add_form.communication_submit(class="btn btn-primary") }}
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- WITHDRAW REQUEST MODAL -->
+<div class="modal fade" id="withdraw-request" tabindex="-1" role="dialog" aria-labelledby="withdrawRequestLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="withdrawRequestLabel">Withdraw Request</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-3">
+          Click <strong>"Confirm"</strong> to finalize and withdraw the request.
+          Please attach correspondence from the requesting agency supporting the withdrawal.
+        </p>
+        <form
+          id="withdraw_request_form"
+          method="POST"
+          action="{{ url_for(table_name ~ '.withdraw_request', item_id=item.id) }}"
+        >
+          {{ kwargs.withdraw_request_form.hidden_tag() }}
+          <div class="modal-footer d-flex justify-content-center">
+            {{ kwargs.withdraw_request_form.withdraw_request_submit(class="btn btn-primary") }}
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- CANCEL REQUEST MODAL -->
+<div class="modal fade" id="cancel-request" tabindex="-1" role="dialog" aria-labelledby="cancelRequestLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="cancelRequestLabel">Cancel Request</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-3">
+          Click <strong>"Confirm"</strong> to finalize and cancel the request.
+          Please attach correspondence providing reasons for cancellation.
+        </p>
+        <form
+          id="cancel_request_form"
+          method="POST"
+          action="{{ url_for(table_name ~ '.cancel_request', item_id=item.id) }}"
+        >
+          {{ kwargs.cancel_request_form.hidden_tag() }}
+          <div class="modal-footer d-flex justify-content-center">
+            {{ kwargs.cancel_request_form.cancel_request_submit(class="btn btn-primary") }}
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- UPDATE RECEIVED DATE MODAL -->
+<div class="modal fade" id="update-received-date" tabindex="-1" role="dialog" aria-labelledby="updateReceivedDateLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="updateReceivedDateLabel">Update Received Date</h5>
+         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+         </button>
+      </div>
+      <div class="modal-body">
+        <form enctype="multipart/form-data" id="update-received-date-form" method="POST">
+          {{ kwargs.update_received_date_form.hidden_tag() }}
+            <div class="form-group">
+                {{ kwargs.update_received_date_form.received_date(
+                    class="form-control",
+                    id="received_date",
+                    placeholder="Select date and time",
+                    autocomplete="off"
+                ) }}
+            </div>
+            <div class="modal-footer d-flex justify-content-center"></div>
+            {{ kwargs.update_received_date_form.update_received_date_submit(class="btn btn-primary") }}
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const forms = document.querySelectorAll('.remove-specimen-form');
+    
+        forms.forEach(form => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();  // prevent normal form submit
+                const specimenId = this.dataset.specimenId;
+                const row = document.getElementById(`specimen-row-${specimenId}`);
+    
+                // Animate the row
+                row.style.transition = 'background-color 0.4s ease, opacity 0.6s ease';
+                row.style.backgroundColor = '#ffcccc';  // light red
+                row.style.opacity = '0.2';
+    
+                // Delay actual form submission so animation is visible
+                setTimeout(() => {
+                    this.submit();
+                }, 300);
+            });
+        });
+    });
+    </script>
+    
+<script>
+
+    $(document).ready(function() {
+      $('.selectpicker').selectpicker();
+
+      $('.selectpicker').on('changed.bs.select', function () {
+        var selectedOptions = $(this).val();
+      });
+    });
+
+      const heading = document.getElementById("{{table_name}}-header")
+      heading.textContent += " | {{item.status}}"
+</script>
+<script>
+    $(document).ready( function () {
+         $('#divisions-table').DataTable({
+             pageLength: -1,
+             scrollX: true,
+             scrollY: '50vh',
+             scrollCollapse: true,
+             lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+             order: [],
+         });
+     });
+</script>
+<script>
+    $(document).ready( function () {
+         $('#personnel-table').DataTable({
+             pageLength: -1,
+             scrollX: true,
+             scrollY: '50vh',
+             scrollCollapse: true,
+             lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+             order: [],
+         });
+     });
+
+</script>
+<script>
+    $(document).ready(function() {
+        function initializeModal(modalId, selectFieldName) {
+            $(modalId).on('shown.bs.modal', function() {
+                const selectField = $(`[name="${selectFieldName}"]`);
+                selectField.find('option').prop('selected', true)
+                selectField.selectpicker('refresh'); 
+            });
+        }
+    
+        const modals = [
+            { modalId: '#specimen_review', selectFieldName: 'approved_specimens' },
+            { modalId: '#specimen_add', selectFieldName: 'specimens' },
+            { modalId: '#prepared-specimen', selectFieldName: 'prepared_specimen' },
+            { modalId: '#specimen-check', selectFieldName: 'checked_specimen' },
+            { modalId: '#release-specimen', selectFieldName: 'released_specimen' }
+        ];
+    
+        modals.forEach(modal => {
+            initializeModal(modal.modalId, modal.selectFieldName);
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        // Function to disable form submission if no specimens are available
+        function checkSpecimenAvailability(formSelector, selectSelector) {
+            const specimenSelect = $(selectSelector);
+            const submitButton = $(formSelector).find('button[type="submit"]');
+            const buttonDiv = $(formSelector).find('#button-div'); // Target `button-div` within the form
+
+            if (specimenSelect.find('option').length === 1 && specimenSelect.find('option').val() === "") {
+                // Disable the selectpicker and submit button if only the "No specimens found" option is present
+                specimenSelect.prop('disabled', true);
+                submitButton.prop('disabled', true);
+
+                // Hide the button-div
+                buttonDiv.hide(); // Hides the button container
+
+            } else {
+                specimenSelect.prop('disabled', false);
+                submitButton.prop('disabled', false);
+
+                // Show the button-div if options are present
+                buttonDiv.show();
+            }
+
+            specimenSelect.selectpicker('refresh'); // Refresh selectpicker UI
+        }
+
+        // Apply the check with a slight delay when the modal shows
+        $('#specimen_add, #specimen_review').on('shown.bs.modal', function(event) {
+            const formId = event.target.id;
+            setTimeout(function() {
+                if (formId === 'specimen_add') {
+                    checkSpecimenAvailability('#specimen_add_form', '#specimen_add_form select[name="specimens"]');
+                } else if (formId === 'specimen_review') {
+                    checkSpecimenAvailability('#specimen_review_form', '#specimen_review_form select[name="approved_specimens"]');
+                }
+            }, 200); // Adjust the delay if necessary for your content load time
+        });
+    });
+
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    // Get the element with the class "fixed-header"
+    const fixedHeader = document.querySelector('#requests-header-text');
+
+    // Update its content to "item.name | item.status"
+    if (fixedHeader) {
+        fixedHeader.textContent = "{{ item.name }} | {{ item.status }} | {% if kwargs.case_number_str|length >30 %} Multiple Cases{% else %}{{kwargs.case_number_str}}{% endif %}";
+    }
+});
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('#tests_table').DataTable();
+    });
+
+    $(function () {
+        $('#custody_type').on('change', function () {
+            let custody_type = $(this).val();
+            $.getJSON('/specimens/get_custody_options_modal/', {
+                custody_type: custody_type
+            }, function (data) {
+                let options = '';
+                for (let item of data.choices) {
+                    options += `<option value="${item.name}">${item.name}</option>`;
+                }
+                $('#custody').html(options);
+                $('#custody').selectpicker('refresh');  // Optional: If you're using a plugin like Bootstrap select
+                $('#custody').selectpicker('render');
+                $('#custody').selectpicker('val', data.default_choice);
+            });
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('#tests_table').DataTable();
+    });
+
+    $(function () {
+        $('#custody_type_checked').on('change', function () {
+            let custody_type = $(this).val();
+            $.getJSON('/specimens/get_custody_options_modal/', {
+                custody_type: custody_type
+            }, function (data) {
+                let options = '';
+                for (let item of data.choices) {
+                    options += `<option value="${item.name}">${item.name}</option>`;
+                }
+                $('#custody_checked').html(options);
+                $('#custody_checked').selectpicker('refresh');  // Optional: If you're using a plugin like Bootstrap select
+                $('#custody_checked').selectpicker('render');
+                $('#custody_checked').selectpicker('val', data.default_choice);
+            });
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+    // Update divisions based on the selected agency
+    $('#receiving_agency').on('change', function() {
+        const agencyId = $(this).val();
+        $.getJSON('/requests/get_divisions/', { agency: agencyId }, function(data) {
+            let divisionOptions = '';
+            data.divisions.forEach(function(division) {
+                divisionOptions += `<option value="${division.id}">${division.name}</option>`;
+            });
+            $('#receiving_division').html(divisionOptions).prop('disabled', false).selectpicker('refresh');
+        }).fail(function() {
+            console.error('Error fetching divisions');
+        });
+    });
+
+    // Update personnel based on the selected division
+    $('#receiving_division').on('change', function() {
+        const divisionId = $(this).val();
+        const agencyId = $('#receiving_agency').val();
+        $.getJSON('/get_all_personnel/', { division: divisionId, agency: agencyId }, function(data) {
+            let personnelOptions = '';
+            data.personnel.forEach(function(person) {
+                personnelOptions += `<option value="${person.id}">${person.name}</option>`;
+            });
+            $('#receiving_personnel').html(personnelOptions).prop('disabled', false).selectpicker('refresh');
+        }).fail(function() {
+            console.error('Error fetching personnel');
+        });
+    });
+});
+
+</script>
+<!-- Disables specific fields when in_persone is marked -->
+<script>
+            /* 
+            // Toggle case_id selection based on no_case checkbox
+            $('#no_case').on('click', function() {
+                var checked = $(this).prop('checked');
+                if (checked) {
+                    $('#case_id').attr('disabled', true).val([]); // Clear selection when disabled
+                } else {
+                    $('#case_id').attr('disabled', false);
+                }
+                $('#case_id').selectpicker('refresh');
+            }); */
+
+            $('#in_person').on('click', function() {
+                let checked = $(this).prop('checked')
+                if(checked) {
+                    $('#drop_off_type').attr('disabled', true).val([])
+                    $('#drop_off_location').attr('disabled', true).val([])
+                } else {
+                    $('#drop_off_type').attr('disabled', false);
+                    $('#drop_off_location').attr('disabled', false);
+                }
+                $('#drop_off_type').selectpicker('refresh');
+                $('#drop_off_location').selectpicker('refresh');
+            })
+
+            $(function () {
+                $('#drop_off_type').on('change', function () {
+                    let custody_type = $(this).val();
+                    $.getJSON('/specimens/get_custody_options_modal/', {
+                        custody_type: custody_type
+                    }, function (data) {
+                        let options = '';
+                        for (let item of data.choices) {
+                            options += `<option value="${item.name}">${item.name}</option>`;
+                        }
+                        $('#drop_off_location').html(options);
+                        $('#drop_off_location').selectpicker('refresh');  // Optional: If you're using a plugin like Bootstrap select
+                        $('#drop_off_location').selectpicker('render');
+                        $('#drop_off_location').selectpicker('val', data.default_choice);
+                    });
+                });
+            });
+
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    // Select the element with the ID 'attach-icon'
+    const attachIcon = document.getElementById('attach-icon');
+
+    // Create the new <a> element
+    const tooltipLink = document.createElement('a');
+    tooltipLink.className = 'text-decoration-none';
+    tooltipLink.setAttribute('data-html', 'true');
+    tooltipLink.setAttribute('data-toggle', 'tooltip');
+    tooltipLink.href = '#!';
+    tooltipLink.title = ``;
+
+    // Create the <i> element inside the <a>
+    const icon = document.createElement('i');
+    icon.className = 'fa-solid fa-circle-question';
+    icon.style.fontSize = '16px';
+    icon.style.color = 'White'
+
+    // Append the <i> to the <a>
+    tooltipLink.appendChild(icon);
+
+    // Insert the new <a> after the attach-icon element
+    attachIcon.insertAdjacentElement('afterend', tooltipLink);
+
+    // Initialize Bootstrap tooltip (if you're using Bootstrap)
+    if (typeof $ !== 'undefined' && typeof $.fn.tooltip !== 'undefined') {
+        $(tooltipLink).tooltip();
+    }
+});
+</script>
+<!-- INSERTS PREDEFINED TEXTS INTO FREE TEXT FIELDS -->
+<script>
+function insertCommText(text) {
+    const textarea = document.getElementById('communication-textarea');
+    if (textarea) {
+        textarea.value = text;
+        textarea.focus();
+    }
+}
+
+function insertLegacyCode(value) {
+    const input = document.getElementById('legacy_code');
+    if (input) {
+        input.value = value;
+        input.focus();
+    }
+}
+</script>
+<!-- Forces directives on buttons to follow tooltip styling -->
+<script>
+$(function () {
+  $('#withdraw-btn, #cancel-btn').tooltip({
+    html: true,
+    placement: 'right',
+    container: 'body',
+    trigger: 'hover',
+    customClass: 'blue-tooltip'   // Bootstrap 5+
+  });
+});
+</script>
+<!-- Display Update button only when request status is 'Incomplete Request' -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const updateBtn = document.getElementById("requests-update");
+    if (!updateBtn) return;
+
+    const itemStatus = "{{ item.status }}";
+
+    if (itemStatus === "Incomplete Request") {
+        updateBtn.style.display = "inline-block"; // show
+    } else {
+        updateBtn.style.display = "none"; // hide
+    }
+});
+</script>
+{% endblock %}

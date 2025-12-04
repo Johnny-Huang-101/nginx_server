@@ -1,0 +1,268 @@
+{% extends "view_template.html" %}
+
+{% block style %}
+
+<style>
+    #results_table td, #results_table th {
+        padding: 8px 12px !important;
+        vertical-align: middle;
+    }
+    .locked-select {
+        background-color: #e9ecef !important;
+        color: #6c757d !important;
+        pointer-events: none;
+    }
+    
+</style>
+
+{% endblock %}
+
+{% block buttons %}
+{% if current_user.permissions != 'ADM-Management' %}
+        <a href="" class="btn btn-primary" data-toggle="modal" data-target="#update_status">Update</a>
+{% endif %}
+{% endblock %}
+
+{% block view %}
+<div class="card">
+    <div class="card-header view-card-header" id="results_heading">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#results" aria-expanded="false" aria-controls="results">
+            <span><i class="fa-solid fa-chevron-down mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Result
+        </button>
+    </div>
+    <div class="collapse show" id="results" aria-labelledby="results_heading">
+        <div class="card-body">
+            <div class="table display">
+                <div class="table-responsive">
+                    <table class="display table-hover table-striped small nowrap datatable" style="width:100%" id="results_table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                {% if current_user.permissions in ['Admin', 'Owner'] %}
+                                <th>Result ID</th>
+                                {% endif %}
+                                <th>Assay</th>
+                                <th>Discipline</th>
+                                <th>Batch</th>
+                                <th>Batch Date</th>
+                                <th>Accession Number</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Result Status</th>
+                                <th>Result Type</th>
+                                <th>Drug Class</th>
+                                <th>Component Name</th>
+                                <th>Result</th>
+                                <th>Supplementary Result</th>
+                                <th>Qualitative</th>
+                                <th>Report Reason</th>
+                                <th>Test</th>
+                                <th>Reported</th>
+                                <th>Primary</th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if item.unit %}
+                            {% set unit = item.unit.name %}
+                            {% endif %}
+                            <tr>
+                                <td>1</td>
+                                {% if current_user.permissions in ['Admin', 'Owner'] %}
+                                <td>
+                                    <a href="{{url_for('results.view', item_id=item.id)}}" target="_blank">{{item.id}}</a>
+                                </td>
+                                {% endif %}
+                                <td>{{item.test.assay.assay_name}}</td>
+                                <td>{{item.test.assay.discipline}}</td>
+                                <td>
+                                    {% if item.test.batch %}
+                                    <a href="{{url_for('batches.view', item_id=item.test.batch.id)}}">
+                                        {{item.test.batch.batch_id}}
+                                    </a>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.test.batch %}
+                                    {{item.test.batch.extraction_date.strftime('%m/%d/%Y')}}
+                                    {% endif %}
+                                </td>
+                                <td>{{item.test.specimen.accession_number}}</td>
+                                <td>[{{item.test.specimen.type.code}}]</td>
+                                <td>{{item.test.specimen.type.name}}</td>
+                                <td id="result-status">{{item.result_status}}
+                                    {% if item.result_status_updated == 'Y' %}
+                                    <span style="color: #007bff;" data-toggle="tooltip" title="{{ item.result_status_update_reason }}">
+                                        (Updated)
+                                    </span>
+                                {% endif %}
+                                </td>
+                                <td>{{item.result_type}}
+                                    {% if item.result_type_updated == 'Y' %}
+                                        <span style="color: #007bff;" data-toggle="tooltip" title="{{ item.result_type_update_reason }}">
+                                            (Updated)
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>{% if item.component.drug_class %}{{item.component.drug_class.name}}{% endif %}</td>
+                                <td>
+                                    {% if item.component %}
+                                    <a href="{{url_for('components.view', item_id=item.component_id)}}">
+                                        {{item.component.name}}
+                                    </a>
+                                    {% else %}
+                                    {{item.component_name}}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{item.result}}
+                                    {% if item.result_type != 'Not Detected' %}
+                                    {{unit}}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.supplementary_result %}
+                                    {{item.supplementary_result}} {{unit}}
+                                    {% endif %}
+                                </td>
+                                <td>{{item.qualitative_reason}}</td>
+                                <td>{{item.report_reason}}</td>
+                                <td>{{item.test.test_name}}</td>
+                                <td>{{item.reported}}</td>
+                                <td>{{item.primary}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block modals %}
+<div class="modal" id="update_status" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Result Status</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>The current status of this result is <strong>{{item.result_status}}</strong> and the type is <strong>{{item.result_type}}</strong></p>
+                <p><strong>Batch: </strong>{{item.test.batch.batch_id}}</p>
+                <p><strong>Test: </strong>{{item.test.test_name}}</p>
+                <p><strong>Component: </strong>{{item.component.name}}</p>
+                <form enctype="multipart/form-data" id="status_form" method="POST">
+                    {{ kwargs.status_form.hidden_tag() }}
+
+                    <div class="form-group">
+                        {{ kwargs.status_form.result_status.label(style='margin-right: 10%') }}
+                        {{ kwargs.status_form.result_status(class='form-control', id='result_status') }}
+                    </div>
+                    <div class="form-group">
+                        {{ kwargs.status_form.result_status_update_reason.label(style='margin-right: 10%') }}
+                        {{ kwargs.status_form.result_status_update_reason(class='form-control', id='result_status_update_reason') }}
+                    </div>
+                    <div class="form-group form-check">
+                        {{ kwargs.status_form.status_dont_change(class="form-check-input", id="status_dont_change") }}
+                        <label class="form-check-label" for="status_dont_change">Do not change</label>
+                    </div>
+                    
+
+                    <div class="form-group">
+                        {{ kwargs.status_form.result_type.label(style='margin-right: 10%') }}
+                        {{ kwargs.status_form.result_type(class='form-control', id='result_type') }}
+                    </div>
+                    <div class="form-group">
+                        {{ kwargs.status_form.result_type_update_reason.label(style='margin-right: 10%') }}
+                        {{ kwargs.status_form.result_type_update_reason(class='form-control', id='result_type_update_reason') }}
+                    </div>
+                    <div class="form-group form-check">
+                        {{ kwargs.status_form.type_dont_change(class="form-check-input", id="type_dont_change") }}
+                        <label class="form-check-label" for="type_dont_change">Do not change</label>
+                    </div>
+                    
+                    <div class="modal-footer" style="justify-content: center">
+                        {{ kwargs.status_form.status_submit(class='btn btn-primary') }}
+                        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#update_status">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+    $(document).ready(function() {
+        $('#results_table').DataTable({
+            "paging": false,
+            "searching": false,
+            "info": false,
+            "ordering": false,
+            "columnDefs": [
+                { "searchable": false, "orderable": false, "targets": 0 }
+            ]
+        });
+    });
+    </script>
+    <script>
+        let update_button = document.getElementById('results-update')
+        update_button.style.display = 'none'
+    </script>
+    <script>
+        $(function () {
+          $('[data-toggle="tooltip"]').tooltip()
+        })
+      </script>
+      <script>
+        $(document).ready(function () {
+            function toggleStatusFields() {
+                const statusChecked = $('#status_dont_change').prop('checked');
+        
+                if (statusChecked) {
+                    $('#result_status')
+                        .on('mousedown.disable', function (e) { e.preventDefault(); })
+                        .addClass('locked-select');
+                    $('#result_status_update_reason').prop('readonly', true);
+                } else {
+                    $('#result_status')
+                        .off('mousedown.disable')
+                        .removeClass('locked-select');
+                    $('#result_status_update_reason').prop('readonly', false);
+                }
+            }
+        
+            function toggleTypeFields() {
+                const typeChecked = $('#type_dont_change').prop('checked');
+        
+                if (typeChecked) {
+                    $('#result_type')
+                        .on('mousedown.disable', function (e) { e.preventDefault(); })
+                        .addClass('locked-select');
+                    $('#result_type_update_reason').prop('readonly', true);
+                } else {
+                    $('#result_type')
+                        .off('mousedown.disable')
+                        .removeClass('locked-select');
+                    $('#result_type_update_reason').prop('readonly', false);
+                }
+            }
+        
+            toggleStatusFields();
+            toggleTypeFields();
+        
+            $('#status_dont_change').change(toggleStatusFields);
+            $('#type_dont_change').change(toggleTypeFields);
+        });
+        </script>
+        
+        
+    
+{% endblock %}

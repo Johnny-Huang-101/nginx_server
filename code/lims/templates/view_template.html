@@ -1,0 +1,673 @@
+{% extends "base.html" %}
+{% block content %}
+<head>
+    <title>{{config['SYSTEM_NAME']}}/{{item_name}}/{{alias}}</title>
+</head>
+
+<style>
+    .view-card-header {
+        height:60px;
+        padding:0px;
+        display:flex;
+        align-items:center;
+    }
+
+    .view-card-header button {
+        font-size:20px
+    }
+
+
+{% block style %}
+{% endblock %}
+
+</style>
+
+
+
+    <!-- ########## -->
+<div id="header">
+    <div id="fixed-header">
+        {% if view_only %}
+            <div class="alert alert-secondary" role="alert" style="margin-top: 12px">
+               You are currently in <b>View Only</b> mode.
+            </div>
+        {% endif %}
+        {% if item.locked %}
+            <div class="alert alert-primary" role="alert" style="margin-top: 12px">
+                <i class="fa-solid fa-lock"></i> <b>{{alias}}</b> locked by <b>{{item.locked_by}}</b> on <b>{{item.lock_date.strftime('%m/%d/%Y')}}</b> at <b>{{item.lock_date.strftime('%H:%M')}}</b>.
+            </div>
+        {% elif item.db_status == 'Removal Pending' %}
+            <div class="alert alert-danger" role="alert" style="margin-top: 12px">
+                <b>{{alias}}</b> has been marked for removal by <b>{{item.modified_by}}</b>
+                on {% if item.modify_date %}<b>{{item.modify_date.strftime('%m/%d/%Y')}}</b> at <b>{{item.modify_date.strftime('%H:%M')}}</b>. {% endif %}
+                for the following reason:
+                <ul>
+                    <li>{{item.remove_reason}}</li>
+                </ul>
+            </div>
+        {% elif item.db_status == 'Removed' %}
+            <div class="alert alert-secondary" role="alert" style="margin-top: 12px">
+                <b>{{alias}}</b> was removed by <b>{{item.modified_by}}</b> on
+                <b>{{item.modify_date.strftime('%m/%d/%Y')}}</b> at <b>{{item.modify_date.strftime('%H:%M')}}</b>
+                for the following reason:
+                <ul>
+                    <li>{{item.remove_reason}}</li>
+                </ul>
+            </div>
+        {% elif item.communications %}
+            {% if not item|hasattr('report_status') %}
+                <div class="alert alert-warning" role="alert" id="communications-box" style="margin-top:6px; background-color: rgb(221, 204, 238); color: black; border-color: #8b53e6">
+                    {% if item.modified_by %}
+                        {% set date = item.modify_date.strftime('%m/%d/%Y %H:%M') %}
+                        {% set submitter = item.modified_by %}
+                    {% else %}
+                        {% set date = item.create_date.strftime('%m/%d/%Y %H:%M') %}
+                        {% set submitter = item.created_by %}
+                    {% endif %}
+                    <b>{{submitter}}</b> left the following communication
+                    on <b>{{date}}</b>:
+                    <ul>
+                        <li>{{item.communications | e }}</li>
+                    </ul>
+                </div>
+            {% endif %}
+        {% endif %}
+        {% if pending_mods %}
+            <div class="alert alert-primary" role="alert" style="margin-top: 12px">
+                <button type="button" class="close" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <b>{{alias}}</b> has pending changes for the following fields by
+                <b>{{pending_mods[0].submitter.initials}}</b> at <b>{{pending_mods[0].submitted_date.strftime("%m/%d/%Y %H:%M")}}</b>:
+                <ul>
+                    {% for mod in pending_mods %}
+                    <li>
+                        <!--                        <b>{{mod.field}}</b>: {{mod.original_value_text}} > {{mod.new_value_text}}-->
+                        {{mod.field}}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <!-- ALERT BLOCK -->
+        {% block alerts %}
+        {% endblock %}
+
+        <div style="margin-top:6px">
+            {% if current_user.permissions not in ['INV', 'MED', 'MED-Autopsy', 'ADM'] %}
+            <a href="{{url_for('dashboard.get_dashboard')}}"><i class="fa-solid fa-house"></i></a>
+            {% else %}
+            <a href="{{url_for('cases.view_list')}}"><i class="fa-solid fa-house"></i></a>
+            {% endif %}
+<!--            > <a href="{{url_for(table_name~'.view_list')}}">{{item_name}}</a> some tables are permission-controlled and the URL shouldn't be displayed -->
+            > {{item_name}}
+            > {{alias}}
+        </div>
+
+        <hr style="border-width:5px; margin-top: 6px">
+        <div>
+            <h1 class="mb-0" id="{{table_name}}-header-text">
+                {% if default_header %}
+                    {{alias}}
+                {% endif %}
+                {% block header %}
+                {% endblock %}
+            </h1>
+        </div>
+        <hr style="border-width:5px">
+        <div id="buttons">
+            {% if current_user.permissions not in ['ADM-Management', 'Developer'] %}
+            {% if default_buttons %}
+                {% if not view_only %}
+                    {% if (current_user.permissions not in ['Admin', 'Owner']) or (creator_only_update and current_user.initials == item.created_by) or current_user.permissions in ['Admin', 'Owner'] %}
+                        {% if not item.remove_reason %}
+                            {% if (item.locked and item.locked_by == current_user.initials) or (not item.locked) %}
+                                {% if item.pending_submitter %}
+                                    {% if item.pending_submitter == current_user.initials %}
+                                        <a class="btn btn-primary" href="{{ url_for(table_name~'.edit', item_id = item.id)}}" role="button">Edit</a>
+                                    {% else %}
+                                        {% if current_user.permissions in ['Owner', 'Admin', 'FLD'] %}
+                                        <a class="btn btn-primary" href="{{ url_for(table_name~'.approve', item_id = item.id)}}" role="button">Approve</a>
+                                        {% endif %}
+                                    {% endif %}
+                                {% else %}
+                                    <a class="btn btn-primary" href="{{ url_for(table_name~'.update', item_id = item.id)}}" role="button" id="{{table_name}}-update">Update</a>
+                                {% endif %}
+                                <div class="dropdown" style="display:inline-block">
+                                    <button class="btn btn-secondary dropdown-toggle " type="button" id="export-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fa-solid fa-paperclip"></i> Attachments
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="export-button">
+                                        <a class="dropdown-item export" href="{{ url_for(table_name~'.attach', item_id=item.id) }}">Add</a>
+                                        {% if export_attachments %}
+                                            <a class="dropdown-item" href="{{url_for(table_name~'.export_attachments', item_id=item.id)}}">Export to .zip</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% if add_comment_button %}
+                                    <a class="btn btn-secondary" href="{{url_for('comment_instances.add', comment_item_type=item_name, comment_item_id=item.id, redirect_url=redirect_url)}}">Add Comment</a>
+                                {% endif %}
+                            {% endif %}
+                            {% if not item.locked %}
+                                {% if current_user.permissions in ['Admin', 'Owner']  %}
+                                    <a class="btn btn-secondary" href="{{ url_for(table_name~'.lock', item_id=item.id) }}"><i class="fa-solid fa-lock"></i> Lock</a>
+                                    <a class="btn btn-danger" data-toggle="modal" data-target="#delete-modal">Delete</a>
+                                {% endif %}
+                            {% else %}
+                                {% if item.locked_by == current_user.initials or current_user.permissions in ['Admin', 'Owner'] %}
+                                    <a class="btn btn-secondary" href="{{url_for(table_name~'.unlock', item_id=item.id)}}" ><i class="fa-solid fa-unlock"></i> Unlock</a>
+                                {% endif %}
+                            {% endif %}
+                            
+                            <a class="btn btn-danger" data-toggle="modal" data-target="#remove-modal">Remove</a>
+                        {% elif current_user.permissions in ['Admin', 'Owner'] %}
+                            {% if item.db_status == 'Removed' %}
+                                <a class="btn btn-secondary" href="{{ url_for(table_name~'.restore', item_id=item.id) }}">Restore</a>
+                            {% elif current_user.initials != item.modified_by %}
+                                <a class="btn btn-success" href="{{ url_for(table_name~'.approve_remove', item_id=item.id) }}">Approve Removal</a>
+                                <a class="btn btn-danger" href="{{ url_for(table_name~'.reject_remove', item_id=item.id) }}">Reject Removal</a>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                {% elif item.locked and current_user.permissions in ['Admin', 'Owner'] %}
+                    <a class="btn btn-secondary" href="{{url_for(table_name~'.unlock', item_id=item.id)}}" ><i class="fa-solid fa-unlock"></i> Unlock</a>
+                {% endif %}
+<!--                {% if not item.locked or current_user.permissions in ['Admin', 'Owner'] %}-->
+<!--                    <a class="btn btn-danger" data-toggle="modal" data-target="#remove-modal">Remove</a>-->
+<!--                {% elif item.locked_by == current_user.initials %}-->
+<!--                    <a class="btn btn-danger" data-toggle="modal" data-target="#remove-modal">Remove</a>-->
+<!--                {% endif %}-->
+            {% endif %}
+            {% endif %}
+
+            <!-- BUTTONS BLOCK-->
+            {% block buttons %}
+            {% endblock %}
+            <!------------------>
+
+        </div>
+    </div>
+
+    <div id="body" class="mt-3">
+
+        <!-- VIEW BLOCK -->
+        <div>
+            {% if item.resource_level and item.resource_level != 'primary' %}
+                {% if item.status and item.status.name != null %}
+                    Status: &emsp;&emsp;<b>{{item.status.name}}</b><br>
+                {% endif %}
+                {% if kwargs['location_display']%}
+                    Location: &emsp;{{kwargs['location_display']}}
+                {% endif %}
+            {% endif %}
+        </div>
+        {% block view %}
+        {% endblock %}
+
+         <!-- ######### -->
+
+        <div id="accordion">
+            <div align="right">
+                <a href="#!" id="accordion-show-all">Show All</a> |
+                <a href="#!" id="accordion-collapse-all">Collapse All</a>
+            </div>
+            {% block accordion %}
+            {% endblock %}
+            {% if show_comments %}
+             <div class="card">
+                    <div class="card-header view-card-header" id="comments">
+                        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#comments-coll" aria-expanded="false" aria-controls="comments">
+                            <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+                            Comments
+                        </button>
+                    </div>
+                    <div id="comments-coll" class="collapse" aria-labelledby="comments-heading">
+                        <div class="card-body">
+                            <div class="table display">
+                                <div class="table-responsive">
+                                    <table class="display table-striped table-hover nowrap small view-table" style="width:100%;" id="comments-table">
+                                        <thead>
+                                        <tr>
+                                            <th>Comment ID</th>
+                                            <th>Comment Type</th>
+                                            <th>Comment</th>
+                                            <th>Include in Report?</th>
+                                            <th>Created By</th>
+                                            <th>Create Date</th>
+                                            <th>Modified By</th>
+                                            <th>Modify Date</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for comment in comments %}
+                                        {% if comment.db_status != 'Removed' %}
+
+                                        <tr>
+                                            <td>
+                                                {% if comment.comment %}
+                                                    {{comment.comment.code}}
+                                                {% endif %}
+                                            </td>
+                                            <td>{{comment.comment_type}}</td>
+                                            <td>
+                                                <a href="{{url_for('comment_instances.view', item_id=comment.id)}}">
+                                                    {% if comment.comment %}
+                                                        {{comment.comment.comment}}
+                                                    {% else %}
+                                                        {{comment.comment_text}}
+                                                    {% endif %}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                {% if comment.include_in_report %}
+                                                    Y
+                                                {% endif %}
+                                            </td>
+                                            <td>{{comment.created_by}}</td>
+                                            <td>{{comment.create_date.strftime('%m/%d/%Y %H:%M')}}</td>
+                                            <td>
+                                                {% if comment.modified_by %}
+                                                    {{comment.modified_by}}
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if comment.modify_date %}
+                                                    {{comment.modify_date.strftime('%m/%d/%Y %H:%M')}}
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% if show_attachments %}
+            {% if current_user.permissions in ['Admin', 'Owner', 'FLD', 'Developer', 'FLD-MethodDevelopment', 'FLD-Administrative'] %}
+                <div class="card">
+                    <div class="card-header view-card-header" id="attachments">
+                        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#attachments-coll" aria-expanded="false" aria-controls="attachments">
+                            <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+                            Attachments
+                        </button>
+                    </div>
+                    <div id="attachments-coll" class="collapse" aria-labelledby="attachments-heading">
+                        <div class="card-body">
+                            <div class="table display">
+                                <div class="table-responsive">
+                                    <table class="display table-striped table-hover nowrap small view-table" style="width:100%;" id="attachments-table">
+                                        <thead>
+                                        <tr>
+                                            <th>Delete</th>
+                                            <th>File Name</th>
+                                            <th>Save Name</th>
+                                            <th>Type</th>
+                                            <th>Source</th>
+                                            <th>Description</th>
+                                            <th>Added By</th>
+                                            <th>Add Date</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for attachment in attachments%}
+                                        <tr>
+                                            <td><a href="{{url_for('attachments.delete', item_id=attachment.id)}}" class="btn btn-danger btn-size"><i class="fa fa-trash-o btn-icon" style="font-size:10px"></i></a></td>
+                                            <td>
+                                                {% if attachment.name.split('.')[1] in ['pdf', 'jpg', 'png'] %}
+                                                <a href="../static/filesystem/attachments{{attachment.path.split('attachments')[1]}}" target="_blank">{{attachment.name}}</a>
+                                                {% else %}
+                                                <a href="../static/filesystem/attachments{{attachment.path.split('attachments')[1]}}" download>{{attachment.name}}</a>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{attachment.save_name}}</td>
+                                            <td>{{attachment.type.name}}</td>
+                                            <td>{{attachment.type.source}}</td>
+                                            <td>{{attachment.description}}</td>
+                                            <td>{{attachment.created_by}}</td>
+                                            <td>
+                                                {% if attachment.create_date %}
+                                                    {{attachment.create_date.strftime('%m/%d/%Y %H:%M')}}
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% endif %}
+            {% if show_modifications %}
+            {% if current_user.permissions in ['Admin', 'Owner', 'FLD', 'Developer', 'FLD-MethodDevelopment'] %}
+                <div class="card">
+                    <div class="card-header view-card-header" id="modifications">
+                        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#modifications-collapse" aria-expanded="false" aria-controls="modifications">
+                            <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+                            Modifications
+                        </button>
+                    </div>
+                    <div id="modifications-collapse" class="collapse" aria-labelledby="modifications-heading">
+                        <div class="card-body">
+                            <!-- Export Button -->
+                                <a class="btn btn-secondary mb-3 export" href="#" name="modifications-table">Export</a>
+                            <!--    ######     -->
+                            <div class="row" style="background-color: rgb(0, 0, 0, 0.05)">
+                                <div class="col" align="center" style="font-size:18px">
+                                    <b>Created: </b>
+                                    {% if item.create_date is not none %}
+                                        {{item.create_date.strftime('%m/%d/%Y %H:%M')}} - {{item.created_by}}
+                                    {% endif %}
+                                </div>
+                                <div class="col" align="center" style="font-size:18px">
+                                    <b>Modified: </b>
+                                    {% if item.modified_by %}
+                                        {{item.modify_date.strftime('%m/%d/%Y %H:%M')}} - {{item.modified_by}}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="table display">
+                                <div class="table-responsive">
+                                    <table class="table-striped table-hover nowrap small view-table" style="width:100%;" id="modifications-table">
+                                        <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Event</th>
+                                            <th>Status</th>
+                                            <th>Revision</th>
+                                            <th>Field</th>
+                                            <th>Original Value</th>
+                                            <th>New Value</th>
+                                            <th>Submitted By</th>
+                                            <th>Submitted Date</th>
+                                            <th>Reviewed By</th>
+                                            <th>Reviewed Date</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for item in modifications %}
+                                        <tr>
+                                            <td>{{item.id}}</td>
+                                            <td>{{item.event}}</td>
+                                            <td>
+                                                <span class="mr-4">
+                                                    {% if item.status == 'Approved' %}
+                                                        <i class="fa-solid fa-check" style="font-size:16px; color: green"></i>
+                                                    {% elif item.status == 'Pending' %}
+                                                        <i class="fa-solid fa-hourglass-half" style="font-size:16px;"></i>
+                                                    {% elif item.status == 'Revised' %}
+                                                        <i class="fa-solid fa-pencil" style="font-size:16px;"></i>
+                                                    {% elif item.status == 'Reverted' %}
+                                                        <i class="fa-solid fa-rotate-left" style="font-size:16px;"></i>
+                                                    {% elif item.status == 'Rejected' %}
+                                                        <i class="fa-solid fa-ban" style="font-size:16px;"></i>
+                                                    {% elif item.status == 'Imported' %}
+                                                        <i class="fa-solid fa-upload" style="font-size:16px;"></i>
+                                                    {% endif %}
+                                               </span>
+                                                {{item.status}}
+                                            </td>
+                                            <td>{{item.revision}}</td>
+                                            <td>{{item.field}}</td>
+                                             <td>
+                                                {% if item.original_value_text %}
+                                                    {{item.original_value_text}}
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if item.new_value_text %}
+                                                    {% if item.field_name == 'file_name' and current_user.permissions in ['Admin', 'Owner', 'Developer'] %}
+                                                        <a href="../static/filesystem/imports/{{item.new_value_text}}" download>
+                                                            {{item.new_value_text}}
+                                                        </a>
+                                                    {% else %}
+                                                        {{item.new_value_text}}
+                                                    {% endif %}
+                                                {% endif %}
+                                            </td>
+                                            <td>{{item.submitter.initials}}</td>
+                                            <td>{{item.submitted_date.strftime("%m/%d/%Y %H:%M")}}</td>
+                                            <td>
+                                                {% if item.reviewed_by %}
+                                                {{item.reviewer.initials}}
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if item.review_date %}
+                                                {{item.review_date.strftime("%m/%d/%Y %H:%M")}}
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- MODALS -->
+
+<!-- REMOVE ITEM -->
+<div class="modal" tabindex="-1" role="dialog" id="remove-modal">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Remove {{alias}}?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="{{ url_for(table_name~'.remove', item_id=item.id) }}" method="POST">
+                <div class="modal-body">
+                    <p>Are you sure you want to remove <b>{{alias}}</b>?</p>
+                    <label>Please enter the reason for removal.</label>
+                    <div class="form-group">
+                        <textarea class="form-control" name="reason" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <input class="btn btn-danger" type="submit" value="Remove">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE ITEM  -->
+<div class="modal" tabindex="-1" role="dialog" id="delete-modal">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete {{alias}}?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <b>{{alias}}</b>?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+
+                <form action="{{ url_for(table_name~'.delete', item_id= item.id) }}" method="POST">
+                    <input class="btn btn-danger" type="submit" value="Delete">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- MODAL BLOCK -->
+
+{% block modals %}
+{% endblock %}
+
+<!-- ########## -->
+
+<!-- SCRIPT BLOCK -->
+
+{% block scripts %}
+{% endblock %}
+
+<!-- ########## -->
+
+<script src="/static/view.js"></script>
+
+<script>
+    $('#accordion-show-all').on('click', function () {
+        $.each($('.card'), function () {
+            $(this).find('.collapse').addClass('show');
+            $(this).find('.chevron').removeClass('fa-chevron-right');
+            $(this).find('.chevron').addClass('fa-chevron-down');
+        });
+    });
+</script>
+<script>
+    $('#accordion-collapse-all').on('click', function () {
+        $.each($('.card'), function () {
+            $(this).find('.collapse').removeClass('show');
+            $(this).find('.chevron').removeClass('fa-chevron-down');
+            $(this).find('.chevron').addClass('fa-chevron-right');
+        });
+    });
+</script>
+
+<script>
+    $('.chevron-btn').on('click', function () {
+        console.log('chevron-btn');
+       if ($(this).find('.chevron').hasClass("fa-chevron-right")) {
+               $(this).find('.chevron').addClass("fa-chevron-down");
+               $(this).find('.chevron').removeClass("fa-chevron-right");
+       } else {
+                $(this).find('.chevron').addClass("fa-chevron-right");
+                $(this).find('.chevron').removeClass("fa-chevron-down");
+       }
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('#attachments-table').DataTable({
+            pageLength: 100,
+            scrollX: true,
+            scrollY: '50vh',
+            scrollCollapse: true,
+            lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+            order: [],
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('#comments-table').DataTable({
+            pageLength: 100,
+            scrollX: true,
+            scrollY: '50vh',
+            scrollCollapse: true,
+            lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+            order: [],
+        });
+    });
+</script>
+
+
+<script>
+    $(document).ready(function () {
+        $('#modifications-table').DataTable({
+            pageLength: 100,
+            scrollX: true,
+            scrollY: '50vh',
+            scrollCollapse: true,
+            lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+            order: [],
+        });
+    });
+</script>
+
+<script>
+$('.export').on('click', function () {
+    var table = $(this).siblings('.table').find('.dataTables_scrollBody');
+    var table_name = $(this).attr('name');
+    console.log(table)
+    console.log(table_name);
+    table.table2excel({
+        filename: "{{alias}}_"+table_name+"_"+moment().format('YYYYMMDDHHmmss')+".xls",
+        exclude: ".filters",
+        exclude_links: true,
+
+    });
+})
+</script>
+
+
+<script>
+    $(document).ready(function() {
+        var divHeight = $('#fixed-header').height(); // Get the div's height in pixels
+        var viewportHeight = $(window).height();
+        var divHeightVh = parseInt((divHeight / viewportHeight) * 100)+6
+        var bodyHeight = (100 - divHeightVh)+'vh'
+
+        console.log(divHeight);
+        console.log(viewportHeight);
+        console.log(divHeightVh);
+        console.log(bodyHeight);
+
+        $('#header').css('height', viewportHeight)
+        $('#body').css('height', bodyHeight);
+
+    });
+</script>
+
+<script>
+    $('.close').on('click', function (){
+
+        $(this).parent().alert('close');
+        var divHeight = $('#fixed-header').height(); // Get the div's height in pixels
+        var viewportHeight = $(window).height();
+        var divHeightVh = parseInt((divHeight / viewportHeight) * 100)+6
+        var bodyHeight = (100 - divHeightVh)+'vh'
+
+        $('#header').css('height', viewportHeight)
+        $('#body').css('height', bodyHeight);
+
+    });
+</script>
+
+<script>
+    //$('.collapse').on('shown.bs.collapse', function () {
+    //   $($.fn.dataTable.tables(true)).DataTable()
+    //      .columns.adjust();
+    //});
+</script>
+
+<script type="text/javascript">
+    let pending_fields = {{pending_fields | safe}}
+    let tableName = "{{table_name}}"
+    let currentUser = "{{current_user.permissions}}"
+</script>
+<script src="/static/view.js"></script>
+<script src="/static/js/remove-update.js"></script>
+
+
+
+{% endblock %}

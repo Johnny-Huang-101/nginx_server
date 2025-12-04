@@ -1,0 +1,71 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Name</th>
+    <th>Status</th>
+    <th>Model</th>
+    <th>MAC Address</th>
+    <th>IP Address</th>
+    <th>Division</th>
+    <th>Location</th>
+    <th>Notes</th>
+
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+     <td>
+      <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+          {{item.equipment_id}}
+      </a>
+    </td>
+    <td class="item-status">{{item.status.name}}</td>
+    <td>{{item.model_number}}</td>
+    <td>{{item.serial_number}}</td>
+    <td>{{item.ip_address}}</td>
+    <td>{{item.division.name}}</td>
+    <td>
+        {% for x in kwargs['locations'] %}
+            {% if x.item_table == table_name %}
+                {% if x.item_id == item.id %}
+                    {% for cls in kwargs['models'] %}
+                        {% if x.location_table is none %}
+                        {% else %}
+                            {% if cls == kwargs['location_dict'][x.location_table]['table'] %}
+                                {% set alias = kwargs['location_dict'][x.location_table]['alias'] %}
+                                {% if alias is string %}
+                                    {{ cls.query.get(x.location_id) | getattr(alias) }}
+                                {% elif alias is iterable %}
+                                    {% for field in alias %}
+                                        {{ cls.query.get(x.location_id) | getattr(field) }}{% if not loop.last %} - {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    </td>
+    <td>{{item.notes}}</td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+<script src="/static/js/row_color_by_status.js"></script>
+{% endblock %}

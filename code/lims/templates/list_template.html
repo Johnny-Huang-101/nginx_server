@@ -1,0 +1,489 @@
+{% extends "base.html" %}
+{% block content %}
+
+<head>
+    <title>{{config['SYSTEM_NAME']}}/{{item_name}}</title>
+</head>
+<div class="header">
+    <div style="margin-top:6px">
+        {% if current_user.permissions not in ['INV', 'MED', 'MED-Autopsy', 'ADM'] %}
+            <a href="{{url_for('dashboard.get_dashboard')}}"><i class="fa-solid fa-house"></i></a>
+            {% else %}
+            <a href="{{url_for('cases.view_list')}}"><i class="fa-solid fa-house"></i></a>
+            {% endif %}
+        > <span id="{{table_name}}-span">{{item_name}}</span>
+    </div>
+    <hr style="border-width:5px; margin-top:6px">
+    <div class="row">
+        <div class="col" style="display:inline-block">
+            <h1 id="{{table_name}}-page-title">
+                <!-- ICON BLOCK -->
+
+                {% block icon %}{% endblock %}
+
+                <!-- ######### -->
+                {{item_name}}
+            </h1>
+        </div>
+
+        <div class="col" align="right">
+            <a class="vertical-center" href="#" data-toggle="tooltip"
+               title="
+                <b>Exporting</b><br>
+                    <ul>
+                        <li>
+                            Current Page - This will export the current page (including filters) as displayed as XLS.
+                        </li>
+                        <li>
+                            All <item_type> data - This will export the entire table from the database as CSV and may
+                            not resemble what is seen here.
+                        </li>
+                    </ul>
+                <b>Filtering</b><br>
+                    <ul>
+                        <li>
+                            There are 2 types of filters:
+                        </li>
+                        <ul>
+                            <li>Global - above the table on the right</li>
+                            <li>Column - under the header of each column</li>
+                        </ul>
+                        <li>
+                            Column filters have some unique filter shortcuts:
+                            <ul>
+                                <li>* - show non-blank rows</li>
+                                <li>[space] - show blank rows</li>
+                                <li>[search term] + ! - will search for the exact term. E.g. 'Fentanyl!' will
+                                only for cells with that exactly match 'Fentanyl'<br>
+                                NOTE: This does not currently worked for hyperlinked columns
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                <b>Sorting</b><br>
+                    <ul>
+                        <li>
+                            Sorting can be applied by clicking on the arrows next to each column header.
+                        </li>
+                        <li>
+                            Multisort can be achieved by holding SHIFT when clicking on the sort button
+                        </li>
+                    </ul>
+
+
+                    <b>NOTE: All filtering and sorting only applies to the data on the current page<b>
+                    "
+               style="display:inline-block">
+                <i class="fa-solid fa-circle-question" style="font-size: 32px;"></i>
+            </a>
+        </div>
+    </div>
+    <hr style="border-width:5px">
+    {% if query %}
+        <div class="alert alert-secondary" role="alert" id="filtered-data-alert">
+            {% if filter_message %}
+                {{filter_message}}
+            {% else %}
+                You are currently viewing filtered data
+            {% endif %}
+            - <b><a href="{{url_for(table_name~'.view_list')}}">Show all items</a></b>
+        </div>
+    {% endif %}
+    {% if alerts and current_user.permissions not in ['ADM-Management', 'ADM', 'INV', 'MED', 'MED-Autopsy']%}
+        {% for alert_type, alert_lst in alerts.items() %}
+            {% if alert_lst %}
+                <div class="alert alert-{{alert_type}}" role="alert">
+                    <button type="button" class="close" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    There are currently:
+                    <ul class="alert-list">
+                        {% for alert in alert_lst %}
+                            {% set url, n_items, text = alert[0] %}
+                            {% if n_items %}
+                                <li>
+                                    <a href="{{url}}"><strong>{{n_items}} items</strong></a> {{text}}.
+                                    {% if alert | length > 1 %}
+                                        {% set url, n_items, text = alert[1] %}
+                                      |  <a href="{{url}}"><strong>{{n_items}} items</strong></a> {{text}}.
+                                    {% endif %}
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+    {% if removed_items and current_user.permissions in ['Admin', 'Owner'] %}
+        <div class="alert alert-secondary" role="alert" id="removed_items_div">
+            <button type="button" class="close" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            There are currently <a href="{{url_for(table_name~'.view_list', query='removed')}}"><b>{{removed_items}} items</b></a> that have been <b>removed</b>.
+        </div>
+    {% endif %}
+
+    <!-- ALERT BLOCK -->
+
+    {% block alerts %}
+    {% endblock %}
+
+    <!-- ########## -->
+
+
+    <div id="buttons">
+        <div class="pr-1" style="display:inline-block; border-right: solid gray">
+            {% if add_item_button %}
+                {% if not view_only or current_user.permissions in ['Admin', 'Owner']  %}
+                    <a class="btn btn-primary" href="{{url_for(table_name~'.add')}}" id="{{table_name}}-add">Add {{item_type}}</a>
+                {% endif %}
+            {% endif %}
+            {% if current_user.permissions not in ['ADM-Management', 'ADM', 'INV', 'MED', 'MED-Autopsy'] %}
+                {% if export_buttons %}
+                    <div class="dropdown" style="display:inline-block">
+                        <button class="btn btn-secondary dropdown-toggle " type="button" id="export-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa-solid fa-file-export"></i> Export
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="export-button">
+                            <a class="dropdown-item export" href="#">Current Page ({{items.per_page}} rows)</a>
+                            <a class="dropdown-item" href="{{url_for(table_name~'.export')}}">All {{item_name}} Data</a>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endif %}
+            {% if import_file_button %}
+                {% if current_user.permissions in ['Admin', 'Owner'] %}
+                    <a class="btn btn-secondary" href="{{url_for(table_name~'.import_file')}}">Import {{item_name}}</a>
+                {% endif %}
+            {% endif %}
+            {% if current_user.permissions == 'Owner' %}
+                <a class="btn btn-danger" data-toggle="modal" data-target="#delete_all_warning">Delete Table</a>
+            {% endif %}
+        </div>
+        <!-- BUTTONS -->
+
+        {% block buttons %}
+        {% endblock %}
+        <!------------->
+
+    </div>
+</div>
+    <div id="spinner-div">
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border" style="width: 10rem; height:10rem" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+        <div>
+            <h2 align="center">Processing. Please wait....</h2>
+        </div>
+    </div>
+    {% if current_user.permissions not in ['Admin', 'Owner'] %}
+        {% set hidden = None %}
+    {% endif %}
+    <div class="table display" id="table-div" style="display:none;">
+        <div class="table-responsive">
+            <table class="display table-striped table-hover nowrap small datatable" style="width:100%;" id="{{table_name}}">
+                <thead>
+                    <tr>
+                        <th style="display: none" id="click"></th>
+                        {% if pending_submitter_column %}
+                            <th {{hidden}} class="{{table_name}}-pending-submitter-heading">Pending Submitter</th>
+                        {% endif %}
+                        {% if locked_column %}
+                            <th class="locked">Locked</th>
+                        {% endif %}
+                        <!-- HEADER BLOCK -->
+
+                        {% block header %}
+                        {% endblock %}
+
+                        <!-- ########## -->
+                        {% if create_date_column %}
+                            <th>Date Created</th>
+                        {% endif %}
+                        {% if created_by_column %}
+                            <th>Created By</th>
+                        {% endif %}
+                        {% if modify_date_column %}
+                            <th>Date Modified</th>
+                        {% endif %}
+                        {% if modified_by_column %}
+                            <th>Modified By</th>
+                        {% endif %}
+
+                        {% if remove_reason_column %}
+                            <th {{hidden}}>Remove Reason</th>
+                        {% endif %}
+                        {% if db_status_column %}
+                            <th class="db-status" {{hidden}}>DB STATUS</th>
+                        {% endif %}
+                        {% if delete_column %}
+                            <th>Delete</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+
+                {% for item in items %}
+                <tr>
+                    <td style="display: none"></td>
+                    
+                    {% if pending_submitter_column %}
+                        <td {{hidden}} class="{{table_name}}-pending-submitter">{{item.pending_submitter}}</td>
+                    {% endif %}
+                    {% if locked_column %}
+                        <td class="locked">
+                            {% if item.locked %}
+                                {% if item.locked_by == current_user.initials or current_user.permissions in ['Admin', 'Owner'] %}
+                                    <a id="lock" href="{{url_for(table_name~'.unlock', item_id=item.id)}}"><i class="fa-solid fa-unlock"></i></a>
+                                {% else %}
+                                    <i class="fa-solid fa-lock"></i>
+                                {% endif %}
+                                {{item.locked_by}}
+                            {% endif %}
+                        </td>
+                    {% endif %}
+
+                    <!-- BODY BLOCK -->
+
+                    {% block loop_item scoped %}
+                        {% block body %}
+                        {% endblock %}
+                    {% endblock %}
+
+                    <!-- ########## -->
+
+                    {% if create_date_column %}
+                    <td>
+                        {% if item.create_date %}
+                        {{item.create_date.strftime('%m/%d/%Y %H:%M')}}
+                        {% endif %}
+                    </td>
+                    {% endif %}
+
+                    {% if created_by_column %}
+                        <td>{{item.created_by}}</td>
+                    {% endif %}
+
+                    {% if modify_date_column %}
+                        <td>
+                            {% if item.modify_date %}
+                            {{item.modify_date.strftime('%m/%d/%Y %H:%M')}}
+                            {% endif %}
+                        </td>
+                    {% endif %}
+                    {% if modified_by_column %}
+                        <td>
+                            {% if item.modified_by %}
+                            {{item.modified_by}}
+                            {% endif %}
+                        </td>
+                    {% endif %}
+                    {% if remove_reason_column %}
+                        <td {{hidden}}>{{item.remove_reason}}</td>
+                    {% endif %}
+                    {% if db_status_column %}
+                        <td class="db-status"{{hidden}}>{{item.db_status}}</td>
+                    {% endif %}
+                    {% if delete_column %}
+                    <td>
+                        {% if permissions in ['Admin', 'Owner'] or delete_ok %}
+                            <a href="{{url_for(table_name~'.delete', item_id=item.id)}}" class="btn btn-danger btn-size"><i class="fa fa-trash-o btn-icon"></i></a>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+                </tbody>
+
+            </table>
+            <div id="navigation">
+                <div>
+                    Showing <span id="first">{{items.first}}</span> to
+                    <span id="last">{{items.last}}</span> of
+                    <span id="total">{{items.total}}</span> entries
+                    <span id="filtered" hidden>(filtered from {{items.last}} entries)</span>
+                </div>
+                <hr>
+                <div class="row" style="width: 100%">
+                    <div class="col">
+                        <form action="{{ url_for(table_name~'.view_list', query_type=query_type, query=query)}}" method="POST">
+                            Show
+                            <div class="form-group px-0" style="display:inline-block">
+                                <select class="form-control" name="length" id="length" onchange="this.form.submit()">
+                                    <option value=100>100</option>
+                                    <option value="500">500</option>
+                                    <option value="1000">1000</option>
+                                    <option value="5000">5000</option>
+                                    <option value="-1">All</option>
+                                </select>
+                            </div>
+                            entries per page
+                        </form>
+                    </div>
+                    <div class="col" style="display: flex; justify-content: flex-end">
+                        <nav aria-label="Page navigation example">
+                            <ul class="pagination">
+                                {% if items.page == 1 %}
+                                <li class="page-item disabled">
+                                    {% else %}
+                                <li class="page-item">
+                                    {% endif %}
+                                    <a class="page-link" href="{{ url_for(table_name~'.view_list', query_type=query_type, query=query, page=items.page-1, length=length) }}" tabindex="-1">Previous</a>
+                                </li>
+
+                                {% for page_num in items.iter_pages(left_edge=1, right_edge=2, left_current=1, right_current=2) %}
+                                    {% if page_num %}
+                                        {% if items.page == page_num %}
+                                            <li class="page-item active">
+                                                <a class="page-link">{{ page_num }}</a></li>
+                                        {% else %}
+                                            <li class="page-item"><a class="page-link" href="{{ url_for(table_name~'.view_list',query_type=query_type, query=query, page=page_num, length=length) }}">{{ page_num }}</a></li>
+                                        {% endif %}
+                                    {% else %}
+                                        <li class="page-item disabled"><a class="page-link">…</a></li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if items.page == items.pages %}
+                                <li class="page-item disabled">
+                                    {% else %}
+                                <li class="page-item">
+                                    {% endif %}
+                                    <a class="page-link" href="{{ url_for(table_name~'.view_list',query_type=query_type, query=query, page=items.page+1, length=length) }}" tabindex="-1">Next</a>
+                                </li>
+                            </ul>
+                        </nav>
+                        <div class="pl-2">
+                            <div class="form-inline">
+                                <input class="form-control mr-2" style="width: 10rem" id="page-num" placeholder="Go to page...">
+                                <a class="btn btn-primary" id="go-to-page">Go</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<!-- MODAL BLOCK -->
+
+{% block modals %}
+
+<!--    Delete All Data Warning    -->
+<div class="modal" tabindex="-1" id="delete_all_warning" data-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <b>Delete all table data?</b>
+      </div>
+      <div class="modal-body">
+        <p>
+          By proceeding, you will delete all items in this table. This process is irreversible, please ensure you have backups.
+        </p>
+        <p>
+          <b>Are you sure you wish to proceed?</b>
+        </p>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-primary" href="{{url_for(table_name~'.delete_all')}}">Confirm</a>
+        <a class="btn btn-secondary" href="#" data-dismiss="modal">Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+<!-- ########## -->
+
+<!-- SCRIPT BLOCK -->
+
+{% block scripts %}
+{% endblock %}
+
+<!-- ########## -->
+
+<script src="/static/list.js"></script>
+<script type="text/javascript">
+    let permissions = '{{permissions}}'
+    let table_name = '{{table_name | safe}}'
+    let query = '{{query}}'
+    let query_type = '{{query_type}}'
+</script>
+
+<script>
+
+$(document).ready(function () {
+    $("#length").val({{kwargs['length']}});
+    //initDataTable($('#{{table_name}}'), {{kwargs['length']}})
+    initDataTable($('.datatable'), {{kwargs['length']}})
+});
+</script>
+
+<script>
+$('.export').on('click', function () {
+    $("#{{table_name}}").table2excel({
+        filename: "{{table_name}}_"+moment().format('YYYYMMDDHHmmss')+".xls",
+        exclude: ".filters",
+        exclude_links: true,
+    });f
+})
+</script>
+<script type="text/javascript">
+    let tableName = "{{table_name}}"
+    let currentUser = "{{current_user.permissions}}"
+    let currentUserInitials = "{{current_user.initials}}"
+</script>
+<script src="/static/js/remove-add.js"></script>
+
+<script>
+    $(document).ready(function() {
+        var divHeight = $('.header').height(); // Get the div's height in pixels
+        var tableHeaderHeight = $('.datatable thead').height()
+        var navigationHeight = $('#navigation').height()
+
+        console.log(divHeight);
+        console.log(tableHeaderHeight);
+        console.log(navigationHeight);
+        var viewportHeight = $(window).height();
+        var divHeightVh = parseInt(((divHeight+tableHeaderHeight+navigationHeight) / viewportHeight) * 100)+11
+        var bodyHeight = (100 - divHeightVh)+'vh'
+
+
+        console.log(viewportHeight);
+        console.log(divHeightVh);
+        console.log(bodyHeight);
+        //$('tbody').css('height', bodyHeight);
+        $('.dataTables_scrollBody').css('height', bodyHeight);
+
+    });
+</script>
+
+<script>
+    $('.close').on('click', function (){
+
+        $(this).parent().alert('close');
+        var divHeight = $('.header').height(); // Get the div's height in pixels
+        var tableHeaderHeight = $('.datatable thead').height()
+        var navigationHeight = $('#navigation').height()
+
+        console.log(divHeight);
+        console.log(tableHeaderHeight);
+        console.log(navigationHeight);
+        var viewportHeight = $(window).height();
+        var divHeightVh = parseInt(((divHeight+tableHeaderHeight+navigationHeight) / viewportHeight) * 100)+10
+        var bodyHeight = (100 - divHeightVh)+'vh'
+
+
+        console.log(viewportHeight);
+        console.log(divHeightVh);
+        console.log(bodyHeight);
+        //$('tbody').css('height', bodyHeight);
+        $('.dataTables_scrollBody').css('height', bodyHeight);
+    });
+</script>
+
+{% endblock %}  

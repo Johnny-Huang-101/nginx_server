@@ -1,0 +1,40 @@
+{% extends "form_template.html" %}
+{% block form %}
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.equipment_id.label}}
+        {{form.equipment_id}}
+    </div>
+    <div class="col">
+        {{form.cabinet_type.label}}
+        {{form.cabinet_type}}
+    </div>
+    <div class="col">
+        {{form.status_id.label}}
+        {{form.status_id}}
+    </div>
+</div>
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.location_table.label}}
+        {{form.location_table}}
+    </div>
+    <div class="col">
+        {{form.location_id.label}}
+        {{form.location_id}}
+    </div>
+</div>
+{% endblock %}
+
+<!--Alerts-->
+{% block alerts %}
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+<script src="/static/js/locations.js"></script>
+{% endblock %}

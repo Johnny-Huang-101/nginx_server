@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div style="margin-top:6px">
+    <a href="{{url_for('dashboard.get_dashboard')}}"><i class="fa-solid fa-house"></i></a>
+    > <a href="{{url_for(table_name~'.view_list')}}">{{table_name|capitalize}}</a>
+    > Test {{alias}}
+</div>
+
+<hr style="border-width:5px; margin-top: 6px">
+    <h1>Test {{alias}}</h1>
+<hr style="border-width:5px">
+
+<a class="btn btn-primary" href="{{ url_for('comment_instances.add', comment_item_type='Tests', comment_item_id=item.id, redirect_url='../batches/'~item.batch_id)}}" role="button">Add Test Comment</a>
+<a class="btn btn-secondary" href="{{ url_for('batches.view', item_id=item.batch_id)}}" role="button">Back to Batch</a>
+
+<div class="card">
+    <div class="card-header" id="details_heading">
+        <h5>Comments</h5>
+    </div>
+    <div class="card-body">
+        <div class="table display">
+            <div class="table-responsive">
+                <table class="table-striped table-hover small display nowrap" style="width:100%" id="batch_constituents">
+                    <thead>
+                        <tr>
+                            <th>Test ID</th>
+                            <th>Comment</th>
+                            <th>Created By</th>
+                            <th>Create Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for comment in comments %}
+                            <tr>
+                                <td>{{comment.item_id}}</td>
+                                <td>{{comment.comment_text}}</td>
+                                <td>{{comment.created_by}}</td>
+                                <td>{{comment.create_date.strftime('%m/%d/%Y')}}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

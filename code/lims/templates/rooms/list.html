@@ -1,0 +1,34 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+<i class="fa-solid fa-door-open"></i>
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Room Number</th>
+    <th>Name</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>{{item.room_number}}</td>
+    <td>
+        <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+            {{item.name}}
+        </a>
+    </td>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
+<!--Modals-->
+{% block modals %}
+{% endblock %}

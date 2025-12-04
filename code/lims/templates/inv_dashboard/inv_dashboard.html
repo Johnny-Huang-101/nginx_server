@@ -1,0 +1,823 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  .compact-card .card-body {
+    padding: 0.6rem 0.75rem;
+  }
+
+  .compact-card .card-title {
+    margin-bottom: 0.35rem;
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .compact-card {
+    margin-bottom: 0.6rem;
+  }
+
+  .metric-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .metric-left,
+  .metric-right,
+  .center-metric {
+    font-size: 1.85rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+  }
+
+  .metric-left {
+    text-align: left;
+  }
+
+  .metric-right {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .metric-right .tat {
+    margin-left: 6px;
+    color: inherit;
+    font-weight: 700;
+  }
+
+  .center-metric {
+    text-align: center;
+  }
+
+  .compact-pie .card-body {
+    padding: 0.75rem;
+  }
+
+  .compact-pie .card-title {
+    font-size: 1rem;
+  }
+
+  .metric-labels {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-size: .85rem;
+    font-weight: 600;
+    color: #e9ecef;
+    margin-bottom: .25rem;
+  }
+
+  .metric-labels .tat {
+    margin-left: 4px;
+    color: inherit;
+    font-weight: 700;
+  }
+
+  .text-muted {
+    margin-bottom: 0px;
+  }
+
+  /* --- Light header + chips (namespaced to avoid collisions) --- */
+  :root {
+    --inv-panel: #ffffff;
+    --inv-ink: #0f172a;
+    --inv-muted: #64748b;
+    --inv-border: #e5e7eb;
+    --inv-primary: #2563eb;
+    --inv-radius: 14px;
+    --inv-shadow: 0 2px 8px rgba(2, 6, 23, .04), 0 1px 1px rgba(2, 6, 23, .04);
+  }
+
+  /* Wrapper above the dashboard body (safe with your current layout) */
+  .inv-head-wrap {
+    margin-top: .5rem;
+  }
+
+  /* Sticky toolbar */
+  .inv-toolbar {
+    position: sticky;
+    top: 56px;
+    /* adjust if your navbar height differs */
+    z-index: 8;
+    background: var(--inv-panel);
+    border: 1px solid var(--inv-border);
+    border-radius: var(--inv-radius);
+    padding: 8px 10px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    box-shadow: var(--inv-shadow);
+  }
+
+  /* Title row */
+  .inv-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: .5rem;
+  }
+
+  .inv-title h2 {
+    margin: 0;
+    font-weight: 800;
+    color: var(--inv-ink);
+  }
+
+  .inv-subtle {
+    color: var(--inv-muted);
+  }
+
+  /* Chips */
+  .inv-chip {
+    border: 1px solid var(--inv-border);
+    background: #f8fafc;
+    color: var(--inv-ink);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: .82rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .inv-chip.active {
+    border-color: var(--inv-primary);
+    background: #eff6ff;
+    color: #1e40af;
+  }
+
+  /* “Label” text in toolbar */
+  .inv-label {
+    color: var(--inv-muted);
+    font-weight: 600;
+    margin-right: 6px;
+  }
+</style>
+
+{% set selected_year = request.args.get('year') %}
+
+{% macro interval_label(i) -%}
+{%- if i == '12h' -%}12h
+{%- elif i in ['1','2','5','10'] -%}{{ i }}d
+{%- else -%}{{ i }}
+{%- endif -%}
+{%- endmacro %}
+
+{% set date_range_str = "Jan 1, " ~ (selected_year or now().year) ~" – Dec 31, " ~ (selected_year or now().year) if
+selected_year else "< " ~ interval_label(interval) %}
+
+<div class=" container-fluid mt-4">
+
+  <div class="container-fluid inv-head-wrap">
+
+    <!-- Title -->
+    <div class="inv-title">
+      <div>
+        <h2>INV Dashboard</h2>
+        <div class="inv-subtle">Hello, {{ current_user.full_name }}
+          • <span class="inv-chip">
+            {# keep same date_range_str logic #}
+            {{ "Jan 1, " ~ (selected_year or now().year) ~ " – Dec 31, " ~ (selected_year or now().year) if
+            selected_year
+            else "< " ~ interval_label(interval) }}
+        </span>
+      </div>
+    </div>
+  
+  </div>
+
+  <!-- Sticky, compact toolbar (single form keeps params in sync) -->
+  <div class=" inv-toolbar mb-3">
+              <form method="get" action="{{ url_for('inv_dashboard.get_inv_dashboard') }}"
+                class="d-flex flex-wrap align-items-center" style="gap:8px;">
+
+                <!-- Investigator -->
+                <div class="d-flex align-items-center">
+                  <span class="inv-label">Investigator</span>
+                  <select name="user_id" id="user_id" class="form-control form-control-sm" style="min-width: 220px"
+                    onchange="this.form.submit()">
+                    <option value="all" {{ 'selected' if selected_inv_user_id=='all' }}>All Investigators</option>
+                    {% for u in inv_users %}
+                    <option value="{{ u.id }}" {{ 'selected' if selected_inv_user_id==(u.id|string) }}>
+                      {{ u.full_name }}
+                    </option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                {# keep year sticky between interval clicks #}
+                {% if request.args.get('year') %}
+                <input type="hidden" name="year" value="{{ request.args.get('year') }}">
+                {% endif %}
+
+                <!-- Interval chips -->
+                <div class="d-flex align-items-center" style="gap:6px; margin-left:6px;">
+                  <span class="inv-label">Interval</span>
+                  {% for i in ['12h','1','2','5','10'] %}
+                  <button type="submit" name="interval" value="{{ i }}"
+                    class="inv-chip {{ 'active' if interval == i and not selected_year else '' }}">
+                    {{ interval_label(i) }}
+                  </button>
+                  {% endfor %}
+                </div>
+
+                <!-- Year chips -->
+                <div class="d-flex align-items-center" style="gap:6px; margin-left:6px;">
+                  <span class="inv-label">Year</span>
+                  <button type="submit" name="year" value="2025"
+                    class="inv-chip {{ 'active' if request.args.get('year') == '2025' else '' }}">
+                    2025
+                  </button>
+                  <button type="submit" name="year" value="2024"
+                    class="inv-chip {{ 'active' if request.args.get('year') == '2024' else '' }}">
+                    2024
+                  </button>
+                  {% if request.args.get('year') %}
+                  {# Clear year to return to live interval mode #}
+                  <button type="submit" name="year" value="" class="inv-chip">
+                    Live
+                  </button>
+                  {% endif %}
+                  {# Preserve interval selection when changing year #}
+                  <input type="hidden" name="interval" value="{{ interval }}">
+                  <input type="hidden" name="user_id" value="{{ selected_inv_user_id }}">
+                </div>
+              </form>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- < Interval Section -->
+    <div class="row" style="margin-bottom: 0px;">
+      <div class="col-md-6">
+        <div class="row">
+          <!-- Left pie -->
+          <div class="col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body">
+                <h5 class="card-title text-center">{{ date_range_str }}</h5>
+                {{ pie_chart_left | safe }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Left metrics (≤ interval, current-year-limited) -->
+          <div class="col-md-6">
+            <h3 style="text-align: center;">&lt; {{ interval_label(interval) }}</h3>
+
+            <!-- Scene arrival -->
+            <div class="mb-3">
+              <div class="card text-white bg-primary compact-card">
+                <div class="card-body">
+                  <h5 class="card-title">Scene arrival</h5>
+                  <div class="metric-labels">
+                    <div>Open</div>
+                    <div>Completed[Avg TAT] <span class="tat"></span></div>
+                  </div>
+                  <div class="metric-row">
+                    <div class="metric-left">{{ left_scene_arrival_count }}</div>
+                    <div class="metric-right">{{ left_scene_arrival_closed_count }}[{{ left_scene_arrival_tat }}]</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Identification -->
+            <div class="mb-3">
+              <div class="card text-white bg-success compact-card">
+                <div class="card-body">
+                  <h5 class="card-title">Identification</h5>
+                  <div class="metric-labels">
+                    <div>Open</div>
+                    <div>Completed[Avg TAT] <span class="tat"></span></div>
+                  </div>
+                  <div class="metric-row">
+                    <div class="metric-left">{{ left_identification_count }}</div>
+                    <div class="metric-right">{{ left_identification_closed_count }}[{{ left_identification_tat }}]
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Next Of Kin -->
+            <div class="mb-3">
+              <div class="card text-white bg-warning compact-card">
+                <div class="card-body">
+                  <h5 class="card-title">Next Of Kin</h5>
+                  <div class="metric-labels">
+                    <div>Open</div>
+                    <div>Completed[Avg TAT] <span class="tat"></span></div>
+                  </div>
+                  <div class="metric-row">
+                    <div class="metric-left">{{ left_next_of_kin_count }}</div>
+                    <div class="metric-right">{{ left_next_of_kin_closed_count }}[{{ left_next_of_kin_tat }}]</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Closed (centered: count[TAT]) -->
+            <div class="mb-3">
+              <div class="card text-white bg-secondary compact-card">
+                <div class="card-body">
+                  <h5 class="card-title">Closed</h5>
+                  <div class="center-metric">
+                    {{ left_closed_count }}<span class="tat">[{{ left_closed_tat }}]</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TOTAL (centered) -->
+            <div class="mb-3">
+              <div class="card text-white compact-card" style="background-color: black">
+                <div class="card-body">
+                  <h5 class="card-title">TOTAL</h5>
+                  <div class="center-metric">{{ left_total_count }}</div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /col -->
+        </div><!-- /row -->
+      </div><!-- /col-md-6 -->
+
+
+      {% if not selected_year %}
+      <!-- > Interval Section (current-year-limited) -->
+      <div class="col-md-6">
+        <div class="row">
+
+          <!-- Right metrics -->
+          <div class="col-md-6">
+            <h3 style="text-align: center;">&gt; {{ interval_label(interval) }}</h3>
+
+            <!-- Scene arrival -->
+            <div class="mb-3">
+              <div class="card text-white bg-primary compact-card">
+                <div class="card-body">
+                  <h5 class="card-title">Scene arrival</h5>
+                  <div class="metric-labels">
+                    <div>Open</div>
+                    <div>Completed[Avg TAT] <span class="tat"></span></div>
+                  </div>
+                  <div class="metric-row">
+                    <div class="metric-left">{{ right_scene_arrival_count }}</div>
+                    <div class="metric-right">{{ right_scene_arrival_closed_count }}[{{ right_scene_arrival_tat }}]
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Identification -->
+            <div class="card text-white bg-success compact-card">
+              <div class="card-body">
+                <h5 class="card-title">Identification</h5>
+                <div class="metric-labels">
+                  <div>Open</div>
+                  <div>Completed[Avg TAT] <span class="tat"></span></div>
+                </div>
+                <div class="metric-row">
+                  <div class="metric-left">{{ right_identification_count }}</div>
+                  <div class="metric-right">{{ right_identification_closed_count }}[{{ right_identification_tat }}]
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Next Of Kin -->
+            <div class="card text-white bg-warning compact-card" style="margin-top: 1rem">
+              <div class="card-body">
+                <h5 class="card-title">Next Of Kin</h5>
+                <div class="metric-labels">
+                  <div>Open</div>
+                  <div>Completed[Avg TAT] <span class="tat"></span></div>
+                </div>
+                <div class="metric-row">
+                  <div class="metric-left">{{ right_next_of_kin_count }}</div>
+                  <div class="metric-right">{{ right_next_of_kin_closed_count }}[{{ right_next_of_kin_tat }}]</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Closed (centered: count[TAT]) -->
+            <div class="card text-white bg-secondary compact-card" style="margin-top: 1rem">
+              <div class="card-body">
+                <h5 class="card-title">Closed</h5>
+                <div class="center-metric">
+                  {{ right_closed_count }}<span class="tat">[{{ right_closed_tat }}]</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- TOTAL (centered) -->
+            <div class="mb-3" style="margin-top: 1rem">
+              <div class="card text-white compact-card" style="background-color: black">
+                <div class="card-body">
+                  <h5 class="card-title">TOTAL</h5>
+                  <div class="center-metric">{{ right_total_count }}</div>
+                </div>
+              </div>
+            </div>
+          </div><!-- /col -->
+
+          <!-- Right pie (> interval, Closed excluded) -->
+          <div class="col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body">
+                <h5 class="card-title text-center">&gt; {{ interval_label(interval) }}</h5>
+                {{ pie_chart_right | safe }}
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /row -->
+      </div><!-- /col-md-6 -->
+      {% endif %}
+
+    </div><!-- /row -->
+
+    {% if not selected_year %}
+    <!-- Overall Total (centered) -->
+    <div class="row justify-content-center">
+      <div class="col-md-4">
+        <div class="card text-white compact-card" style="background-color: black">
+          <div class="card-body">
+            <h5 class="card-title">Overall Total</h5>
+            <div class="center-metric">{{ overall_total_count }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if selected_year %}
+    <div class="card mb-4">
+      <div class="card-header view-card-header">
+        <i class="fa-solid fa-chart-box mr-2"></i>
+        <strong style="font-size: 1.2rem;">Closed Case Turn Around Time %</strong>
+      </div>
+      <div class="card-body">{{ tat_graph | safe }}</div>
+    </div>
+    {% endif %}
+
+    <!-- ========== Tables (all current-year-limited) ========== -->
+
+    <!-- Scene arrival (OPEN only; both sides; row highlight if > threshold) -->
+    <div class="card mb-4">
+      <div class="card-header view-card-header" id="scene-arrival-header">
+        <span><i class="fa-solid fa-folder-open mr-2"></i></span>
+        <strong style="font-size: 1.2rem;">Scene arrival</strong>
+      </div>
+      <div class="card-body">
+        <div class="table display">
+          <div class="table-responsive">
+            <table class="table-striped table-hover nowrap small view-table" style="width: 100%"
+              id="scene-arrival-table">
+              <thead>
+                <tr>
+                  <th>Case No.</th>
+                  <th>Name</th>
+                  <th>Date of Death</th>
+                  <th>Investigator Start Date/Time</th>
+                  <th>Days Open</th>
+                  <th>Case Comments</th>
+                  <th>Scene Arrival</th>
+                  
+                </tr>
+              </thead>
+              <tbody>
+                {% for case in scene_arrival_cases %}
+                <tr {% if case.fa_inv_start_datetime and ((datetime.now() - case.fa_inv_start_datetime).total_seconds()
+                  / 86400)> threshold_days %} style="background-color: #fff3cd;" {% endif %}>
+                  <td><a href="/cases/{{ case.id }}" target="_blank">{{ case.case_number or '-' }}</a></td>
+                  <td>{{ case.last_name }} {{ case.first_name }} {% if case.middle_name %} {{ case.middle_name }} {%
+                    endif %}</td>
+                  <td>{{ case.date_of_incident.strftime('%m/%d/%Y') if case.date_of_incident else '' }}</td>
+                  <td>{% if case.fa_inv_start_datetime %} {{ case.fa_inv_start_datetime.strftime('%m/%d/%y %H:%M') }} {%
+                    else %} No Investigator Start Date/Time {% endif %}</td>
+                  <td>{{ (datetime.now() - case.fa_case_entry_date).days if case.fa_case_entry_date else '' }}</td>
+                  <td>{{ case.fa_case_comments or '' }}</td>
+                  <td>{% if case.fa_scene_arrival_datetime %}{{ case.fa_scene_arrival_datetime.strftime('%m/%d/%Y
+                    %H:%M') }} {% else %} No Scene Arrival Date/Time {% endif %}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div><!-- /table-responsive -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Identification (OPEN only) -->
+    <div class="card mb-4">
+      <div class="card-header view-card-header" id="identification-header">
+        <span><i class="fa-solid fa-folder-open mr-2"></i></span>
+        <strong style="font-size: 1.2rem;">Identification</strong>
+      </div>
+      <div class="card-body">
+        <div class="table display">
+          <div class="table-responsive">
+            <table class="table-striped table-hover nowrap small view-table" style="width: 100%"
+              id="identification-table">
+              <thead>
+                <tr>
+                  <th>Case No.</th>
+                  <th>Name</th>
+                  <th>Date of Death</th>
+                  <th>Investigator Start Date/Time</th>
+                  <th>Days Open</th>
+                  <th>Case Comments</th>
+                  <th>Scene Arrival</th>
+                  <th>Scene Departure</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for case in identification_cases_le + identification_cases_gt %}
+                <tr {% if case.fa_inv_start_datetime and ((datetime.now() - case.fa_inv_start_datetime).total_seconds()
+                  / 86400)> threshold_days %} style="background-color: #fff3cd;" {% endif %}>
+                  <td><a href="/cases/{{ case.id }}" target="_blank">{{ case.case_number or '-' }}</a></td>
+                  <td>{{ case.last_name }} {{ case.first_name }} {% if case.middle_name %} {{ case.middle_name }} {%
+                    endif %}</td>
+                  <td>{{ case.date_of_incident.strftime('%m/%d/%Y') if case.date_of_incident else '' }}</td>
+                  <td>{% if case.fa_inv_start_datetime %} {{ case.fa_inv_start_datetime.strftime('%m/%d/%y %H:%M') }} {%
+                    else %} No Investigator Start Date/Time {% endif %}</td>
+                  <td>{{ (datetime.now() - case.fa_case_entry_date).days if case.fa_case_entry_date else '' }}</td>
+                  <td>{{ case.fa_case_comments or '' }}</td>
+                  <td>{% if case.fa_scene_arrival_datetime %}{{ case.fa_scene_arrival_datetime.strftime('%m/%d/%Y
+                    %H:%M') }} {% else %} No Scene Arrival Date/Time {% endif %}</td>
+                  <td>
+                    {% if case.fa_scene_dept_datetime %}
+                    {{ case.fa_scene_dept_datetime.strftime('%m/%d/%Y %H:%M') }}
+                    {% if case.fa_scene_arrival_datetime %}
+                    {% set diff = case.fa_scene_dept_datetime - case.fa_scene_arrival_datetime %}
+                    {% set mins_total = (diff.total_seconds() // 60) | int %}
+                    {% if mins_total >= 0 %}
+                    {% set h = (mins_total // 60) | int %}
+                    {% set m = (mins_total % 60) | int %}
+                    ({{ h }}h {{ m }}m)
+                    {% else %}
+                    (—) {# departure before arrival; show a dash #}
+                    {% endif %}
+                    {% endif %}
+                    {% else %}
+                    No Scene Departure Date/Time
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div><!-- /table-responsive -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Next Of Kin (OPEN only; may be empty due to exclusion) -->
+    <div class="card mb-4">
+      <div class="card-header view-card-header" id="nok-header">
+        <span><i class="fa-solid fa-user-group mr-2"></i></span>
+        <strong style="font-size: 1.2rem;">Next Of Kin</strong>
+      </div>
+      <div class="card-body">
+        <div class="table display">
+          <div class="table-responsive">
+            <table class="table-striped table-hover nowrap small view-table" style="width: 100%" id="nok-table">
+              <thead>
+                <tr>
+                  <th>Case No.</th>
+                  <th>Name</th>
+                  <th>Date of Death</th>
+                  <th>Investigator Start Date/Time</th>
+                  <th>Days Open</th>
+                  <th>Case Comments</th>
+                  <th>Scene Arrival</th>
+                  <th>Scene Departure</th>
+                  <th>Identification Date/time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for case in (next_of_kin_cases_le or []) + (next_of_kin_cases_gt or []) %}
+                <tr {% if case.fa_inv_start_datetime and ((datetime.now() - case.fa_inv_start_datetime).total_seconds()
+                  / 86400)> threshold_days %} style="background-color: #fff3cd;" {% endif %}>
+                  <td><a href="/cases/{{ case.id }}" target="_blank">{{ case.case_number or '-' }}</a></td>
+                  <td>{{ case.last_name }} {{ case.first_name }} {% if case.middle_name %} {{ case.middle_name }} {%
+                    endif %}</td>
+                  <td>{{ case.date_of_incident.strftime('%m/%d/%Y') if case.date_of_incident else '' }}</td>
+                  <td>{% if case.fa_inv_start_datetime %} {{ case.fa_inv_start_datetime.strftime('%m/%d/%y %H:%M') }} {%
+                    else %} No Investigator Start Date/Time {% endif %}</td>
+                  <td>{{ (datetime.now() - case.fa_case_entry_date).days if case.fa_case_entry_date else '' }}</td>
+                  <td>{{ case.fa_case_comments or '' }}</td>
+                  <td>{% if case.fa_scene_arrival_datetime %}{{ case.fa_scene_arrival_datetime.strftime('%m/%d/%Y
+                    %H:%M') }} {% else %} No Scene Arrival Date/Time {% endif %}</td>
+                  <td>
+                    {% if case.fa_scene_dept_datetime %}
+                    {{ case.fa_scene_dept_datetime.strftime('%m/%d/%Y %H:%M') }}
+                    {% if case.fa_scene_arrival_datetime %}
+                    {% set diff = case.fa_scene_dept_datetime - case.fa_scene_arrival_datetime %}
+                    {% set mins_total = (diff.total_seconds() // 60) | int %}
+                    {% if mins_total >= 0 %}
+                    {% set h = (mins_total // 60) | int %}
+                    {% set m = (mins_total % 60) | int %}
+                    ({{ h }}h {{ m }}m)
+                    {% else %}
+                    (—) {# departure before arrival; show a dash #}
+                    {% endif %}
+                    {% endif %}
+                    {% else %}
+                    No Scene Departure Date/Time
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if case.fa_ident_datetime %}
+                    {{ case.fa_ident_datetime.strftime('%m/%d/%Y %H:%M') }}
+                    {% if case.fa_inv_start_datetime %}
+                    {% set diff = case.fa_ident_datetime - case.fa_inv_start_datetime %}
+                    {% set mins_total = (diff.total_seconds() // 60) | int %}
+                    {% if mins_total >= 0 %}
+                    {% set h = (mins_total // 60) | int %}
+                    {% set m = (mins_total % 60) | int %}
+                    ({{ h }}h {{ m }}m)
+                    {% else %}
+                    (—)
+                    {% endif %}
+                    {% endif %}
+                    {% else %}
+                    No Identification Date/Time
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div><!-- /table-responsive -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Closed Cases (<= interval; current-year-limited) -->
+    <div class="card">
+      <div class="card-header view-card-header" id="closed-cases-header">
+        <span><i class="fa-solid fa-folder mr-2"></i></span>
+        <strong style="font-size: 1.2rem;">Closed Cases</strong>
+      </div>
+      <div class="card-body">
+        <div class="table display">
+          <div class="table-responsive">
+            <table class="table-striped table-hover nowrap small view-table" style="width: 100%"
+              id="closed-cases-table">
+              <thead>
+                <tr>
+                  <th style="min-width: 110px">Case No.</th>
+                  <th>Name</th>
+                  <th>Date of Death</th>
+                  <th>Manner of Death</th>
+                  <th style="max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Cause of
+                    Death</th>
+                  <th>Case Comments</th>
+                  <th>Investigator Start Date/Time</th>
+
+                  <th>Scene Arrival</th>
+                  <th>Scene Departure</th>
+                  <th>Identification Date/Time</th>
+                  <th>Next Of Kin Notificatoin Date/Time</th>
+                  <th>TAT (Days)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for case in closed_cases_le %}
+                <tr>
+                  <td><a href="/cases/{{ case.id }}" target="_blank">{{ case.case_number or '-' }}</a></td>
+                  <td>{{ case.last_name }} {{ case.first_name }} {% if case.middle_name %} {{ case.middle_name }} {%
+                    endif %}</td>
+                  <td>{{ case.date_of_incident.strftime('%m/%d/%Y') if case.date_of_incident else '' }}</td>
+                  <td>{{ case.manner_of_death or '' }}</td>
+                  <td>{{ case.cod_a or '' }}</td>
+                  <td>{{ case.fa_case_comments or '' }}</td>
+                                    <td>{% if case.fa_inv_start_datetime %} {{ case.fa_inv_start_datetime.strftime('%m/%d/%y %H:%M') }} {%
+                    else %} No Investigator Start Date/Time {% endif %}</td>
+                  <td>{% if case.fa_scene_arrival_datetime %}{{ case.fa_scene_arrival_datetime.strftime('%m/%d/%Y
+                    %H:%M') }} {% else %} No Scene Arrival Date/Time {% endif %}</td>
+                  <td>
+                    {% if case.fa_scene_dept_datetime %}
+                    {{ case.fa_scene_dept_datetime.strftime('%m/%d/%Y %H:%M') }}
+                    {% if case.fa_scene_arrival_datetime %}
+                    {% set diff = case.fa_scene_dept_datetime - case.fa_scene_arrival_datetime %}
+                    {% set mins_total = (diff.total_seconds() // 60) | int %}
+                    {% if mins_total >= 0 %}
+                    {% set h = (mins_total // 60) | int %}
+                    {% set m = (mins_total % 60) | int %}
+                    ({{ h }}h {{ m }}m)
+                    {% else %}
+                    (—) {# departure before arrival; show a dash #}
+                    {% endif %}
+                    {% endif %}
+                    {% else %}
+                    No Scene Departure Date/Time
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if case.fa_ident_datetime %}
+                    {{ case.fa_ident_datetime.strftime('%m/%d/%Y %H:%M') }}
+                    {% if case.fa_inv_start_datetime %}
+                    {% set diff = case.fa_ident_datetime - case.fa_inv_start_datetime %}
+                    {% set mins_total = (diff.total_seconds() // 60) | int %}
+                    {% if mins_total >= 0 %}
+                    {% set h = (mins_total // 60) | int %}
+                    {% set m = (mins_total % 60) | int %}
+                    ({{ h }}h {{ m }}m)
+                    {% else %}
+                    (—)
+                    {% endif %}
+                    {% endif %}
+                    {% else %}
+                    No Identification Date/Time
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if case.nok_dt %}
+                      {{ case.nok_dt.strftime('%m/%d/%Y') }} {{case.nok_notify_time}}{% if case.nok_from_inv_dh %} ({{ case.nok_from_inv_dh }}){% endif %}
+                    {% else %}
+                      No NOK Notification Date/Time
+                    {% endif %}
+                  </td>
+
+
+
+
+                  <td {% if case.fa_inv_end_datetime and case.fa_inv_start_datetime %} {% set
+                    secs=(case.fa_inv_end_datetime - case.fa_inv_start_datetime).total_seconds() %} {% if secs < 0
+                    %}style="background-color:#fff3cd;" {% endif %} {% endif %}>
+                    {% if case.fa_inv_end_datetime and case.fa_inv_start_datetime %}
+                    {% set sign = '-' if secs < 0 else '' %} {% set secs_abs=(secs | float) | abs %} {% set
+                      total_hours=(secs_abs // 3600) | int %} {% set days=(total_hours // 24) | int %} {% set
+                      hours=(total_hours % 24) | int %} {{ sign }}{{ days }}d {{ hours }}h {% else %} N/A {% endif %}
+                      </td>
+
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div><!-- /table-responsive -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Closed Cases (Current Year) -->
+    <div class="card mt-4">
+      <div class="card-header view-card-header" id="closed-cases-currentyear-header">
+        <span><i class="fa-solid fa-folder mr-2"></i></span>
+        <strong style="font-size: 1.2rem;">Closed Cases (Current Year)</strong>
+      </div>
+      <div class="card-body">
+        <div class="table display">
+          <div class="table-responsive">
+            <table class="table-striped table-hover nowrap small view-table" style="width: 100%"
+              id="closed-cases-currentyear-table">
+              <thead>
+                <tr>
+                  <th style="min-width: 110px">Case No.</th>
+                  <th>Name</th>
+                  <th>Date of Death</th>
+                  <th>Manner of Death</th>
+                  <th style="max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Cause of
+                    Death</th>
+                  <th>TAT</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for case in closed_cases_current_year %}
+                <tr>
+                  <td><a href="/cases/{{ case.id }}" target="_blank">{{ case.case_number or '-' }}</a></td>
+                  <td>{{ case.last_name }} {{ case.first_name }} {% if case.middle_name %} {{ case.middle_name }} {%
+                    endif %}</td>
+                  <td>{{ case.date_of_incident.strftime('%m/%d/%Y') if case.date_of_incident else '' }}</td>
+                  <td>{{ case.manner_of_death or '' }}</td>
+                  <td>{{ case.cod_a or '' }}</td>
+                  <td {% if case.fa_inv_end_datetime and case.fa_inv_start_datetime %} {% set
+                    secs=(case.fa_inv_end_datetime - case.fa_inv_start_datetime).total_seconds() %} {% if secs < 0
+                    %}style="background-color:#fff3cd;" {% endif %} {% endif %}>
+                    {% if case.fa_inv_end_datetime and case.fa_inv_start_datetime %}
+                    {% set sign = '-' if secs < 0 else '' %} {% set secs_abs=(secs | float) | abs %} {% set
+                      total_hours=(secs_abs // 3600) | int %} {% set days=(total_hours // 24) | int %} {% set
+                      hours=(total_hours % 24) | int %} {{ sign }}{{ days }}d {{ hours }}h {% else %} N/A {% endif %}
+                      </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div><!-- /table-responsive -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+  {% endblock %}

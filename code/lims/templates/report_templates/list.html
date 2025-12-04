@@ -1,0 +1,49 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Name</th>
+    <th>Discipline</th>
+    <th>.docx</th>
+    <th>.pdf</th>
+    <th>Status</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+
+<td>
+    <a href="{{ url_for(table_name~'.view', item_id=item.id) }}">
+        {{item.name}}
+    </a>
+</td>
+<td>{{item.discipline}}</td>
+<td>
+    <a href="../static/filesystem/report_templates/{{item.name}}.docx" target="_blank">
+        Open Word
+    </a>
+
+</td>
+<td>
+    <a href="../static/filesystem/report_templates/{{item.name}}.pdf" target="_blank">
+        Open PDF
+    </a>
+</td>
+
+    <td class="item-status">{{item.status.name}}</td>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="/static/js/row_color_by_status.js"></script>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "view_template.html" %}
+
+{% block view %}
+{% endblock %}
+
+{% block accordion %}
+<div class="card">
+    <div class="card-header" id="details" style="height:50px; padding:0px; display:flex;align-items:center;">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#details-coll" aria-expanded="false" aria-controls="details">
+            <span><i class="fa-solid fa-chevron-down mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Button Details
+        </button>
+    </div>
+    <div id="details-coll" class="collapse show" aria-labelledby="details">
+        <div class="card-body">
+            <div class="my-3">
+                <table class="table table-hover table-striped details-table" style="width:100%">
+                    <tr>
+                        <th>Button Name</th>
+                        <td>{{item.button}}</td>
+                    </tr>
+                    <tr>
+                        <th>Specimen Types</th>
+                        <td>
+                            {% for type in item.specimen_types.split(', ') %}
+                                [{{kwargs['specimen_table'].query.get(type).code}}],
+                            {% endfor %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block alerts %}
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

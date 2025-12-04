@@ -1,0 +1,44 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Accession Number</th>
+    <th>Case Number</th>
+    <th>Code</th>
+    <th>Comment (if other)</th>
+    <th>Statement</th>
+    <th>Submitter (Name)</th>
+    <th>Submitter (Division)</th>
+    <th>Submitter (Agency)</th>
+
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>{{item.accession_number}}</td>
+    <td>{{item.case.case_number}}</td>
+    <td>{{item.code}}</td>
+    <td>{{item.comment}}</td>
+    <td>{{item.statement}}</td>
+    <td>{{item.submitter_name}}</td>
+    <td>{{item.submitter_division}}</td>
+    <td>{{item.submitter_agency}}</td>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+    let tableName = "{{table_name}}"
+    let currentUser = "{{current_user.permissions}}"
+</script>
+<script src="/static/js/remove-add.js"></script>
+{% endblock %}

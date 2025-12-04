@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container">
+      <h1>Assign Batch Resources</h1>
+
+    <form method="POST" id="form" novalidate="novalidate">
+        {{form.hidden_tag()}}
+        <div class="form-group">
+            {{form.batch_id.label}}
+            {{form.batch_id}}
+        </div>
+        <div class="form-group">
+            {{form.instrument_id.label}}
+            {{form.instrument_id}}
+        </div>
+        <div class="form-group">
+            {{form.batch_template_id.label}}
+            {{form.batch_template_id}}
+        </div>
+        <div class="form-group">
+            {{form.constituent_id.label}}
+            {{form.constituent_id}}
+        </div>
+        <div class="sort" style="font-size:0.875rem">
+            <a class='clear' id="clear" href="#!">Clear</a>
+            |
+            <a class='select_all' id='select_all' href="#!">Select All</a>
+        </div>
+        <div class="row form-row">
+          <div class="table display">
+              <div class="table-responsive">
+                  <table class="display table-hover small nowrap" style="width:100%; border:1px solid #ced4da" id="constituents_table">
+                      <thead>
+                          <tr>
+                            <th>ID</th>
+                            <th>Assay</th>
+                            <th>Standard/Solution ID</th>
+                            <th>Standard/Solution type</th>
+                            <th>Standard/Solution lot</th>
+                            <th>Retest Date</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                      {% for item in kwargs['items'] %}
+                          <tr class="rows">
+                            <td>{{item.id}}</td>
+                            <td>{{item.assay.assay_name}}</td>
+                            <td >{{item.constituent_lot}}</td>
+                            <td>{{item.assay_constituents.constituent}}</td>
+                            <th scope="row">
+                                <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+                                    {{item.standards.lot}}
+                                </a>
+                            </th>
+                            {% if item.standards.retest_date == None %}
+                                <td></td>
+                            {% else %}
+                                <td>{{item.standards.retest_date.strftime('%m-%d-%Y')}}</td>
+                            {% endif %}
+                          </tr>
+                      {% endfor %}
+                      </tbody>
+                  </table>
+              </div>
+              {% if form.constituent_id.errors %}
+                <div style="font-size: 0.875rem; color: #DC3545">
+                    {% for error in form.constituent_id.errors %}
+                        {{error}}
+                    {% endfor %}
+                </div>
+              {% endif %}
+          </div>
+        </div>
+        <div class="form-group">
+            {{form.submit(class='btn btn-primary')}}
+            <a type="button" class="btn btn-secondary" href="{{url_for(table_name~'.view_list')}}">Exit</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Initialize the constituents datatable
+    $(document).ready(function () {
+        var table = $('#constituents_table').DataTable({
+            dom: 'tr',
+            scrollX: true,
+            //scrollY : "30vh",
+            //scrollCollapse: true,
+            pageLength: -1,
+            "aaSorting": [[ 0, "asc" ]],
+            "language": {
+             "emptyTable": "Please select a batch to see available constituents"
+             }
+        });
+    });
+</script>
+
+<script type=text/javascript>
+    var dataOrder = [];
+    var orderArr = []
+    $("#constituents_table").on('click', 'tbody tr', function (e) {
+        var table = $('#constituents_table').DataTable();
+        var x = dataOrder.length +1
+        var dataArr = [];
+        $(this).toggleClass('table-active');
+        $.each($("#constituents_table tr.table-active"),function(){ //get each tr which has selected class
+            dataArr.push($(this).find('td').eq(0).text()); //find its first td and push the value
+        });
+
+        $('#constituent_id').selectpicker('val', dataArr);
+
+        var rowIndex = $(this).find('td').eq(0).text();
+        id = $(this).find('td').eq(1).text()
+        order = Number($(this).find('td').eq(2).text())
+        });
+
+</script>
+
+<script type=text/javascript>
+     $(function() {
+        $('.clear').on('click', function() {
+             $.each($("#constituents_table tbody tr"),function(){
+                 $(this).removeClass('table-active');
+            });
+            $('#constituent_id').selectpicker('val', []);
+         });
+    });
+</script>
+
+<script>
+    $('#select_all').click(function() {
+         $.each($("#constituents_table tbody tr"),function(){
+             $(this).addClass('table-active');
+         });
+         var selected = [];
+         $.each($("#constituents_table tr.table-active"),function(){
+            selected.push(Number($(this).find('td').eq(0).text()));
+         });
+        $('#constituent_id').selectpicker('val', selected);
+    });
+</script>
+{% endblock %}

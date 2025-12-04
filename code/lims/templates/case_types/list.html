@@ -1,0 +1,51 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+{% endblock %}
+
+<!--Custom Buttons-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% block buttons %}
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Name</th>
+    <th>Code</th>
+    <th>Accession Level</th>
+    <th>Batch Level</th>
+    <th>Case Number Type</th>
+    <th>Case Number Start</th>
+    <th>Current Case Number</th>
+    <th>Default Retention Policy</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td >
+        <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+            {{item.name}}
+        </a>
+    </td>
+    <td>{{item.code}}</td>
+    <td>{{item.accession_level}}</td>
+    <td>{{item.batch_level}}</td>
+    <td>{{item.case_number_type}}</td>
+    <td>{{item.case_number_start}}</td>
+    <td>{{item.current_case_number}}</td>
+    <td>{{item.retention.name}}</td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}
+

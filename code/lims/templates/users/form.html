@@ -1,0 +1,106 @@
+{% extends "form_template.html" %}
+{% block form %}
+
+        <div class="row form-group mb-4">
+                <div class="col">
+                    {{form.first_name.label}}
+                    {{form.first_name}}
+                </div>
+                <div class="col">
+                    {{form.middle_initial.label}}
+                    {{form.middle_initial}}
+                </div>
+                <div class="col">
+                    {{form.last_name.label}}
+                    {{form.last_name}}
+                </div>
+                <div class="col">
+                    {{form.initials.label}}
+                    {{form.initials}}
+                </div>
+                <div class="col">
+                    {{form.title.label}}
+                    {{form.title}}
+                </div>
+         </div>
+        <div class="row form-group mb-4">
+                <div class="col">
+                    {{form.email.label}}
+                    {{form.email}}
+                </div>
+                <div class="col">
+                    {{form.username.label}}
+                    {{form.username}}
+                </div>
+                <div class="col">
+                    {{form.job_class.label}}
+                    {{form.job_class}}
+                </div>
+                <div class="col">
+                    {{form.job_title.label}}
+                    {{form.job_title}}
+                </div>
+         </div>
+         <div class="row form-group mb-4">
+                <div class="col">
+                    {{form.cellphone_number.label}}
+                    <a class="text-decoration-none" data-html="true" data-toggle="tooltip" href="#!" tabindex="-1" title= "This is a duplicate field in Personnel.">
+                    <i class="fa-solid fa-circle-question" style="font-size:16px"></i></a>
+                    {{ form.cellphone_number(placeholder="e.g. 555-123-4567") }}
+                </div>
+                <div class="col">
+                    {{form.telephone_number.label}}
+                    <a class="text-decoration-none" data-html="true" data-toggle="tooltip" href="#!" tabindex="-1" title= "This is a duplicate field in Personnel.">
+                    <i class="fa-solid fa-circle-question" style="font-size:16px"></i></a>
+                    {{form.telephone_number(placeholder="e.g. 555-123-4567")}}
+                </div>
+         </div>
+         <div class="row form-group mb-4">
+                <div class="col">
+                    {{form.background_check.label}}
+                    {{form.background_check}}
+                </div>
+                <div class="col">
+                    {{form.permissions.label}}
+                    {{form.permissions}}
+                </div>
+                <div class="col">
+                    {{form.status.label}}
+                    {{form.status}}
+                </div>
+         </div>
+         <div class="row form-group mb-4">
+            <div class="col">
+                {{form.signature_file.label}}
+                {{form.signature_file}}
+            </div>
+         </div>
+         <div class="row form-group mb-4">
+                <div class="col">
+                    {{form.password.label}}
+                    {{form.password}}
+                </div>
+                <div class="col">
+                    {{form.pass_confirm.label}}
+                    {{form.pass_confirm}}
+                </div>
+         </div>
+         <div class="row form-group mb-4">
+                <div class="col">
+                    {{form.create_personnel.label}}
+                    {{form.create_personnel}}
+                </div>
+         </div>
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+  });
+</script>
+{% endblock %}

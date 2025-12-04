@@ -1,0 +1,66 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+<i class="fa-solid fa-braille"></i>
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Equipment ID</th>
+    <th>Status</th>
+    <th>Location</th>
+    <th>Occupied</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        <a href="{{ url_for(table_name~'.view', item_id=item.id) }}">
+            {{item.equipment_id}}
+        </a>
+    </td>
+    <td class="item-status">{{item.status.name}}</td>
+    <td>
+        {% for x in kwargs['locations'] %}
+            {% if x.item_table == table_name %}
+                {% if x.item_id == item.id %}
+                    {% for cls in kwargs['models'] %}
+                        {% if x.location_table is none %}
+                        {% else %}
+                            {% if cls == kwargs['location_dict'][x.location_table]['table'] %}
+                                {% set alias = kwargs['location_dict'][x.location_table]['alias'] %}
+                                {% if alias is string %}
+                                    {{ cls.query.get(x.location_id) | getattr(alias) }}
+                                {% elif alias is iterable %}
+                                    {% for field in alias %}
+                                        {{ cls.query.get(x.location_id) | getattr(field) }}{% if not loop.last %} - {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    </td>
+    <td>
+        {% if item.occupied %}
+            <a href="{{url_for(table_name~'.empty', item_id=item.id)}}" data-toggle="tooltip" title="Click to empty locker">
+                {{item.occupied}}
+            </a>
+        {% else %}
+            False
+        {% endif %}
+    </td>
+{% endblock %}
+
+
+{% block scripts %}
+{% endblock %}

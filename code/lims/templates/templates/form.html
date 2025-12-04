@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block content %}
+    <head>
+        <title>{{item_name}}</title>
+    </head>
+<div>
+    <div style="margin-top:6px">
+        <a href="{{url_for('dashboard.get_dashboard')}}"><i class="fa-solid fa-house"></i></a>
+        > <a href="{{url_for(table_name~'.view_list')}}">{{item_name}}</a>
+        {% if function == 'Add' %}
+        > Add
+        {% else %}
+        > <a href="{{url_for(table_name~'.view', item_id=item.id)}}">{{name}}</a>
+        > {{function}}
+        {% endif %}
+     </div>
+     <hr style="border-width:5px; margin-top:6px">
+     {% if item_dict is not none %}
+      <h1>{{function}} {{item_dict['full_name']}}</h1>
+    {% else %}
+      <h1>Add {{item_type}}</h1>
+    {% endif %}
+    <hr style="border-width:5px">
+    {% if item.communications %}
+      <div class="alert alert-warning" role="alert">
+      <b>{{item.modified_by}}</b> left the following comment
+          on <b>{{item.modify_date.strftime('%Y-%m-%d %H:%M')}}</b>:
+          <ul>
+              <li>{{item.communications}}</li>
+          </ul>
+      </div>
+    {% endif %}
+    <form method="POST" id="form" novalidate="novalidate">
+        {{form.hidden_tag()}}
+        <div class="row form-group mb-4">
+                <div class="col-md-4">
+                    {{form.first_name.label}}
+                    {{form.first_name}}
+                </div>
+                <div class="col">
+                    {{form.middle_name.label}}
+                    {{form.middle_name}}
+                </div>
+                <div class="col">
+                    {{form.last_name.label}}
+                    {{form.last_name}}
+                </div>
+                <div class="col">
+                    {{form.titles.label}}
+                    {{form.titles}}
+                </div>
+         </div>
+        <div class="row form-group mb-4">
+                <div class="col">
+                    {{form.agency_id.label}}
+                    {{form.agency_id}}
+                </div>
+                <div class="col">
+                    {{form.division_id.label}}
+                    {{form.division_id}}
+                </div>
+                <div class="col">
+                    {{form.job_title.label}}
+                    {{form.job_title}}
+                </div>
+                <div class="col">
+                    {{form.id_number.label}}
+                    {{form.id_number}}
+                </div>
+         </div>
+         <div class="row form-group mb-4">
+                <div class="col">
+                    {{form.email.label}}
+                    {{form.email}}
+                </div>
+                <div class="col">
+                    {{form.phone.label}}
+                    {{form.phone}}
+                </div>
+                <div class="col">
+                    {{form.cell.label}}
+                    {{form.cell}}
+                </div>
+         </div>
+         <div class="row form-group mb-4">
+                <div class="col">
+                    {{form.submitter.label}}
+                    {{form.submitter}}
+                </div>
+                <div class="col">
+                    {{form.stakeholder.label}}
+                    {{form.stakeholder}}
+                </div>
+         </div>
+        <div class="form-group">
+            {{form.submit(class='btn btn-primary')}}
+           <a type="button" class="btn btn-secondary" href="{{url_for(table_name~'.view_list')}}">Exit</a>
+        </div>
+    </form>
+</div>
+
+
+{% endblock %}
+

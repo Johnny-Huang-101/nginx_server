@@ -1,0 +1,36 @@
+{% extends "list_template.html" %}
+
+{% block icon %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+<th>Parent Item</th>
+<th>Admin Template Name</th>
+<th>Route</th>
+<th>Type</th>
+<th>Path</th>
+<th>Name</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+<td>{{item.parent_item}}</td>
+<td>{{item.lit_template.name}}</td>
+<td>{{item.route}}</td>
+<td>{{item.attachment_type}}</td>
+<td>{{item.attachment_path}}</td>
+<td>{{item.attachment_name}}</td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}

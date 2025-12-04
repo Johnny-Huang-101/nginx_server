@@ -1,0 +1,430 @@
+{% extends "base.html" %}
+{% block content %}
+    <head>
+        <title>{{item_name}}</title>
+    </head>
+    <hr style="border-width:5px">
+    <h1>PT Results Summary</h1>
+    <hr style="border-width:5px">
+
+ <div class="d-flex justify-content-center" id="spinner-div">
+    <div class="spinner-border" role="status" style="width: 3rem; height: 3rem;">
+        <span class="sr-only">Loading...</span>
+    </div>
+</div>
+<!--
+<a href="#" id="testing">Testing</a>
+-->
+
+<div class="table display" id="table-div" style="opacity:0">
+    <form action="{{ url_for(table_name~'.view_list')}}" method="POST">
+        Show
+        <div class="form-group px-0" style="display:inline-block">
+            <select class="form-control" name="length" id="length" onchange="this.form.submit()">
+                <option value="10">10</option>
+                <option value=100>100</option>
+                <option value="1000">1000</option>
+                <option value="-1">All</option>
+            </select>
+        </div>
+        entries per page
+    </form>
+        <div class="table-responsive">
+            <table class="display table-striped table-hover small nowrap" style="width:100%" id="{{table_name}}">
+              <thead>
+                <tr>
+                  <th>Del?</th>
+                  <th>ID</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                  <th>Official</th>
+                  <th>Case</th>
+                  <th>Program</th>
+                  <th>Case Status</th>
+
+                  <th>Evaluation <br>Date</th>
+                  <th>Informal</th>
+                  <th>Specimen ID</th>
+
+                  <th>Component <br><i>__if diff</i></th>
+                  <th>Reported <br>Result</th>
+                  <th>Concentration</th>
+                  <th>Reported</th>
+                  <th>Result <br>Status</th>
+                  <th>Result <br>Type</th>
+
+                  <th>ABFT</th>
+                  <th>ABFT flags</th>
+                  <th>FLD <br>Conclusion</th>
+
+                  <th>Result_ID</th>
+                  <th>Batch</th>
+                  <th>Dil</th>
+
+                  <th>Median | Target</th>
+                  <th>% from <br>Target</th>
+                  <th>Mean // SD<br>(all)</th>
+                  <th>% from Mean <br>(all)</th>
+                  <th>Z-score <br>(all)</th>
+                  <th>Mean // SD<br>(sub)</th>
+                  <th>% from Mean <br>(sub)</th>
+                  <th>Z-score <br>(sub)</th>
+                  <th>PT Provider <br>Evaluation</th>
+                  <th>PT Provider <br>Criteria A</th>
+                  <th>PT Provider <br>Criteria B</th>
+                  <th>Min</th>
+                  <th>Max</th>
+                  <th>PT Reporting <br>Limit</th>
+                  <th>PT Participants</th>
+                  <th>Eval Notes</th>
+
+                  <th>Acc</th>
+                  <th>EA</th>
+                  <th>PA</th>
+                  <th>BR</th>
+                </tr>
+              </thead>
+              <tbody id="body">
+              {% for item in items %}
+                   {% if item.result_official == item.id %}
+                       {% set fontweight = 'bold' %}
+                   {% else %}
+                       {% set fontweight = 'normal' %}
+                   {% endif %}
+                  {% if item.db_status == 'Pending' %}
+                    <tr class="table-warning" style="font-weight:{{fontweight}}">
+                  {% elif item.db_status == 'Deletion Pending' %}
+                    <tr class="table-danger" style="font-weight:{{fontweight}}">
+                  {% elif item.db_status == 'Removed' %}
+                    <tr class="table-secondary" style="font-weight:{{fontweight}}">
+                  {% elif item.eval_FLD_conclusion == 'Ignore' %}
+                    <tr class="table-default" style="font-weight:{{fontweight}}">
+                  {% elif item.eval_overall_conclusion == '0' %}
+                    <tr class="table-danger" style="font-weight:{{fontweight}}">
+                  {% else %}
+                    <tr class="table-default" style="font-weight:{{fontweight}}">
+                  {% endif %}
+                  <td><a href="{{url_for(table_name~'.delete', item_id=item.id)}}" class="btn btn-danger btn-xxs"><i class="fa fa-trash-o" style="font-size:10px"></i></a></td>
+                  <td>{{item.id}}</td>
+                  <td>{{item.db_status}}</td>
+                  <td>
+                      {% if item.result_official == item.id %}
+                          {% if item.db_status in ['Pending','Active with pending changes'] %}
+                                {% if item.pending_submitter == current_user.initials %}
+                                    <a href="{{url_for(table_name~'.edit', item_id = item.id)}}">Edit</a>
+                                {% else %}
+                                    <a href="{{url_for(table_name~'.approve_all_fields', item_id = item.id)}}">Approve All</a> | <a href="{{url_for(table_name~'.approve', item_id = item.id)}}">Approve</a>
+                                {% endif %}
+                          {% else %}
+                            <a href="{{url_for(table_name~'.update', item_id = item.id)}}">Update</a>
+                          {% endif %}
+                      {% endif %}
+                  </td>
+                  <td>
+                      {% if item.result_official == 0 %}N/A
+                      {% else %}<a href="{{url_for(table_name~'.view',item_id=item.result_official)}}">{{item.result_official}}</a>
+                      {% endif %}
+                  </td>
+                  <th scope="row">
+                    <a href="{{url_for('cases.view',item_id=item.case.id)}}">
+                      {{item.case.case_number}}
+                    </a>
+                  </th>
+                  <td>{{item.case.last_name}}</td>
+                  <td>{{item.case.case_status}}</td>
+
+                  <td><a href="{{url_for(table_name~'.view_eval', item_id=item.result_official)}}"> {{item.eval_date.strftime('%m/%d/%Y')}}</a></td>
+                  <td>{{item.eval_informal}}</td>
+                  <td>{{item.result.test.specimen.accession_number}}</td>
+
+                  <td>{{item.result.component_name}}{% if item.pt_component_id != 0 %}<br><i>__{{item.component.name}}</i>{% endif %}</td>
+                  <td>{{item.result.result}}<br>{% if item.pt_unit_id != 0 %}<i>__{{item.unit.name}}</i>{% endif %}</td>
+                  <td>{{item.result.concentration}}</td>
+                  <td>{{item.result.reported}}</td>
+                  <td>{{item.result.result_status}}</td>
+                  <td>{{item.result.result_type}}</td>
+                  <td>
+                  {% if item.eval_ABFT_conclusion is not none%}
+                    {{item.eval_ABFT_conclusion}}
+                  {% endif %}
+                  </td>
+                  {% if item.eval_ABFT_conclusion != ''%}
+                    {% if not item.eval_ABFT_conclusion %}
+                        <td style="background-color: #ffb77b">
+                    {% else %}
+                        <td>
+                    {% endif %}
+                    {{item.eval_ABFT_display}}</td>
+                  {% else %}
+                    <td></td>
+                  {% endif %}
+                  <td>
+                        {% if item.result_official == item.id %}
+                            {{item.eval_FLD_conclusion}}
+                        {% endif %}
+                  </td>
+                  <td>{{item.result_id}}</td>
+
+                  <td>
+                      <a href="{{url_for('batches.view',item_id=item.result.test.batch.id)}}">
+                      {{item.result.test.batch.batch_id}}
+                      </a>
+                  </td>
+                  <td>{{item.result.test.dilution}}</td>
+
+                  <td>{{item.median}} | {{item.target}}</td>
+                  <td>
+                      {% if item.target_percent is not none %}
+                        {{(item.target_percent*100) | round(1)}}%
+                      {% endif %}
+                  </td>
+                  <td>{{item.mean_all}} // {{item.sd_all}}</td>
+                  {% if item.mean_all_percent is not none %}
+                      {% if item.mean_all_percent<-0.2 or item.mean_all_percent>0.2 %}
+                        <td style="background-color: #ffb77b">{{(item.mean_all_percent*100) | round(1)}}%</td>
+                      {% else %}
+                        <td>{{(item.mean_all_percent*100) | round(1)}}%</td>
+                      {% endif %}
+                  {% else %}
+                        <td></td>
+                  {% endif %}
+                  {% if item.z_all is not none %}
+                      {% if item.z_all<-2 or item.z_all>2 %}
+                      <td style="background-color: #ffb77b">{{item.z_all | round(2)}}</td>
+                      {% else %}
+                      <td>{{item.z_all | round(2)}}</td>
+                      {% endif %}
+                  {% else %}
+                        <td></td>
+                  {% endif %}
+                  <td>{{item.mean_sub}} // {{item.sd_sub}}</td>
+                  {% if item.mean_sub_percent is not none %}
+                    <td>{{(item.mean_sub_percent*100) | round(1)}}%</td>
+                  {% else %}
+                    <td></td>
+                  {% endif %}
+                  <td>
+                      {% if item.z_sub is not none %}
+                        {{item.z_sub | round(2)}}
+                      {% endif %}
+                  </td>
+                  {% if item.eval_overall_conclusion == '0' %}
+                  <td style="background-color: #ffb77b">{{item.eval_overall_conclusion}}</td>
+                  {% else %}
+                  <td>{{item.eval_overall_conclusion}}</td>
+                  {% endif %}
+                  <td>{{item.eval_A_ref}}</td>
+                  <td>{{item.eval_B_ref}}</td>
+                  <td>{{item.eval_manual_min}}</td>
+                  <td>{{item.eval_manual_max}}</td>
+                  <td>{% if item.pt_reporting_limit is not none%}
+                        {{item.pt_reporting_limit}}
+                      {% endif %}
+                  </td>
+                  <td>{% if item.pt_participants is not none%}
+                        {{item.pt_participants}}
+                      {% endif %}
+                  </td>
+                  <td>{{item.notes}}</td>
+
+                  <td>{{item.result.test.specimen.accessioner.initials}}</td>
+                  <td>{{item.result.test.batch.extractor.initials}}</td>
+                  <td>{{item.result.test.batch.processor.initials}}</td>
+                  <td>{{item.result.test.batch.batch_reviewer.initials}}</td>
+              </tr>
+
+              {% endfor %}
+
+               </tbody>
+             </table>
+            <div>
+                Official results are displayed in the table below as <b>bolded rows</b>.<br><br>Showing <span id="first">{{items.first}}</span> to
+                <span id="last">{{items.last}}</span> of
+                <span id="total">{{items.total}}</span> entries
+                <span id="filtered" hidden>(filtered from {{items.last}} entries)</span>
+            </div>
+            <div style="display: flex; justify-content: flex-end">
+                <nav aria-label="Page navigation example">
+                     <ul class="pagination">
+                         {% if items.page == 1 %}
+                         <li class="page-item disabled">
+                         {% else %}
+                         <li class="page-item">
+                          {% endif %}
+                            <a class="page-link" href="{{ url_for(table_name~'.view_list', page=items.page-1, length=kwargs['length']) }}" tabindex="-1">Previous</a>
+                        </li>
+
+                         {% for page_num in items.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                         {% if page_num %}
+                             {% if items.page == page_num %}
+                                <li class="page-item active">
+                                    <a class="page-link">{{ page_num }}</a></li>
+                             {% else %}
+                                <li class="page-item"><a class="page-link" href="{{ url_for(table_name~'.view_list', page=page_num, length=kwargs['length']) }}">{{ page_num }}</a></li>
+                             {% endif %}
+                         {% else %}
+                              <li class="page-item disabled"><a class="page-link">…</a></li>
+                         {% endif %}
+                      {% endfor %}
+
+                        {% if items.page == items.pages %}
+                        <li class="page-item disabled">
+                        {% else %}
+                         <li class="page-item">
+                          {% endif %}
+                            <a class="page-link" href="{{ url_for(table_name~'.view_list', page=items.page+1, length=kwargs['length']) }}" tabindex="-1">Next</a>
+                        </li>
+                     </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+<script>
+
+    $(document).ready(function () {
+    // Setup - add a text input to each footer cell
+
+     $("#length").val({{kwargs['length']}});
+
+     var buttons = []
+
+     buttons.push({
+        className: 'btn btn-primary mb-3',
+        text: 'Add PT Evaluation',
+        action: function (e, dt, node, config) {
+            window.location.href = "{{url_for(table_name~'.add')}}";
+            }
+        })
+
+      buttons.push({
+        className: 'btn btn-primary mb-3',
+        text: 'Import PT Evaluations',
+        action: function (e, dt, node, config) {
+        window.location.href = "{{url_for(table_name~'.import_file')}}";
+        }
+        })
+
+     buttons.push({
+            extend: 'csvHtml5',
+            className: 'btn btn-secondary mb-3',
+            text: 'Export',
+            autoFilter: true,
+            title: '{{item_name}}_'+moment().format('YYYYMMDDHHmmss'),
+            sheetName: 'export'
+            })
+
+     buttons.push({
+            className: 'dt-button btn btn-primary mb-3',
+            text: 'View PT Cases',
+            action: function () {
+                    window.location.href = "{{ url_for('pt_cases.view_list') }}";
+                }
+            })
+
+    $('#{{table_name}} thead tr')
+        .clone(true)
+        .addClass('filters')
+        .appendTo('#{{table_name}} thead');
+
+    var start = Date.now();
+    var table = $('#{{table_name}}').DataTable({
+        dom: 'Brt',
+        scrollX: true,
+        scrollY: "60vh",
+        scrollCollapse: true,
+        buttons: buttons,
+        orderCellsTop: true,
+        fixedHeader: true,
+        //select: true,
+        order: [],
+        pageLength: {{kwargs['length']}},
+
+        initComplete: function () {
+            var api = this.api();
+
+            // For each column
+            api
+                .columns()
+                .eq(0)
+                .each(function (colIdx) {
+                    // Set the header cell to contain the input element
+                    var cell = $('.filters th').eq(
+                        $(api.column(colIdx).header()).index()
+                    );
+                    var title = $(cell).text();
+                    $(cell).html('<input type="text" placeholder="' + title + '" style="width: 100%; border: 1px solid lightgray; border-radius: 5px;  "/>');
+
+                    // On every keypress in this input
+                    $(
+                        'input',
+                        $('.filters th').eq($(api.column(colIdx).header()).index())
+                    )
+                        .off('keyup change')
+                        .on('change', function (e) {
+                            // Get the search value
+                            $(this).attr('title', $(this).val());
+                            var regexr = '({search})'; //$(this).parents('th').find('select').val();
+
+                            var cursorPosition = this.selectionStart;
+                            // Search the column for that value
+
+                             if (this.value != ' ' && this.value != '*') {
+                            api
+                                .column(colIdx)
+                                .search(
+                                    this.value != ''
+                                        ? regexr.replace('{search}', '(((' + this.value + ')))')
+                                        : '',
+                                    this.value != '',
+                                    this.value == ''
+                                )
+                                .draw();
+                            } else if (this.value == ' ') {
+                                api
+                                .column(colIdx)
+                                .search('^$', true, false )
+                                .draw();
+                            } else if (this.value == '*') {
+                                api
+                                .column(colIdx)
+                                .search('^(?!\s*$).+', true, false )
+                                .draw();
+                            }
+
+                            $('#first').html('1');
+                            $('#last').html(api.page.info().recordsDisplay);
+
+                            if (api.page.info().recordsDisplay != {{kwargs['length']}}) {
+                                $('#filtered').removeAttr('hidden');
+                            } else if (api.page.info().recordsDisplay == -1) {
+                                $('#filtered').attr('hidden', true);
+                            } else {
+                                $('#filtered').attr('hidden', true);
+                             }
+                        })
+                        .on('keyup', function (e) {
+                            e.stopPropagation();
+
+                            $(this).trigger('change');
+                            $(this)
+                                .focus()[0]
+                                .setSelectionRange(cursorPosition, cursorPosition);
+                        });
+                });
+        $('#table-div').css('opacity',1);
+        $('.spinner-border').hide();
+        }
+    });
+
+    $('#testing').on('click',  function () {
+        alert('hello');
+    });
+
+});
+
+</script>
+
+
+
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends "form_template.html" %}
+
+{% block form %}
+
+<!-- Row 1: Case Number(s) and Returned Items -->
+<div class="row form-group mb-5">
+    <div class="col-md-4">
+        {{ form.case_id.label }}
+        <select id="case_id" name="case_id" class="form-control" multiple="multiple">
+            {% for case_id, case_number in form.case_id.choices %}
+                <option value="{{ case_id }}">{{ case_number }}</option>
+            {% endfor %}
+        </select>
+
+        <div class="form-check mt-2">
+            {{ form.legacy_case_check(class="form-check-input") }}
+            {{ form.legacy_case_check.label(class="form-check-label") }}
+        </div>
+        <div id="legacy_case_string_field" style="display: none;" class="mt-2">
+            {{ form.legacy_case_number.label }}
+            {{ form.legacy_case_number(class="form-control") }}
+        </div>
+    </div>
+    <div class="col-md-3">
+        {{ form.return_date.label }}
+        {{ form.return_date(class="form-control") }}
+    </div>
+</div>
+
+<!-- Row 2: Returning Agency, Division, Personnel -->
+<div class="row form-group mb-6">
+    <div class="col-md-4">
+        {{ form.returning_agency.label }}
+        {{ form.returning_agency(class="form-control", id="returning_agency") }}
+    </div>
+    <div class="col-md-4">
+        {{ form.returning_division.label }}
+        {{ form.returning_division(class="form-control", id="returning_division") }}
+    </div>
+    <div class="col-md-4">
+        {{ form.returning_personnel.label }}
+        {{ form.returning_personnel(class="form-control", id="returning_personnel") }}
+        <div class="mt-1">
+            <a href="#!" class="text-primary">Add personnel</a>
+            <a href="#!" class="text-decoration-none" data-toggle="tooltip" title="Use this to add new personnel.">
+                <i class="fa-solid fa-circle-question" style="font-size:14px;"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Row 3: Due Date, Notes, Communications -->
+<div class="row form-group mb-4">
+    <div class="col-md-5">
+        {{ form.communications.label }} (SFOCME Internal Use Only)
+        {{ form.communications(class="form-control", style="background-color: #fff3cd;") }}
+    </div>
+</div>
+
+{% endblock %}
+
+
+
+<!-- TO MOVE TO JS FILE --> 
+ 
+{% block scripts %}
+<script>
+// Toggle behavior for legacy_case checkbox
+$('#legacy_case_check').on('click', function() {
+    const checked = $(this).prop('checked');
+    if (checked) {
+        $('#case_id').attr('disabled', true).val([]); // Clear selection when disabled
+        $('#legacy_case_string_field').show(); // Show the legacy case number field
+        $('#notes').val("");
+    } else {
+        $('#case_id').attr('disabled', false);
+        $('#legacy_case_string_field').hide(); // Hide the legacy case number field
+        $('#notes').val('');
+    }
+    $('#case_id').selectpicker('refresh');
+    });
+
+$(document).ready(function () {
+// When returning_agency changes, update returning_division
+$('#returning_agency').on('change', function () {
+    const agencyId = $(this).val();
+
+    $.getJSON('/returns/get_divisions/', { agency: agencyId }, function (data) {
+        let options = '<option value="">Select Division</option>';
+        data.divisions.forEach(function (division) {
+            options += `<option value="${division.id}">${division.name}</option>`;
+        });
+
+        $('#returning_division').html(options).selectpicker('refresh');
+        $('#returning_personnel').html('<option value="">Select Personnel</option>').selectpicker('refresh');
+    }).fail(function (jqXHR, textStatus, errorThrown) {
+        console.error('Error fetching divisions:', textStatus, errorThrown);
+    });
+});
+
+// When returning_division changes, update returning_personnel
+$('#returning_division').on('change', function () {
+    const divisionId = $(this).val();
+    const agencyId = $('#returning_agency').val(); 
+    const personnelSelect = $('#returning_personnel');
+
+    $.getJSON('/get_all_personnel/', { division: divisionId, agency: agencyId }, function(data) {
+            var optionHTML = '<option value="">Select Personnel</option>';
+            data.personnel.forEach(function(person) {
+                optionHTML += `<option value="${person.id}">${person.name}</option>`;
+            });
+            personnelSelect.html(optionHTML).selectpicker('refresh');
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            console.error('Error fetching personnel:', textStatus, errorThrown);
+        });
+    });
+});
+</script>
+{% endblock %}

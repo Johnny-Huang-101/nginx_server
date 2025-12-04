@@ -1,0 +1,42 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+
+    <th>Report ID</th>
+    <th>Specimen</th>
+    <th>Component</th>
+    <th>Result ID</th>
+    <th>Official</th>
+    <th>Supplementary</th>
+    <th>Qualitative</th>
+    <th>Observed</th>
+    <th>Approximate</th>
+    <th>Order</th>
+
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>{{item.report.report_name}}</td>
+    <td>{{item.result.test.specimen.type.name}} ({{item.result.test.specimen.accession_number}})</td>
+    <td>{{item.result.component.name}}</td>
+    <td>{{item.result.result}}</td>
+    <td>{{item.primary_result}}</td>
+    <td>{{item.supplementary_result}}</td>
+    <td>{{item.qualitative_result}}</td>
+    <td>{{item.observed_result}}</td>
+    <td>{{item.approximate_result}}</td>
+    <td>{{item.order}}</td>
+{% endblock %}
+

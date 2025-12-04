@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<head>
+    <title>{{config['SYSTEM_NAME']}}/{{item_name}}/{{alias}}/Delete</title>
+</head>
+<div>
+    <div style="margin-top:6px">
+        <a href="{{url_for('dashboard.get_dashboard')}}"><i class="fa-solid fa-house"></i></a>
+        > <a href="{{url_for(table_name~'.view_list')}}">{{item_name}}</a>
+            > <a href="{{url_for(table_name~'.view', item_id=item.id)}}">{{alias}}</a>
+            > Delete
+
+     </div>
+    <hr style="border-width:5px; margin-top: 6px">
+    <h1>
+        Delete <a class="link-unstyled">{{alias}}</a>?
+    </h1>
+    <hr style="border-width:5px; margin-top: 6px">
+    <div class="py-3">
+        <h3>By clicking on the Delete button, you will delete <a class="link-unstyled">{{alias}}</a> from the database. This process is irreversible.</h3>
+        <h3>Do you wish to proceed?</h3>
+    </div>
+    <form method="POST" id="form" novalidate="novalidate" enctype="multipart/form-data" autocomplete="off">
+        <div class="form-group">
+            <input type="submit" class="btn btn-danger" value="Delete">
+            <a type="button" class="btn btn-secondary" href="{{url_for(table_name~'.view_list')}}" id="exit">Exit</a>
+        </div>
+    </form>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+<hr style="border-width:5px">
+<h1><i class="fa-solid fa-pen-to-square"></i> {{item_name}}</h1>
+<hr style="border-width:5px">
+
+ <div class="d-flex justify-content-center" id="spinner-div">
+    <div class="spinner-border" role="status" style="width: 3rem; height: 3rem;">
+        <span class="sr-only">Loading...</span>
+    </div>
+</div>
+<div class="table display" id="table-div" style="opacity:0">
+    <form action="{{ url_for(table_name~'.view_list')}}" method="POST">
+        Show
+        <div class="form-group px-0" style="display:inline-block">
+            <select class="form-control" name="length" id="length" onchange="this.form.submit()">
+                <option value="10">10</option>
+                <option value=100>100</option>
+                <option value="1000">1000</option>
+                <option value="-1">All</option>
+            </select>
+        </div>
+        entries per page
+    </form>
+    <div class="table display">
+        <div class="table-responsive">
+            <table class="table-hover small display nowrap" style="width:100%" id="modifications">
+              <thead>
+                <tr>
+                  <th>Delete</th>
+                  <th>ID</th>
+                  <th>Event</th>
+                  <th>Status</th>
+                  <th>Table</th>
+                  <th>Record Name</th>
+                  <th>Revision</th>
+                  <th>Field</th>
+                  <th>Field Name</th>
+                  <th>Original Value</th>
+                  <th>Original Value (Text)</th>
+                  <th>New Value</th>
+                  <th>New Value (Text)</th>
+                  <th>Submitted By</th>
+                  <th>Submitted Date</th>
+                  <th>Reviewed By</th>
+                  <th>Reviewed Date</th>
+                </tr>
+              </thead>
+              <tbody>
+              {# Go through each modification #}
+              {% for mod in items %}
+               <tr>
+                  <td><a href="{{url_for(table_name~'.delete', item_id=mod.id)}}" class="btn btn-danger"><i class="fa fa-trash-o" style="font-size:10px"></i></a></td>
+                  <th>{{mod.id}}</th>
+                  <th scope="row">{{mod.event}}</th>
+                  <th>{{mod.status}}</th>
+                  <td>{{mod.table_name}}</td>
+                  {% if mod.event != 'DELETE' %}
+                        {% if mod.record_id != "" %}
+
+                          <td>
+                              <a href="{{url_for(kwargs['routes'][mod.table_name]~'.view', item_id=mod.record_id)}}">
+                                    {{ kwargs['tables'][mod.table_name].query.get(mod.record_id).__dict__[kwargs['names'][mod.table_name]]}}
+                              </a>
+
+                          </td>
+                        {% endif %}
+
+                  {% else %}
+                    <td>{{mod.record_id}}</td>
+                  {% endif %}
+                  <td>{{mod.revision}}</td>
+                  <td>{{mod.field}}</td>
+                  <td>{{mod.field_name}}</td>
+                  <td>{{mod.original_value}}</td>
+                  <td>{{mod.original_value_text}}</td>
+                   {% if mod.field_name == 'file_name' %}
+                   <td>
+                       <a href="../static/Uploads/{{mod.new_value}}" download>
+                           {{mod.new_value}}
+                       </a>
+                   </td>
+                   {% else %}
+                    <td>{{mod.new_value}}</td>
+                   {% endif %}
+                  <td>{{mod.new_value_text}}</td>
+                  <td>{{mod.submitter.initials}}</td>
+                  <td>{{mod.submitted_date}}</td>
+
+              {% if mod.reviewed_by == "" %}
+                   <td></td>
+              {% else %}
+                    <td>{{mod.reviewer.initials}}</td>
+              {% endif %}
+
+              {% if mod.review_date == None %}
+                   <td></td>
+              {% else %}
+                   <td>{{mod.review_date}}</td>
+              {% endif %}
+
+              {% endfor %}
+              </tr>
+               </tbody>
+            </table>
+             <div>
+                Showing <span id="first">{{items.first}}</span> to
+                <span id="last">{{items.last}}</span> of
+                <span id="total">{{items.total}}</span> entries
+                <span id="filtered" hidden>(filtered from {{items.last}} entries)</span>
+             </div>
+             <div style="display: flex; justify-content: flex-end">
+                    <div class="row">
+                        <div class="col"style="display:flex; justify-content:flex-end; align-items:center;">
+                             <label style="justify-content:flex-end;">Go to page:</label>
+                        </div>
+                        <div class="col">
+                          <input class="form-control" style="display:flex; justify-content:flex-end; align-items:center;" id="page-num">
+                        </div>
+                         <div class="col">
+                             <a class="btn btn-primary" id="go-to-page">Go</a>
+                        </div>
+                    </div>
+                    <nav aria-label="Page navigation example">
+                         <ul class="pagination">
+                             {% if items.page == 1 %}
+                             <li class="page-item disabled">
+                             {% else %}
+                             <li class="page-item">
+                              {% endif %}
+                                <a class="page-link" href="{{ url_for(table_name~'.view_list', page=items.page-1, length=kwargs['length']) }}" tabindex="-1">Previous</a>
+                            </li>
+
+                             {% for page_num in items.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                             {% if page_num %}
+                                 {% if items.page == page_num %}
+                                    <li class="page-item active">
+                                        <a class="page-link">{{ page_num }}</a></li>
+                                 {% else %}
+                                    <li class="page-item"><a class="page-link" href="{{ url_for(table_name~'.view_list', page=page_num, length=kwargs['length']) }}">{{ page_num }}</a></li>
+                                 {% endif %}
+                             {% else %}
+                                  <li class="page-item disabled"><a class="page-link">…</a></li>
+                             {% endif %}
+                          {% endfor %}
+
+                            {% if items.page == items.pages %}
+                            <li class="page-item disabled">
+                            {% else %}
+                             <li class="page-item">
+                              {% endif %}
+                                <a class="page-link" href="{{ url_for(table_name~'.view_list', page=items.page+1, length=kwargs['length']) }}" tabindex="-1">Next</a>
+                            </li>
+                         </ul>
+                    </nav>
+             </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+    // Setup - add a text input to each footer cell
+    $("#length").val({{kwargs['length']}});
+
+    var buttons = []
+
+    buttons.push({
+        className: 'btn btn-danger mb-3',
+        text: '<a href class="text-decoration-none" style="color:white">Delete</a>',
+        action: function (e, dt, node, config)
+        {
+            //This will send the page to the location specified
+            window.location.href = "{{ url_for('modifications.delete_items') }}";
+        }
+    })
+
+    buttons.push({
+        extend: 'csvHtml5',
+        className: 'btn btn-secondary mb-3',
+        text: '<i class="fa-solid fa-file-export"></i> Export',
+        autoFilter: true,
+        title: '{{item_name}}_'+moment().format('YYYYMMDDHHmmss'),
+        sheetName: 'Modifications'
+    })
+
+    $('#modifications thead tr')
+        .clone(true)
+        .addClass('filters')
+        .appendTo('#modifications thead');
+
+    var table = $('#modifications').DataTable({
+        dom: 'Brt',
+        scrollX: true,
+        scrollY: '60vh',
+        buttons: buttons,
+        orderCellsTop: true,
+        order: [],
+        pageLength: {{kwargs['length']}},
+        initComplete: function () {
+
+            var api = this.api();
+
+            // For each column
+            api
+                .columns()
+                .eq(0)
+                .each(function (colIdx) {
+                    // Set the header cell to contain the input element
+                    var cell = $('.filters th').eq(
+                        $(api.column(colIdx).header()).index()
+                    );
+                    var title = $(cell).text();
+                    $(cell).html('<input type="text" placeholder="' + title + '" style="width: 100%; border: 1px solid lightgray; border-radius: 5px;  "/>');
+
+
+                    // On every keypress in this input
+                    $(
+                        'input',
+                        $('.filters th').eq($(api.column(colIdx).header()).index())
+                    )
+                        .off('keyup change')
+                        .on('change', function (e) {
+                            // Get the search value
+                            $(this).attr('title', $(this).val());
+                            var regexr = '({search})'; //$(this).parents('th').find('select').val();
+
+                            var cursorPosition = this.selectionStart;
+                            // Search the column for that value
+                            if (this.value != ' ' && this.value != '*') {
+                            api
+                                .column(colIdx)
+                                .search(
+                                    this.value != ''
+                                        ? regexr.replace('{search}', '(((' + this.value + ')))')
+                                        : '',
+                                    this.value != '',
+                                    this.value == ''
+                                )
+                                .draw();
+                            } else if (this.value == ' ') {
+                                api
+                                .column(colIdx)
+                                .search('^$', true, false )
+                                .draw();
+                            } else if (this.value == '*') {
+                                api
+                                .column(colIdx)
+                                .search('^(?!\s*$).+', true, false )
+                                .draw();
+                            }
+
+                            $('#first').html('1');
+                            $('#last').html(api.page.info().recordsDisplay);
+
+                            if (api.page.info().recordsDisplay != {{kwargs['length']}}) {
+                                $('#filtered').removeAttr('hidden');
+                            } else if (api.page.info().recordsDisplay == -1) {
+                                $('#filtered').attr('hidden', true);
+                            } else {
+                                $('#filtered').attr('hidden', true);
+                             }
+                        })
+                        .on('keyup', function (e) {
+                            e.stopPropagation();
+
+                            $(this).trigger('change');
+                            $(this)
+                                .focus()[0]
+                                .setSelectionRange(cursorPosition, cursorPosition);
+                        });
+                });
+        $('#table-div').css('opacity',1);
+        $('.spinner-border').hide();
+
+        },
+    });
+
+});
+
+</script>
+
+<script>
+    $('#go-to-page').on('click', function() {
+        var pageNum = 10;
+        window.location.href = "{{ url_for(table_name~'.view_list', page=pageNum, length=kwargs['length']) }}";
+    });
+</script>
+{% endblock %}

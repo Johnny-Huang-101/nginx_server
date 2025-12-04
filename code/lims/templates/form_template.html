@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+{% block style %}
+{% endblock %}
+</style>
+{% block head %}
+<head>
+    {% if function in ['Edit', 'Approve', 'Update'] %}
+        <title>{{config['SYSTEM_NAME']}}/{{item_name}}/{{item_dict['id']}}/{{function}}</title>
+    {% else %}
+        <title>{{config['SYSTEM_NAME']}}/{{item_name}}/{{function}}</title>
+    {% endif %}
+</head>
+{% endblock %}
+{% if item_dict and item_dict['communications'] and function == 'Approve' %}
+    <div class="alert alert-warning" role="alert" style="margin-top:6px; background-color:rgb(221, 204, 238); color: black; border-color: #8b53e6">
+        {% if item_dict['modified_by'] %}
+            {% set date = item_dict['modify_date'].strftime('%m/%d/%Y %H:%M') %}
+            {% set submitter = item_dict['modified_by'] %}
+        {% else %}
+            {% set date = item_dict['create_date'].strftime('%m/%d/%Y %H:%M') %}
+            {% set submitter = item_dict['created_by'] %}
+        {% endif %}
+        <b>{{submitter}}</b> left the following communication
+        on <b>{{date}}</b>:
+        <ul>
+            <li>{{item_dict['communications']}}</li>
+        </ul>
+    </div>
+{% endif %}
+
+{% if errors.unique_failed  %}
+    <div class="alert alert-danger mt-3" role="alert" style="margin-top:6px">
+        <p class="my-0">{{errors['unique_failed']}}</p>
+    </div>
+{% endif %}
+
+<!-- ALERT BLOCK -->
+
+{% block alerts %}
+{% endblock %}
+
+<!--#############-->
+<div>
+    <div style="margin-top:6px">
+        {% if current_user.permissions not in ['INV', 'MED', 'MED-Autopsy', 'ADM'] %}
+            <a href="{{url_for('dashboard.get_dashboard')}}"><i class="fa-solid fa-house"></i></a>
+        {% else %}
+            <a href="{{url_for('cases.view_list')}}"><i class="fa-solid fa-house"></i></a>
+        {% endif %}
+        > <a href="#">{{item_name}}</a>
+        {% if function not in ['Edit', 'Approve', 'Update', 'Attach'] %}
+            > {{function}}
+        {% else %}
+            > {{alias}}
+            > {{function}}
+        {% endif %}
+     </div>
+    <hr style="border-width:5px; margin-top: 6px">
+    <h1>
+        {% if default_header %}
+            {% if function in ['Edit', 'Approve', 'Update'] %}
+              {{function}} <a class="link-unstyled">{{alias}}</a>
+            {% elif function == 'Attach' %}
+              {{function}} Files To <a class="link-unstyled">{{alias}}</a>
+            {% elif function == 'Import' %}
+                {{function}} <a class="link-unstyled">{{item_name}}</a>
+            {% elif function == 'Add' %}
+              Add <a class="link-unstyled">{{item_type}}</a>
+            {% else %}
+                {{function}}
+            {% endif %}
+        {% endif %}
+
+        {% block header %}
+        {% endblock %}
+    </h1>
+    <hr style="border-width:5px; margin-top: 6px">
+    <form method="POST" id="form" novalidate="novalidate" enctype="multipart/form-data" autocomplete="off">
+        {{ form.hidden_tag() }}
+    
+        <!--FORM BLOCK-->
+        {% block form %}
+        {% endblock %}
+        <!--###########-->
+    
+        <hr>
+    
+        <div class="form-group d-flex gap-2 align-items-center">
+            {% if 'submit' in form and (module_name not in ['containers', 'specimens'] or function != 'Add') %}
+                {{ form.submit(class='btn btn-primary') }}
+            {% endif %}
+    
+            {% block buttons %}{% endblock %}
+    
+            {% if exit_route %}
+                <a type="button" class="btn btn-secondary" href="{{exit_route}}" id="exit">Exit</a>
+            {% else %}
+                <a type="button" class="btn btn-secondary" href="{{url_for(table_name~'.view_list')}}">Exit</a>
+            {% endif %}
+        </div>
+    </form>
+    
+        
+    {% block text %}
+    {% endblock %}
+</div>
+
+
+<!--MODAL BLOCK-->
+
+{% block modals %}
+{% endblock %}
+
+<!--###########-->
+
+<!-- SCRIPT BLOCK -->
+
+<script src="/static/form.js"></script>
+<script type="text/javascript">
+    let item_id = '{{item_id}}'
+    let func = '{{function}}'
+    let table_name = '{{table_name}}'
+    let required_fields = {{required_fields | safe }}
+    let pending_fields = {{pending_fields | safe }}
+    let approved_fields = {{approved_fields | safe }}
+    let errors = {{errors_json | safe }}
+</script>
+{% block scripts %}
+{% endblock %}
+
+<!--##############-->
+
+<!--<script type="text/javascript">-->
+<!--    let item_id = '{{item_id | safe}}'-->
+<!--</script>-->
+
+
+{% endblock %}

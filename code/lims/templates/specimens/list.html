@@ -1,0 +1,119 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+<div class="dropdown" style="display: inline-block;">
+    <button aria-expanded="false" aria-haspopup="true" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown"
+            id="specimens-filter" style="background-color: black; border-color: black;" type="button">
+        Discipline (of SpecimenType) {% if query is not none %} | {{ query }} {% endif %}
+    </button>
+    <div class="dropdown-menu" aria-labelledby="specimens-filter">
+        {% for option in kwargs['discipline'] %}
+            <a href="{{ url_for(table_name + '.view_list', query_type='discipline', query=option) }}" class="dropdown-item">{{ option }}</a>
+        {% endfor %}
+        <a href="{{ url_for(table_name + '.view_list')}}" class="dropdown-item">All</a>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block header %}
+
+    <th>Custody</th>
+    <th>Custody Type</th>
+    <th>Accession Number</th>
+    <th>Code</th>
+    <th>Description</th>
+    <th>Discipline</th>
+    <th>Case Number</th>
+    <th>Parent Container</th>
+    <th>Collection Date</th>
+    <th>Collection Time</th>
+    <th>Collected By</th>
+    <th>Collection Vessel</th>
+    <th>Submitted Sample Amount </th>
+    <th>Current Sample Amount </th>
+    <th>Units</th>
+    <th>Condition</th>
+    <th>Evidence Comments</th>
+    <th>Accessioned By</th>
+    <th>Accession Date</th>
+    <th>Accession Time</th>
+
+{% endblock %}
+
+{% block body scoped %}
+
+    <td>{{item.custody}}</td>
+    <td>{{item.custody_type}}</td>
+    <td>
+        {% if current_user.permissions not in ['Owner', 'Admin'] %}
+            <a href="{{url_for(table_name~'.view', item_id=item.id, view_only='True')}}">
+                {{item.accession_number}}
+            </a>
+        {% else %}
+            <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+                {{item.accession_number}}
+            </a>
+        {% endif %}
+    </td>
+    <td>[{{item.type.code}}]</td>
+    <td>{{item.type.name}}</td>
+    <td>{{item.discipline}}</td>
+    <td>
+        {% if item.case %}
+            <a href="{{url_for('cases.view', item_id=item.case.id, view_only=True)}}">
+                {{item.case.case_number}}
+            </a>
+        {% endif %}
+    </td>
+    <td>
+        {% if item.container %}
+        <a href="{{url_for('containers.view', item_id=item.container.id) }}">
+            {{item.container.accession_number}}
+        </a>
+        {% endif %}
+    </td>
+    <td>
+        {% if item.collection_date %}
+            {{item.collection_date.strftime('%m/%d/%Y')}}
+        {% endif %}
+    </td>
+    <td>{{item.collection_time}}</td>
+    <td>
+        {% if item.collected_by %}
+            {{item.collector.full_name}}
+        {% endif %}
+    </td>
+    <td>{{item.collection_container.display_name}}</td>
+    <td>{{item.submitted_sample_amount}}</td>
+    <td>{{item.current_sample_amount}}</td>
+    <td>{{item.type.unit.name}}</td>
+    <td>{{item.condition}}</td>
+    <td>{{item.evidence_comments}}</td>
+    <td>{{item.accessioner.initials}}</td>
+    {% if item.accession_date %}
+        <td>{{item.accession_date.strftime('%m/%d/%Y')}}</td>
+        <td>{{item.accession_date.strftime('%H%M')}}</td>
+    {% else %}
+        <td></td>
+        <td></td>
+    {% endif %}
+
+
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+    let tableName = "{{table_name}}"
+    let currentUser = "{{current_user.permissions}}"
+</script>
+<script src="/static/js/remove-add.js"></script>
+{% endblock %}

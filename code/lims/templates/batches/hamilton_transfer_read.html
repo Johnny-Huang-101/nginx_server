@@ -1,0 +1,408 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+
+    .rows {
+
+    line-height: 3px;
+    min-height: 3px;
+    height: 3px;
+    }
+
+    td:nth-child(1) {
+    width: 2%;
+    }
+
+    td:nth-child(4) {
+    width: 2%;
+    }
+
+    td:nth-child(7) {
+    width: 2%;
+    }
+
+    .correct {
+    background-color: green
+    }
+
+    .incorrect{
+    background-color: yellow
+    }
+
+</style>
+
+{% set x = ['A', 'B', 'C', 'D', 'E', 'F'] %}
+{% set y = [1, 2, 3, 4, 5, 6, 7, 8] %}
+
+<div class="container-fluid">
+    <hr style="border-width:5px">
+    <h1 align="center">
+        Transfer Check
+    </h1>
+    <h3 align="center">
+        Do not refresh this page!
+    </h3>
+    <hr style="border-width:5px">
+</div>
+
+<div>
+    <form method="POST" id="form" novalidate="novalidate">
+        {{form.hidden_tag()}}
+        <div class="col">
+            <table class="table-hover table-striped table-bordered nowrap" style="width: 100%">
+                <tbody>
+                    <tr>
+                        <th colspan="9">
+                            <h1 style="text-align: center">Reference Plate 1</h1>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        {% for num in y %}
+                            <th style="text-align: center">{{num}}</th>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                    {% for letter in x %}
+                        <tr>
+                            <th style="text-align: center">{{letter}}</th>
+                            {% for num in y %}
+                                {% if num in [3,6] %}
+                                    <td style="text-align: center" id="source{{letter}}{{num}}">
+                                        X
+                                    </td>
+                                {% else %}
+                                    {% for sample in plate_1 %}
+                                        {% if sample[1] == letter ~ num %}
+                                            {% for check in p1_checks %}
+                                                {% if check[1] == letter ~ num and check[2] is not none %}
+                                                    <td style="text-align: center; width: 16%; background-color: rgba(0, 0, 0, 0.33)" id="sourceP1{{letter}}{{num}}" data-value="{{sample[2]}}">
+                                                {% elif check[1] == letter ~ num %}
+                                                    <td style="text-align: center; width: 16%" id="sourceP1{{letter}}{{num}}" data-value="{{sample[2]}}">
+                                                {% else %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                        {% for item in plate_1 %}
+                                            {% if item[1] == letter ~ num %}
+                                                {{item[0]}}
+                                            {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="col" style="padding-top: 50px">
+            <table class="table-hover table-striped table-bordered nowrap" style="width: 100%">
+                <tbody>
+                    <tr>
+                        <th colspan="9">
+                            <h1 style="text-align: center">Scan into Plate 1</h1>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <th style="text-align: center">1</th>
+                        <th style="text-align: center">2</th>
+                        <th style="text-align: center">3</th>
+                        <th style="text-align: center">4</th>
+                        <th style="text-align: center">5</th>
+                        <th style="text-align: center">6</th>
+                        <th style="text-align: center">7</th>
+                        <th style="text-align: center">8</th>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                    {% for letter in x %}
+                        <tr>
+                            <th style="text-align: center">{{letter}}</th>
+                            {% for num in y %}
+                                {% if num in [3, 6] %}
+                                    <td style="text-align: center">X</td>
+                                {% else %}
+                                    <td style="width: 16%; text-align: center">
+                                        {% for field in form %}
+                                            {% if 'p1' in field.name %}
+                                                {% if letter |lower ~ num in field.name %}
+                                                    {% for check in p1_checks %}
+                                                            {% if check[1] == letter ~ num and check[2] is not none %}
+                                                                {{field(disabled='true')}}
+                                                            {% elif check[1] == letter ~ num %}
+                                                                {{field(disabled='true')}}
+                                                            {% else %}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="col">
+            <table class="table-hover table-striped table-bordered nowrap" style="width: 100%; margin-top: 3%">
+                <tbody>
+                    <tr>
+                        <th colspan="9">
+                            <h1 style="text-align: center">Reference Plate 2</h1>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        {% for num in y %}
+                            <th style="text-align: center">{{num}}</th>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                    {% for letter in x %}
+                        <tr>
+                            <th style="text-align: center">{{letter}}</th>
+                            {% for num in y %}
+                                {% if num in [3, 6] %}
+                                    <td style="text-align: center" id="source{{letter}}{{num}}">
+                                        X
+                                    </td>
+                                {% else %}
+                                    {% for sample in plate_2 %}
+                                        {% if sample[1] == letter ~ num %}
+                                            {% for check in p2_checks %}
+                                                {% if check[1] == letter ~ num and check[2] is not none %}
+                                                    <td style="text-align: center; width: 16%; background-color: rgba(0, 0, 0, 0.33)" id="sourceP2{{letter}}{{num}}" data-value="{{sample[2]}}">
+                                                {% elif check[1] == letter ~ num %}
+                                                    <td style="text-align: center; width: 16%" id="sourceP2{{letter}}{{num}}" data-value="{{sample[2]}}">
+                                                {% else %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% for item in plate_2 %}
+                                        {% if item[1] == letter ~ num %}
+                                            {{item[0]}}
+                                        {% endif %}
+                                    {% endfor %}
+                                    </td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="col" style="padding-top: 50px">
+            <table class="table-hover table-striped table-bordered nowrap" style="width: 100%">
+                <tbody>
+                    <tr>
+                        <th colspan="9">
+                            <h1 style="text-align: center">Scan into Plate 2</h1>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <th style="text-align: center">1</th>
+                        <th style="text-align: center">2</th>
+                        <th style="text-align: center">3</th>
+                        <th style="text-align: center">4</th>
+                        <th style="text-align: center">5</th>
+                        <th style="text-align: center">6</th>
+                        <th style="text-align: center">7</th>
+                        <th style="text-align: center">8</th>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                    {% for letter in x %}
+                        <tr>
+                            <th style="text-align: center">{{letter}}</th>
+                            {% for num in y %}
+                                {% if num in [3, 6] %}
+                                    <td style="text-align: center">X</td>
+                                {% else %}
+                                    <td style="width: 16%; text-align: center">
+                                        {% for field in form %}
+                                            {% if 'p2' in field.name %}
+                                                {% if letter |lower ~ num in field.name %}
+                                                    {% for check in p2_checks %}
+                                                        {% if check[1] == letter ~ num and check[2] is not none %}
+                                                            {{field(disabled='true')}}
+                                                        {% elif check[1] == letter ~ num %}
+                                                            {{field(disabled='true')}}
+                                                        {% else %}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="container-fluid text-center" style="padding-top: 20px">
+            <button type="submit" class="btn btn-primary" style="width: 10%">Submit</button>
+            <a href="{{url_for('batches.view', item_id=item.id)}}" class="btn btn-secondary ml-1" style="width: 10%">Exit</a>
+        </div>
+    </form>
+</div>
+
+<script>
+
+function getCurrentDateTime() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+var x = ['A', 'B', 'C', 'D', 'E', 'F'];
+var y = [1, 2, 3, 4, 5, 6, 7, 8];
+
+// Source values
+const sourceTrueValueP1 = "specimens: " + $('#sourceP1').data('value');
+const sourceTrueValueP2 = "specimens: " + $('#sourceP2').data('value');
+
+// Test values
+const testInputP1 = $("#testScanP1")[0];
+const testTrueValueP1 = "tests: " + $('#testP1').data('value');
+const testInputP2 = $("#testScanP2")[0];
+const testTrueValueP2 = "tests: " + $('#testP2').data('value');
+
+let scanInputP1 = "";
+let scanInputP2 = "";
+
+// Attach change event handler to all input fields
+$('input').change(function() {
+    // Get the ID of the current input field
+    const id = $(this).attr('id');
+
+    // Extract letter and number from the ID for P1 and P2
+    const matchP1 = id.match(/p1([a-f])(\d+)$/i);
+    const matchP2 = id.match(/p2([a-f])(\d+)$/i);
+
+    // Process for P1
+    if (matchP1) {
+        const letter = matchP1[1].toUpperCase();
+        const number = matchP1[2];
+
+        if ($(this).val() !== '' && $(this).val() !== undefined) {
+            scanInputP1 = $(this).val().split(": ")[1];
+            qrCheck = $(this).val().split(": ")[0];
+        } else {
+            scanInputP1 = "";
+        }
+
+        // Construct the ID of the corresponding source input field
+        const sourceInputId = "sourceP1" + letter + number;
+        console.log('SOURCE ID', sourceInputId);
+        let sourceInputP1 = $("#" + sourceInputId).attr('data-value');
+
+        if (qrCheck === 'qr_reference') {
+            $("#" + sourceInputId).removeClass('incorrect');
+            $(this).removeClass('incorrect');
+            $("#" + sourceInputId).addClass('correct');
+            $(this).addClass('correct');
+            $("#" + id + '_date').val(getCurrentDateTime());
+
+        } else if (scanInputP1 !== '' && (scanInputP1 === sourceInputP1)) {
+            $("#" + sourceInputId).removeClass('incorrect');
+            $(this).removeClass('incorrect');
+            $("#" + sourceInputId).addClass('correct');
+            $(this).addClass('correct');
+            $("#" + id + '_date').val(getCurrentDateTime());
+            console.log('SUCCESS');
+            console.log('DATE', $("#" + id + '_date').val());
+
+        } else if (scanInputP1 === '') {
+            $("#" + sourceInputId).removeClass('incorrect');
+            $(this).removeClass('incorrect');
+            $("#" + sourceInputId).removeClass('correct');
+            $(this).removeClass('correct');
+        } else {
+            $("#" + sourceInputId).removeClass('correct');
+            $(this).removeClass('correct');
+            $("#" + sourceInputId).addClass('incorrect');
+            $(this).addClass('incorrect');
+        }
+
+        console.log('SCAN P1', scanInputP1);
+        console.log('SOURCE P1', sourceInputP1);
+
+    } else if (matchP2) { // Process for P2
+        const letter = matchP2[1].toUpperCase();
+        const number = matchP2[2];
+
+        if ($(this).val() !== '' && $(this).val() !== undefined) {
+            scanInputP2 = $(this).val().split(": ")[1];
+            qrCheck = $(this).val().split(": ")[0];
+        } else {
+            scanInputP2 = "";
+        }
+
+        // Construct the ID of the corresponding source input field
+        const sourceInputId = "sourceP2" + letter + number;
+        console.log('SOURCE ID', sourceInputId);
+        let sourceInputP2 = $("#" + sourceInputId).attr('data-value');
+
+        if (qrCheck === 'qr_reference') {
+            $("#" + sourceInputId).removeClass('incorrect');
+            $(this).removeClass('incorrect');
+            $("#" + sourceInputId).addClass('correct');
+            $(this).addClass('correct');
+            $("#" + id + '_date').val(getCurrentDateTime());
+
+        } else if (scanInputP2 !== '' && (scanInputP2 === sourceInputP2)) {
+            $("#" + sourceInputId).removeClass('incorrect');
+            $(this).removeClass('incorrect');
+            $("#" + sourceInputId).addClass('correct');
+            $(this).addClass('correct');
+            $("#" + id + '_date').val(getCurrentDateTime());
+            console.log('SUCCESS');
+            console.log('DATE', $("#" + id + '_date').val());
+
+        } else if (scanInputP2 === '') {
+            $("#" + sourceInputId).removeClass('incorrect');
+            $(this).removeClass('incorrect');
+            $("#" + sourceInputId).removeClass('correct');
+            $(this).removeClass('correct');
+        } else {
+            $("#" + sourceInputId).removeClass('correct');
+            $(this).removeClass('correct');
+            $("#" + sourceInputId).addClass('incorrect');
+            $(this).addClass('incorrect');
+        }
+
+        console.log('SCAN P2', scanInputP2);
+        console.log('SOURCE P2', sourceInputP2);
+    }
+});
+
+
+
+
+
+</script>
+
+{% endblock %}

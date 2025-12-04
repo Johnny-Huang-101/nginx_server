@@ -1,0 +1,44 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+    <i class="fa-solid fa-building-columns"></i>
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Case Type</th>
+    <th>Submitting Agency</th>
+    <th>Default Client</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+        <td>{{item.type.name}}</td>
+        <td>{{item.agency.name}}</td>
+        <td>
+            <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+                {{item.division.name}}
+            </a>
+        </td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}
+
+

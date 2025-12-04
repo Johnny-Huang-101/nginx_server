@@ -1,0 +1,25 @@
+{% extends "list_template.html" %}
+
+{% block header %}
+    <th>Standard/Solution lot</th>
+    <th>Standard/Solution type</th>
+    <th>Assay</th>
+    <th>In Use</th>
+    <th>Retest Date</th>
+{% endblock %}
+
+{% block body scoped %}
+    <th>
+        <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+            {{item.standards.lot}}
+        </a>
+    </th>
+    <td>{{item.assay_constituents.constituent}}</td>
+    <td>{{item.assay.assay_name}}</td>
+    <td>{{item.constituent_status}}</td>
+    <td>
+        {% if item.standards.retest_date %}
+            {{item.standards.retest_date.strftime('%m/%d/%Y')}}
+        {% endif %}
+    </td>
+{% endblock %}

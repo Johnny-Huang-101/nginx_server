@@ -1,0 +1,85 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+    <i class="fa fa-archive" aria-hidden="true"></i>
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<div class="dropdown" style="display: inline-block;">
+    <button class="btn btn-secondary dropdown-toggle" type="button" id="batches-filter" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Filter
+    </button>
+    <div class="dropdown-menu" aria-labelledby="batches-filter">
+        <div class="dropdown-submenu dropright">
+            <a class="dropdown-item dropdown-toggle" href="#">Type</a>
+            <ul class="dropdown-menu">
+                {% for type in kwargs['types'] %}
+                    <li><a class="dropdown-item" href="{{url_for(table_name~'.view_list', query_type='type', query=type)}}">{{type}}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+         <div class="dropdown-submenu dropright">
+            <a class="dropdown-item dropdown-toggle" href="#">Status</a>
+            <ul class="dropdown-menu">
+                 {% for status in kwargs['statuses'] %}
+                <li><a class="dropdown-item" href="{{url_for(table_name~'.view_list', query_type='status', query=status)}}">{{status}}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Equipment ID</th>
+    <th>Status</th>
+    <th>Location</th>
+    <th>Type</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        <a href="{{ url_for(table_name~'.view', item_id=item.id) }}">
+            {{item.equipment_id}}
+        </a>
+    </td>
+    <td class="item-status">{{item.status.name}}</td>
+    <td>
+        {% for x in kwargs['locations'] %}
+            {% if x.item_table == table_name %}
+                {% if x.item_id == item.id %}
+                    {% for cls in kwargs['models'] %}
+                        {% if x.location_table is none %}
+                        {% else %}
+                            {% if cls == kwargs['location_dict'][x.location_table]['table'] %}
+                                {% set alias = kwargs['location_dict'][x.location_table]['alias'] %}
+                                {% if alias is string %}
+                                    {{ cls.query.get(x.location_id) | getattr(alias) }}
+                                {% elif alias is iterable %}
+                                    {% for field in alias %}
+                                        {{ cls.query.get(x.location_id) | getattr(field) }}{% if not loop.last %} - {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    </td>
+    <td>{{item.type.name}}</td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+<script src="/static/js/row_color_by_status.js"></script>
+{% endblock %}

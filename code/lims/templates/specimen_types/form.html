@@ -1,0 +1,44 @@
+{% extends "form_template.html" %}
+{% block form %}
+    <div class="row form-group mb-4">
+            <div class="col-md-4">
+                {{form.name.label}}
+                {{form.name}}
+            </div>
+            <div class="col">
+                {{form.code.label}}
+                {{form.code}}
+            </div>
+            <div class="col">
+                {{form.state_id.label}}
+                {{form.state_id}}
+            </div>
+            <div class="col">
+                {{form.discipline.label}}
+                {{form.discipline}}
+            </div>
+     </div>
+    <div class="row form-group mb-4">
+
+            <div class="col">
+                {{form.collection_container_id.label}}
+                {{form.collection_container_id}}
+            </div>
+            <div class="col">
+                {{form.unit_id.label}}
+                {{form.unit_id}}
+            </div>
+     </div>
+     <div class="row form-group mb-4">
+            <div class="col">
+                {{form.default_assays.label}}
+                {{form.default_assays}}
+            </div>
+     </div>
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

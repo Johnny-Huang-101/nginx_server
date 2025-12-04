@@ -1,0 +1,61 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+    <i class="fa-solid fa-building-columns"></i>
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Name</th>
+    <th>Case Number</th>
+    <th>Returning Agency</th>
+    <th>Returning Division</th>
+    <th>Returning Personnel</th>
+    <th>Return Date</th>
+    <th>Status</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+
+    <td>
+            <a href = "{{ url_for('returns.view', item_id=item.id) }}">
+                {{item.name}}
+            </a>
+    </td>
+    {% if item.case_id %}
+    <td>
+        {% set case_ids = item.case_id.split(',') %}
+        {% for case_id in case_ids %}
+            {{ kwargs.case_number_map[case_id|int] }}{% if not loop.last %}, {% endif %}
+        {% endfor %}
+    </td>
+    {% elif item.legacy_case %}
+    <td>{{ item.legacy_case }}</td>
+    {% else %}
+    <td>N/A</td>
+    {% endif %}
+    <td>{{item.agency.name}}</td>
+    <td>{{item.division.name}}</td>
+    <td>{{item.personnel.full_name}}</td>
+    <td>{{ item.return_date.strftime('%m/%d/%Y') }}</td>
+    <td>{{ item.status}}</td>
+{% endblock %}
+
+<!--Modals-->
+
+
+<!--Scripts-->
+
+

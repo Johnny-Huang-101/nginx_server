@@ -1,0 +1,33 @@
+{% extends "form_template.html" %}
+{% block form %}
+
+            <div class="row">
+                <div class="form-group col">
+                    {{form.name.label}}
+                    {{form.name}}
+                </div>
+                <div class="form-group col">
+                    {{form.date_selection.label}}
+                    {{form.date_selection}}
+                </div>
+                <div class="form-group col">
+                    {{form.retention_length.label}}
+                    {{form.retention_length}}
+                   <div style="font-size:0.9rem">
+                      <a id="one_year" href="#!">1-Year</a>
+                      |
+                      <a id="five_year" href="#!">5-Year</a>
+                      |
+                      <a id="indefinite" href="#!">Indefinite</a>
+                  </div>
+                </div>
+            </div>
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/retention_policies.js"></script>
+{% endblock %}

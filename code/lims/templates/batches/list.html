@@ -1,0 +1,159 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+{% if kwargs['pending_tests']|length != 0 %}
+<div class="alert alert-warning alert-dismissible" role="alert">
+    <button type="button" class="close"aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+    <strong>Pending Tests</strong>
+    <ul>
+        {% for assay, count in kwargs['pending_tests'] %}
+        <li><a href="{{url_for(table_name~'.add', assay_id=assay.id)}}">{{assay.assay_name}}: {{count}}</a></li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<div class="dropdown" style="display:inline-block;">
+  <button class="btn btn-secondary dropdown-toggle"
+          type="button"
+          id="batches-filter"
+          data-toggle="dropdown"
+          aria-haspopup="true"
+          aria-expanded="false">
+    Filter
+  </button>
+  <div class="dropdown-menu" aria-labelledby="batches-filter" style="max-height: 50vh; overflow-y: auto;">
+
+      <!-- Status Group -->
+    <h6 class="dropdown-header">Status</h6>
+    {% for status in ['Pending','Processing','Finalized','Cancelled','All'] %}
+      <a class="dropdown-item"
+         href="{{ url_for(table_name~'.view_list',
+                          query_type='status',
+                          query=status) }}">
+        {{ status }}
+      </a>
+    {% endfor %}
+
+    <!-- Assay Group -->
+    <h6 class="dropdown-header">Assay</h6>
+    {% for assay in kwargs['assays'] %}
+      <a class="dropdown-item"
+         href="{{ url_for(table_name~'.view_list',
+                          query_type='assay',
+                          query=assay) }}">
+        {{ assay }}
+      </a>
+    {% endfor %}
+    <div class="dropdown-divider"></div>
+
+  </div>
+</div>
+
+
+<div class="dropdown" style="display: inline-block;">
+    <button aria-expanded="false" aria-haspopup="true" class="btn btn-secondary dropdown-toggle"
+            data-toggle="dropdown"
+            id="specimens-filter" style="background-color: black; border-color: black;" type="button">
+        Discipline {% if query is not none %} | {{ query }} {% endif %}
+    </button>
+    <div aria-labelledby="specimens-filter" class="dropdown-menu">
+        {% for option in kwargs['discipline'] %}
+        <a class="dropdown-item"
+           href="{{ url_for(table_name~'.view_list', query_type='discipline', query=option) }}">{{ option }}</a>
+        {% endfor %}
+        <a class="dropdown-item" href="{{ url_for(table_name + '.view_list')}}">All</a>
+    </div>
+</div>
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Batch ID</th>
+    <th>Assay</th>
+    <th>Instrument</th>
+    <th>Tests</th>
+    <th>Batch Status</th>
+    <th>Extracting Analyst</th>
+    <th>Processing Analyst</th>
+    <th>Batch Reviewer</th>
+    <th>Extraction Date</th>
+    <th>Finalized Date</th>
+    <th>Sequence File</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        {% if item in kwargs['pa'] %}
+        <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+            {{item.batch_id}}
+        </a>
+        <span class="badge badge-primary ml-2">PA</span>
+        {% elif item in kwargs['br'] %}
+        <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+            {{item.batch_id}}
+        </a>
+        <span class="badge badge-primary ml-2">BR</span>
+        {% else %}
+        <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+            {{item.batch_id}}
+        </a>
+        {% endif %}
+    </td>
+
+    <td>
+        {% if item.assay  %}
+        <a href="{{url_for('assays.view', item_id=item.assay.id)}}">
+            {{item.assay.assay_name}}
+        </a>
+        {% endif %}
+    </td>
+    <td>{{item.instrument.instrument_id}}</td>
+    <td>{{item.test_count}}</td>
+    <td>{{item.batch_status}}</td>
+    <td>{{item.extractor.initials}}</td>
+    <td>{{item.processor.initials}}</td>
+    <td>{{item.batch_reviewer.initials}}</td>
+    <td>
+        {% if item.extraction_date %}
+            {{item.extraction_date.strftime('%m/%d/%Y %H:%M')}}
+        {% endif %}
+    </td>
+    <td>
+        {% if item.review_finish_date %}
+         {{item.review_finish_date.strftime('%m/%d/%Y %H:%M')}}
+        {% endif %}
+    </td>
+    <td>
+        {% if item.batch_id in kwargs['sequences'] %}
+            <a href="../static/batch_sequences/{{item.batch_id}}.csv" target="_blank">View Sequence</a>
+        {% endif %}
+    </td>
+
+
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+<script type="text/javascript">
+    let tableName = "{{table_name}}"
+    let currentUser = "{{current_user.permissions}}"
+</script>
+<script src="/static/js/remove-add.js"></script>
+{% endblock %}
+

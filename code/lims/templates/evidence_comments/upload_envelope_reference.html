@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+<div>
+    <div style="margin-top:6px">
+        <a href="{{url_for('dashboard.get_dashboard')}}"><i class="fa-solid fa-house"></i></a>
+        > <a href="{{url_for(table_name~'.view_list')}}">{{item_name}}</a>
+        > Uploaad Evidence Envelope Reference
+     </div>
+     <hr style="border-width:5px; margin-top: 6px">
+      <h1>Upload Evidence Envelope Reference</h1>
+    <hr style="border-width:5px; margin-top: 6px">
+
+    <form method="POST" id="form" novalidate="novalidate" enctype="multipart/form-data" autocomplete="off">
+        {{form.hidden_tag()}}
+        <div class="form-group">
+            <b>{{form.file.label}}</b>
+            {{form.file(class='form-control')}}
+        </div>
+
+        <hr>
+        <div class="form-group">
+            {{form.submit(class='btn btn-primary')}}
+            {% if item_dict %}
+                <a type="button" class="btn btn-secondary" href="{{url_for(table_name~'.unlock', item_id=item_dict['id'])}}">Exit</a>
+            {% else %}
+                <a type="button" class="btn btn-secondary" href="{{url_for(table_name~'.view_list')}}">Exit</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+
+<!--MODAL BLOCK-->
+
+{% block modals %}
+{% endblock %}
+
+<!--###########-->
+
+<!-- SCRIPT BLOCK -->
+
+{% block scripts %}
+{% endblock %}
+
+<!--##############-->
+
+<!--<script type="text/javascript">-->
+<!--    let item_id = '{{item_id | safe}}'-->
+<!--</script>-->
+
+
+{% endblock %}

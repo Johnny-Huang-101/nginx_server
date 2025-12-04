@@ -1,0 +1,46 @@
+{% extends "form_template.html" %}
+
+{% block form %}
+
+
+    <div class="form-group">
+        {% if file_path is none %}
+            {{ form.files.label }}
+            {{ form.files }}
+        {% endif %}
+    </div>
+    <div class="form-group">
+        {{form.type_id.label}}
+        {{form.type_id}}
+    </div>
+    <div class="form-group">
+        {{form.description.label}}
+        {{form.description}}
+    </div>
+
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+<!-- {% block scripts %}
+
+<script>
+    $('#mode').on('change', function () {-->
+<!--        let mode = $('#mode').val()-->
+<!--        console.log(mode);-->
+<!--        if (mode == 'single') {-->
+<!--            $('#description').prop('disabled', false);-->
+<!--            $('#files').prop('multiple', false);-->
+<!--        } else {-->
+<!--            $('#description').prop('disabled', true);-->
+<!--            $('#files').prop('multiple', true);-->
+<!--        }-->
+<!--    });
+</script>
+
+{% endblock %} -->
+
+
+

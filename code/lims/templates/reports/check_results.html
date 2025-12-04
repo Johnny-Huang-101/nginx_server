@@ -1,0 +1,73 @@
+{% extends "view_template.html" %}
+
+{% block buttons %}
+  <a class="btn btn-secondary" href="{{ url_for('reports.view', item_id=item.id) }}">
+    Back to Report
+  </a>
+{% endblock %}
+
+{% macro results_table(rows) %}
+  <div class="table-responsive">
+    <table class="table table-striped table-hover table-sm">
+      <thead class="thead-light">
+        <tr>
+          <th>#</th>
+          <th>Report As</th>
+          <th>Inc. Suppl.</th>
+          <th>Status</th>
+          <th>Specimen</th>
+          <th>Component</th>
+          <th>Result</th>
+          <th>Supp. Result</th>
+          <th>Units</th>
+          <th>Assay</th>
+          <th>Batch Date</th>
+          <th>Test ID</th>
+          <th>Result ID</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+          <tr>
+            <td>{{ r.order }}</td>
+            <td>{{ r.report_as }}</td>
+            <td>{{ r.supplementary }}</td>
+            <td>{{ r.status }}</td>
+            <td>{{ r.specimen }}</td>
+            <td>{{ r.component }}</td>
+            <td>{{ r.result }}</td>
+            <td>{{ r.supp_result }}</td>
+            <td>{{ r.unit }}</td>
+            <td>{{ r.assay }}</td>
+            <td>{{ r.batch_date }}</td>
+            <td>{{ r.test_id }}</td>
+            <td>{{ r.result_id }}</td>
+          </tr>
+        {% endfor %}
+        {% if not rows %}
+          <tr><td colspan="13" class="text-muted text-center">No items in this section.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+{% endmacro %}
+
+{% block view %}
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h3 class="mb-1">Check Results – {{ item.report_name }}</h3>
+      <p class="text-muted mb-4">Grouped by report role, ordered by display order.</p>
+
+      <h4 class="mt-2 mb-2">Official</h4>
+      {{ results_table(official) }}
+
+      <h4 class="mt-4 mb-2">Observed</h4>
+      {{ results_table(observed) }}
+
+      {% if other %}
+        <h4 class="mt-4 mb-2">Other</h4>
+        {{ results_table(other) }}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

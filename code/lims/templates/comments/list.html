@@ -1,0 +1,42 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Code</th>
+    <th>Comment Type</th>
+    <th>Comment</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        <a href="{{ url_for(table_name~'.view', item_id=item.id) }}">
+            {{item.code}}
+        </a>
+    </td>
+    <td>{{item.comment_type}}</td>
+    <td>{{item.comment}}</td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+<script type="text/javascript">
+    let tableName = "{{table_name}}"
+    let currentUser = "{{current_user.permissions}}"
+</script>
+<script src="/static/js/remove-add.js"></script>
+{% endblock %}

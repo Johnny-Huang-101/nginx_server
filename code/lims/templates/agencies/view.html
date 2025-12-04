@@ -1,0 +1,221 @@
+{% extends "view_template.html" %}
+
+{% block alerts %}
+{% endblock %}
+
+{% block buttons %}
+{% endblock %}
+
+{% block view %}
+{% endblock %}
+
+{% block accordion %}
+<div class="card">
+    <div class="card-header view-card-header" id="details">
+        <button class="btn btn-link chevron-btn view" data-toggle="collapse" data-target="#details-coll" aria-expanded="false" aria-controls="details">
+            <span><i class="fa-solid fa-chevron-down mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Agency Details
+        </button>
+    </div>
+    <div id="details-coll" class="collapse show" aria-labelledby="details">
+        <div class="card-body">
+            <div class="my-3">
+                <table class="table table-hover table-striped details-table" style="width:50%">
+                    <tr>
+                        <th>Name</th>
+                        <td>{{item.name}}</td>
+                    </tr>
+                    <tr>
+                        <th>Abbreviation</th>
+                        <td>{{item.abbreviation}}</td>
+                    </tr>
+                    <tr>
+                        <th>Vendor</th>
+                        <td>{{item.vendor}}</td>
+                    </tr>
+                    <tr>
+                        <th>Manufacturer</th>
+                        <td>{{item.manufacturer}}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header view-card-header">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#divisions-collapse" aria-expanded="false" aria-controls="divisions">
+            <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Divisions
+        </button>
+    </div>
+    <div id="divisions-collapse" class="collapse" aria-labelledby="divisions-heading">
+        <div class="card-body">
+            <a class="btn btn-secondary mb-3 export" href="#" name="divisions">Export</a>
+            <div class="table display">
+                <div class="table-responsive">
+                    <table class="display table-striped table-hover nowrap small view-table" style="width:100%;" id="divisions-table">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Abbreviation</th>
+                            <th>Address</th>
+                            <th>Unit/Suite No.</th>
+                            <th>Floor</th>
+                            <th>Email</th>
+                            <th>Client?</th>
+                            <th>Stakeholder?</th>
+                            <th>Reference Material Provider?</th>
+                            <th>Service Provider?</th>
+                            <th>Date Created</th>
+                            <th>Created By</th>
+                            <th>Modify Date</th>
+                            <th>Modified By</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        {% for item in kwargs['divisions'] %}
+                        <tr>
+                            <td>
+                                <a href="{{url_for('divisions.view', item_id=item.id)}}">
+                                    {{item.name}}
+                                </a>
+                            </td>
+
+                            <td>{{item.abbreviation}}</td>
+                            <td>
+                                {% if item.full_address %}
+                                <a href="https://google.com/maps/?q={{item.full_address}}" target="_blank">
+                                    {{item.full_address}}
+                                </a>
+                                {% endif %}
+                            </td>
+                            <td>{{item.unit_number}}</td>
+                            <td>{{item.floor}}</td>
+                            <td>
+                                <a href="mailto:{{email}}">{{item.email}}</a>
+                            </td>
+                            <td>{{item.client}}</td>
+                            <td>{{item.stakeholder}}</td>
+                            <td>{{item.reference_material_provider}}</td>
+                            <td>{{item.service_provider}}</td>
+                            <td>{{item.create_date.strftime('%m/%d/%Y %H:%M')}}</td>
+                            <td>{{item.created_by}}</td>
+                            <td>
+                                {% if item.modify_date %}
+                                {{item.modify_date.strftime('%m/%d/%Y %H:%M')}}
+                                {% endif %}
+                            </td>
+                            <td>{{item.modified_by}}</td>
+                        </tr>
+
+                        {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header view-card-header">
+        <button class="btn btn-link chevron-btn" style="font-size:20px" data-toggle="collapse" data-target="#personnel-collapse" aria-expanded="false" aria-controls="personnel">
+            <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Personnel
+        </button>
+    </div>
+    <div id="personnel-collapse" class="collapse" aria-labelledby="personnel-heading">
+        <div class="card-body">
+            <a class="btn btn-secondary mb-3 export" href="#" name="personnel">Export</a>
+            <div class="table display">
+                <div class="table-responsive">
+                    <table class="display table-striped table-hover nowrap small view-table" style="width:100%;" id="personnel-table">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Division</th>
+                            <th>Job Title</th>
+                            <th>ID/Badge</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Cell</th>
+                            <th>Submitter?</th>
+                            <th>Receives Report?</th>
+                            <th>Date Created</th>
+                            <th>Created By</th>
+                            <th>Modify Date</th>
+                            <th>Modified By</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        {% for item in kwargs['personnel'] %}
+                        <tr>
+                            <td>
+                                <a href="{{url_for('personnel.view', item_id=item.id)}}">
+                                    {{item.full_name}}
+                                </a>
+                            </td>
+                            <td>{{item.division.name}}</td>
+                            <td>{{item.job_title}}</td>
+                            <td>{{item.id_number}}</td>
+                            <td>
+                                <a href="mailto:{{item.email}}">{{item.email}}</a>
+                            </td>
+                            <td>{{item.phone}}</td>
+                            <td>{{item.cell}}</td>
+                            <td>{{item.submitter}}</td>
+                            <td>{{item.receives_report}}</td>
+                            <td>{{item.create_date.strftime('%m/%d/%Y %H:%M')}}</td>
+                            <td>{{item.created_by}}</td>
+                            <td>
+                                {% if item.modify_date %}
+                                {{item.modify_date.strftime('%m/%d/%Y %H:%M')}}
+                                {% endif %}
+                            </td>
+                            <td>{{item.modified_by}}</td>
+                        </tr>
+
+                        {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+   $(document).ready( function () {
+        $('#divisions-table').DataTable({
+            pageLength: -1,
+            scrollX: true,
+            scrollY: '50vh',
+            scrollCollapse: true,
+            lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+            order: [],
+        });
+    });
+</script>
+<script>
+   $(document).ready( function () {
+        $('#personnel-table').DataTable({
+            pageLength: -1,
+            scrollX: true,
+            scrollY: '50vh',
+            scrollCollapse: true,
+            lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+            order: [],
+        });
+    });
+</script>
+
+{% endblock %}

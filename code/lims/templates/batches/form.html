@@ -1,0 +1,713 @@
+{% extends "form_template.html" %}
+
+{% block style %}
+    .rows {
+
+   line-height: 3px;
+   min-height: 3px;
+   height: 3px;
+}
+
+{% endblock %}
+
+{% block form %}
+    {% if function == 'Add' %}
+            <div class="form-group">
+                {{form.assay_id.label}}
+                {{form.assay_id}}
+            </div>
+            <div class="form-group" style="display: none">
+                {{form.test_id}}
+            </div>
+            <div class="form-group">
+                {{form.test_id_order}}
+            </div>
+            <div class="sort" style="font-size:0.875rem">
+                <a class='clear' id="clear" href="#!">Clear</a>
+                    |
+                    <a class='select_all' id='select_all' href="#!">Select All</a>
+                    |
+                     <a id='oldest' href="#!">Oldest</a>
+                    |
+                     <a id='newest' href="#!">Newest</a>
+                    |
+                     <a id='optimum' href="#!">Optimum</a>
+                    |
+                   <span id="test_count">{{kwargs['test_count']}}</span><span id="num_tests">{{kwargs['num_tests']}}</span>
+            </div>
+            <div class="row form-row">
+              <div class="table display">
+                  <div class="table-responsive">
+                      <table class="display table-hover small nowrap" style="width:100%; border:1px solid #ced4da" name="table" id="tests">
+                          <thead>
+                            <tr>
+                                <th style="width:1.5rem">#</th>
+                                <th>Test ID</th>
+                                <th>Order</th>
+                                <th>Assay Name</th>
+                                <th>Case No.</th>
+                                <th>Accession<br>Number</th>
+                                <th>Code</th>
+                                <th>Description</th>
+                                <th>Dilution</th>
+                                <th>Directive</th>
+                                <th>Days<br>Outstanding</th>
+                                <th>Test<br>Order Date</th>
+                                <th>Test<br>Ordered By</th>
+                                <th>Current<br>Amount</th>
+                                <th>Original<br>Amount</th>
+                                <th>Conditions</th>
+                                <th>Priority</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                          {% set x = 0 %}
+                          {% for item in kwargs['items'] %}
+                            <tr class="rows">
+                                <td>{{loop.index}}</td>
+                                <td>{{item.id}}</td>
+                                {% if item.batch_id %}
+                                <td>{{kwargs['test_id_order'].index(item.id)+1}}</td>
+                                {% else %}
+                                <td></td>
+                                {% endif %}
+                                <td>{{item.assay.assay_name}}</td>
+                                <td>{{item.case.case_number}}</td>
+                                <td>
+                                    {% if item.specimen.parent_specimen is none %}
+                                        {{item.specimen.accession_number}}
+                                    {% else %}
+                                        {{item.specimen.accession_number}}
+                                    {% endif %}
+                                </td>
+                                <td>{{item.specimen.type.code}}</td>
+                                <td>{{item.specimen.type.name}}</td>
+                                <td>
+                                    {% if item.dilution.isnumeric() %}
+                                    {% if item.dilution != '1' %}
+                                        d1/{{item.dilution}}
+                                    {% endif %}
+                                    {% else %}
+
+                                    {{item.dilution}}
+                                    {% endif %}
+                                </td>
+                                <td>{{item.directives}}</td>
+                                <td>{{kwargs['days'][item.id]}}</td>
+                                <td>{{item.create_date.strftime('%m/%d/%Y')}}</td>
+                                <td>{{item.created_by}}</td>
+                                <td>{{item.specimen.current_sample_amount}}</td>
+                                <td>{{item.specimen.submitted_sample_amount}}</td>
+                                <td>{{item.specimen.condition}}</td>
+                                <td>
+                                    {% if item.case.priority != 'Normal' %}
+                                        {{item.case.priority}}
+                                    {% endif %}
+                                </td>
+                              </tr>
+                          {% endfor %}
+                          </tbody>
+                      </table>
+                  </div>
+                  {% if form.test_id.errors %}
+                    <div style="font-size: 0.875rem; color: #DC3545">
+                        {% for error in form.test_id.errors %}
+                            {{error}}
+                        {% endfor %}
+                    </div>
+                  {% endif %}
+              </div>
+            </div>
+        <hr style="border-width:3px">
+    {% endif %}
+    {% if function == 'Update' %}
+        <div class="row">
+            <div class="form-group col">
+                {{form.instrument_type_id.label}}
+                {{form.instrument_type_id}}
+            </div>
+            <div class="form-group col">
+                form.batch_template_id.label
+            </div>
+        </div>
+        <div class="form-group">
+            form.constituent_id.label
+            form.constituent_id
+        </div>
+        <div class="sort" style="font-size:0.875rem">
+            <a class='clear' id="clear_constituents" href="#!">Clear</a>
+            |
+            <a class='select_all' id='select_all_constituents' href="#!">Select All</a>
+        </div>
+        <div class="row form-row">
+          <div class="table display">
+              <div class="table-responsive">
+                  <table class="display table-hover small nowrap" style="width:100%; border:1px solid #ced4da" id="constituents_table">
+                      <thead>
+                          <tr>
+                              <th>Test ID</th>
+                              <th>Order</th>
+                              <th>Assay Name</th>
+                              <th>Case No.</th>
+                              <th>Accession<br>Number</th>
+                              <th>Code</th>
+                              <th>Description</th>
+                              <th>Dilution</th>
+                              <th>Directive</th>
+                              <th>Test<br>Order Date</th>
+                              <th>Test<br>Ordered By</th>
+                              <th>Current<br>Amount</th>
+                              <th>Original<br>Amount</th>
+                              <th>Conditions</th>
+                              <th>Priority</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                      {% for item in kwargs['items'] %}
+                          <tr class="rows">
+                              <td>{{item.id}}</td>
+                              <td>
+                                  {% if item.batch_id %}
+                                    {{kwargs['test_id_order'].index(item.id)+1}}
+                                  {% endif %}
+                              </td>
+                              <td>{{item.assay.assay_name}}</td>
+                              <td>{{item.case.case_number}}</td>
+                              <td>{{item.specimen.accession_number}}</td>
+                              <td>{{item.specimen.type.code}}</td>
+                              <td>{{item.specimen.type.description}}</td>
+                              <td>{{item.dilution}}</td>
+                              <td>{{item.directive}}</td>
+                              <td>{{item.create_date.strftime('%Y-%m-%d %H:%M')}}</td>
+                              <td>{{item.created_by}}</td>
+                              <td>{{item.specimen.current_sample_amount}}</td>
+                              <td>{{item.specimen.submitted_sample_amount}}</td>
+                              <td>{{item.specimen.condition}}</td>
+                              <td>{{item.case.priority}}</td>
+                          </tr>
+                      {% endfor %}
+                      </tbody>
+                  </table>
+              </div>
+          </div>
+        </div>
+    {% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function () {
+<!--      $('#test_id').selectpicker('hide');-->
+<!--      $('#test_id_order').prop('hidden', true);-->
+
+          $.each($("#tests tbody tr"),function(){
+             if ($(this).find('td').eq(2).text() != "") {
+                $(this).addClass('table-active');
+             }
+          });
+
+      if ('test_id' in errors) {
+        $('#tests').css('border', '1px solid #DC3545')
+      }
+});
+</script>
+
+
+<script>
+    // Initialize the tests datatable
+    $(document).ready(function () {
+        var table = $('#tests').DataTable({
+            dom: 'tr',
+            scrollX: true,
+            //scrollY : "30vh",
+            //scrollCollapse: true,
+            pageLength: -1,
+            "aaSorting": [[ 0, "asc" ]],
+            "language": {
+             "emptyTable": "Please select an assay to see available tests"
+             }
+        });
+    });
+</script>
+
+<script type=text/javascript>
+// Get pending tests for the selected assay.
+$(function() {
+      $('#assay_id').on('change', function() {
+        $('#test_id_order').val("");
+        $('#test_id').val("")
+        var assay_id = $("#assay_id").val();
+        $('#tests').DataTable().clear().draw();
+         $.getJSON('/batches/get_tests/', {
+            assay_id: assay_id,
+            }, function(data) {
+                var choices = 1;
+                var x = 1
+                for (var test of data.tests) {
+                    $('#tests').DataTable().row.add([
+                        test['#'],
+                        test['id'],
+                        "",
+                        test['assay'],
+                        test['case_number'],
+                        test['accession_numer'],
+                        test['code'],
+                        test['description'],
+                        test['dilution'],
+                        test['directives'],
+                        test['test_date'],
+                        test['test_ordered_by'],
+                        test['current_sample_amount'],
+                        test['submitted_sample_amount'],
+                        test['condition'],
+                        test['priority'],
+                     ]).draw();
+                }
+
+                $('#tests').DataTable().rows().nodes().to$().addClass('rows');
+
+                // Highlight rows where "Current Amount" is <= 0.
+                $('#tests').DataTable().column(10).nodes().to$().each( function (d) {
+                  if ($(this).html() <= '0') {
+                    $(this).parent().addClass('table-danger');
+                    //$(this).parent().css({'color': 'red'});
+                  }
+               });
+
+                $('#test_count').text('Test count: 0');
+                if (data.num_tests != "") {
+                    $('#num_tests').text(" of max: "+data.num_tests)
+                }
+                else {
+                   $('#num_tests').text("")
+                }
+            });
+
+
+            return false;
+         });
+
+    });
+
+</script>
+
+<script type=text/javascript>
+    // When clicking on the tests table, assign an order in the "Order" column
+    //var dataOrder = [];
+    var orderArr = []
+    $("#tests").on('click', 'tbody tr', function (e) {
+        var table = $('#tests').DataTable();
+        if ($('#test_id_order').val() == "") {
+            var dataOrder = []
+        } else {
+            var dataOrder = $('#test_id_order').val().split(",")
+        }
+        var x = dataOrder.length +1
+        var dataArr = [];
+        $(this).toggleClass('table-active');
+        $.each($("#tests tr.table-active"),function(){ //get each tr which has selected class
+            dataArr.push($(this).find('td').eq(1).text()); //find its first td and push the value
+        });
+
+        $('#test_id').selectpicker('val', dataArr);
+
+        var rowIndex = $(this).find('td').eq(0).text();
+        id = $(this).find('td').eq(1).text()
+        order = Number($(this).find('td').eq(2).text())
+
+        //if (orderArr.includes(order) == true) {
+        if (dataOrder.includes(id) == true) {
+             $.each($("#tests tr.table-active"),function( ){
+               if (Number($(this).find('td').eq(2).text()) > order) {
+                  var new_order = Number($(this).find('td').eq(2).text()) - 1;
+                  var idx = $(this).find('td').eq(0).text()
+                  //$(this).find('td').eq(2).text(new_order)
+                 table.cell(idx-1, 2).data(new_order)
+               }
+            });
+            //$(this).find('td').eq(2).text("");
+            table.cell(rowIndex-1, 2).data("");
+            dataOrder.splice(order-1, 1)
+            //table.order([[2, 'asc']]).draw();
+
+
+
+            x--
+
+        } else {
+            y = x++
+            orderArr.push(y)
+            dataOrder.push($(this).find('td').eq(1).text());
+            $('#tests').DataTable().cell(rowIndex-1, 2).data(y);
+
+        }
+
+
+        $('#test_id_order').val(dataOrder);
+
+        var selected =  $('#test_id :selected').length;
+        var text = 'Test count: ' + selected
+        $('#test_count').text(text);
+        var num_tests = Number($('#num_tests').text().slice(1));
+        if (num_tests != "") {
+            if (selected > num_tests) {
+                $('#test_count').css({'color': 'red', 'font-weight':'bold'})
+                $('#num_tests').css({'color': 'red', 'font-weight':'bold'})
+            }
+            else {
+                $('#test_count').css({'color': 'black', 'font-weight':'normal'})
+                $('#num_tests').css({'color': 'black', 'font-weight':'normal'})
+            }
+        }
+
+        });
+</script>
+
+<script>
+     $('#test_id').on('change', function() {
+        var selected =  $('#test_id :selected').length;
+        var text = 'Test count: ' + selected
+        $('#test_count').text(text);
+        var num_tests = Number($('#num_tests').text().slice(1));
+        if (num_tests != "") {
+            if (selected > num_tests) {
+                $('#test_count').css({'color': 'red', 'font-weight':'bold'})
+                $('#num_tests').css({'color': 'red', 'font-weight':'bold'})
+            }
+            else {
+                $('#test_count').css({'color': 'black', 'font-weight':'normal'})
+                $('#num_tests').css({'color': 'black', 'font-weight':'normal'})
+            }
+        }
+     });
+</script>
+
+
+
+<script type=text/javascript>
+    // Clear the selected/highlighted rows
+     $(function() {
+        $('#clear').on('click', function() {
+             $.each($("#tests tbody tr"),function(){
+                 $(this).removeClass('table-active');
+                 $(this).find('td').eq(2).text(""); //find its first td and push the value
+             });
+            $('#test_id_order').val("")
+            var name = event.target.name;
+            var select = document.getElementById(name);
+            $("#test_id").selectpicker('val', [])
+
+            $('#test_count').text("Test count: 0")
+            $('#test_count').css({'color': 'black', 'font-weight':'normal'})
+            $('#num_tests').css({'color': 'black', 'font-weight':'normal'})
+
+         });
+    });
+</script>
+
+<script>
+    // Select all rows in the tests table
+    $('#select_all').click(function() {
+        if ($('#assay_id').val() != 0) {
+             $.each($("#tests tbody tr"),function(){
+                 $(this).addClass('table-active');
+             });
+
+             var selected = [];
+             var x = 1
+             $.each($("#tests tr.table-active"),function(){
+                selected.push($(this).find('td').eq(1).text());
+                $(this).find('td').eq(2).text(x++)
+             });
+
+            $('#test_id').selectpicker('val', selected);
+            $('#test_id_order').val(selected);
+            var selected =  $('#test_id :selected').length;
+            var num_tests = Number($('#num_tests').text().slice(1));
+            var text = 'Test count: ' + selected
+            $('#test_count').text(text);
+            if (selected > num_tests) {
+                $('#test_count').css({'color': 'red', 'font-weight':'bold'})
+                $('#num_tests').css({'color': 'red', 'font-weight':'bold'})
+            }
+        }
+
+    });
+</script>
+
+
+<!--
+<script type=text/javascript>
+$(function() {
+    $('#oldest').on('click', function() {
+        var assay_id = document.getElementById("assay_id").value;
+        $.getJSON('/batches/get_oldest/', {
+            assay_id: assay_id,
+            }, function(data) {
+               $('#test_id').val(data.tests);
+            });
+        return false;
+    });
+});
+</script>
+
+-->
+
+<script type=text/javascript>
+// Select the oldest tests based on the assay's specimen limit
+$(function() {
+    $('#oldest').on('click', function() {
+        $.each($("#tests tbody tr"),function() {
+            if ($(this).hasClass('table-active')) {
+                $(this).toggleClass('table-active');
+                $(this).find('td').eq(2).text("");
+            }
+        });
+        var assay_id = document.getElementById("assay_id").value;
+        var table = $('#tests').DataTable();
+        var dataOrder = []
+        $('#test_id_order').val(dataOrder)
+        $.getJSON('/batches/get_oldest/', {
+            assay_id: assay_id,
+            }, function(data) {
+               $('#test_id').selectpicker('val', data.tests);
+               $('#test_id_order').val(data.test_lst)
+               var selected =  $('#test_id :selected').length;
+               var text = 'Test count: ' + selected
+               $('#test_count').text(text);
+               table.order([[10,'asc']]).draw();
+               //table.rows(data.row_lst).nodes().to$().addClass('table-active').draw();
+               applyPriorityFormatting();
+               var x = 1
+               $.each($("#tests tbody tr"), function() {
+                  if (x <= selected) {
+                    $(this).toggleClass('table-active');
+                    $(this).find('td').eq(2).text(x++);
+                  }
+               });
+            });
+        if ( $('#test_count').css("color") == "rgb(255, 0, 0)") {
+            $('#test_count').css({'color': 'black', 'font-weight':'normal'})
+            $('#num_tests').css({'color': 'black', 'font-weight':'normal'})
+        }
+        //var x = 1
+        //$.each($("#tests tr.table-active"), function() {
+        //  $(this).find('td').eq(2).text(x++);
+        //});
+        return false;
+    });
+});
+
+</script>
+
+<script type=text/javascript>
+// Select the most recent tests based on the assay's specimen limit
+$(function() {
+    $('#newest').on('click', function() {
+       $.each($("#tests tbody tr"),function() {
+            if ($(this).hasClass('table-active')) {
+                $(this).toggleClass('table-active');
+                $(this).find('td').eq(2).text("");
+            }
+        });
+        var assay_id = document.getElementById("assay_id").value;
+        var table = $('#tests').DataTable();
+        var dataOrder = []
+        $('#test_id_order').val(dataOrder)
+        $.getJSON('/batches/get_newest/', {
+            assay_id: assay_id,
+            }, function(data) {
+               $('#test_id').selectpicker('val', data.tests);
+               $('#test_id_order').val(data.test_lst)
+               var selected =  $('#test_id :selected').length;
+               var text = 'Test count: ' + selected
+               $('#test_count').text(text);
+               //table.order([[10,'desc'], [13, 'desc']]).draw();
+               table.order([[10,'desc']]).draw();
+
+               var x = 1
+               $.each($("#tests tbody tr"), function() {
+                  if (x <= selected) {
+                    $(this).toggleClass('table-active');
+                    $(this).find('td').eq(2).text(x++);
+                  }
+               });
+               //table.rows(data.row_lst).nodes().to$().addClass('table-active').draw()
+               applyPriorityFormatting();
+            });
+
+        if ( $('#test_count').css("color") == "rgb(255, 0, 0)") {
+            $('#test_count').css({'color': 'black', 'font-weight':'normal'})
+            $('#num_tests').css({'color': 'black', 'font-weight':'normal'})
+        }
+        return false;
+
+    });
+});
+
+</script>
+
+<script type=text/javascript>
+// Select the tests in optimum order based on the assay's specimen limit
+$(function() {
+    $('#optimum').on('click', function() {
+        //$.each($("#tests tbody tr"),function(){
+        //     $(this).removeClass('table-active');
+        //});
+        var assay_id = document.getElementById("assay_id").value;
+        var table = $('#tests').DataTable();
+        var dataOrder = []
+        $('#test_id')
+        $('#test_id_order').val(dataOrder)
+        $('#tests').DataTable().clear();
+        $.getJSON('/batches/get_optimum/', {
+            assay_id: assay_id,
+            }, function(data) {
+               $('#test_id').selectpicker('val', data.tests);
+               $('#test_id_order').val(data.test_lst)
+               var selected =  $('#test_id :selected').length;
+               var text = 'Test count: ' + selected
+               $('#test_count').text(text);
+               var x = 1
+               for (var test of data.items_lst) {
+                    if (x <= selected) {
+                        y = x++
+                    } else {
+                        y = ""
+                    }
+                    $('#tests').DataTable().row.add([
+                        test['#'],
+                        test['id'],
+                        y,
+                        test['assay'],
+                        (test['priority'] && test['priority'].toLowerCase() === 'high')
+                        ? "<span style='color: red;'><strong>P</strong></span> " + test['case_number']
+                        : test['case_number'],
+                        test['accession_numer'],
+                        test['code'],
+                        test['description'],
+                        test['dilution'],
+                        test['directives'],
+                        test['days_since_submission'],
+                        test['test_date'],
+                        test['test_ordered_by'],
+                        test['current_sample_amount'],
+                        test['submitted_sample_amount'],
+                        test['condition'],
+                        test['priority'],
+                       ]);
+               }
+               table.draw();
+
+               table.order([[0,'asc']]).draw();
+               $('#tests').DataTable().rows().nodes().to$().addClass('rows');
+               table.rows(data.row_lst).nodes().to$().addClass('table-active').draw();
+       
+        });
+        if ( $('#test_count').css("color") == "rgb(255, 0, 0)") {
+            $('#test_count').css({'color': 'black', 'font-weight':'normal'})
+            $('#num_tests').css({'color': 'black', 'font-weight':'normal'})
+        }
+
+        return false;
+
+    });
+});
+
+</script>
+
+<script>
+    // Initialize the constituents datatable
+    $(document).ready(function () {
+        var table = $('#constituents_table').DataTable({
+            dom: 'tr',
+            scrollX: true,
+            //scrollY : "30vh",
+            //scrollCollapse: true,
+            pageLength: -1,
+            "aaSorting": [[ 0, "asc" ]],
+            "language": {
+             "emptyTable": "Please select an assay to see available constituents"
+             }
+        });
+    });
+</script>
+
+<script type=text/javascript>
+    var dataOrder = [];
+    var orderArr = []
+    $("#constituents_table").on('click', 'tbody tr', function (e) {
+        var table = $('#constituents_table').DataTable();
+        var x = dataOrder.length +1
+        var dataArr = [];
+        $(this).toggleClass('table-active');
+        $.each($("#constituents_table tr.table-active"),function(){ //get each tr which has selected class
+            dataArr.push($(this).find('td').eq(0).text()); //find its first td and push the value
+        });
+
+        $('#constituent_id').selectpicker('val', dataArr);
+
+        var rowIndex = $(this).find('td').eq(0).text();
+        id = $(this).find('td').eq(1).text()
+        order = Number($(this).find('td').eq(2).text())
+        });
+
+</script>
+
+<script type=text/javascript>
+     $(function() {
+        $('.clear_constituents').on('click', function() {
+             $.each($("#constituents_table tbody tr"),function(){
+                 $(this).removeClass('table-active');
+            });
+            $('#constituent_id').selectpicker('val', []);
+         });
+    });
+</script>
+
+<script>
+    $('#select_all_constituents').click(function() {
+         $.each($("#constituents_table tbody tr"),function(){
+             $(this).addClass('table-active');
+         });
+         var selected = [];
+         $.each($("#constituents_table tr.table-active"),function(){
+            selected.push(Number($(this).find('td').eq(0).text()));
+         });
+        $('#constituent_id').selectpicker('val', selected);
+    });
+</script>
+
+<script>
+    //Highlights table rows on page load for already selected constituents
+    $(document).ready( function () {
+        let selected = {{kwargs['constituent_id']}}
+        $.each($("#constituents_table tbody tr"),function(){
+             let constituent_id = Number($(this).find('td').eq(0).text());
+             if (selected.includes(constituent_id)) {
+                $(this).addClass('table-active');
+             }
+         });
+    });
+</script>
+
+<script>
+function applyPriorityFormatting() {
+    $('#tests tbody tr').each(function() {
+        let $row = $(this);
+        let priority = $row.find('td').eq(17).text().trim(); // Priority column index
+        let caseCell = $row.find('td').eq(4); // Case No. column index
+
+        // Avoid re-injecting if P already added
+        if (priority === 'High' && !caseCell.html().includes('strong')) {
+            let originalText = caseCell.html().trim();
+            caseCell.html("<span style='color: red;'><strong>P</strong></span> " + originalText);
+        }
+    });
+}
+</script>
+
+
+
+{% endblock %}

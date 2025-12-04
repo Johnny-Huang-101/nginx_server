@@ -1,0 +1,282 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DieCutLabel Version="8.0" Units="twips">
+	<PaperOrientation>Landscape</PaperOrientation>
+	<Id>Small30333</Id>
+	<IsOutlined>false</IsOutlined>
+	<PaperName>30333 1/2 in x 1 in (2 up)</PaperName>
+	<DrawCommands>
+		<Path>
+			<FillMode>EvenOdd</FillMode>
+			<RoundRectangle X="0" Y="0" Width="720" Height="1440" Rx="180" Ry="180" />
+			<RoundRectangle X="720" Y="0" Width="720" Height="1440" Rx="180" Ry="180" />
+		</Path>
+	</DrawCommands>
+	<ObjectInfo>
+		<TextObject>
+			<Name>LOT</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Top</VerticalAlignment>
+			<TextFitMode>ShrinkToFit</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String xml:space="preserve">QCVOL
+_D3095
+_20250103</String>
+					<Attributes>
+						<Font Family="Calibri" Size="6" Bold="True" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="824.766317478983" Y="57" Width="528.233682521017" Height="400.689669367911" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>COUNTER</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Top</VerticalAlignment>
+			<TextFitMode>ShrinkToFit</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String xml:space="preserve">1 of 20</String>
+					<Attributes>
+						<Font Family="Calibri" Size="6" Bold="True" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="1041.01537046304" Y="547.344848591707" Width="311.984629536957" Height="120" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<ImageObject>
+			<Name>QR</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<Image>iVBORw0KGgoAAAANSUhEUgAAAUoAAAFKAQAAAABTUiuoAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAFWSURBVGje7dlLDsMgDARQSxygR8rVc6QcIJIb/4CqiZQdsxgvaEtfVhZ0oKJvayclJSUlJQWhktVsxoaPzR41vZFCUf+gR7N3pxRtOn1LikOtiZtRq+hpfmykuNSGWItKik59BSYgRaX+4ruk/7C92V9JV9GsamcONU0KRUdFINFryGb3IkWhc3z0rfKjFftFhBSLZrof7bxW4DV3xiokxaJj0xzns2rx+XjmJl1Et+puZhF/3BtLikcNRNjPM3QOsRZJsWioyCKqlfjPOa6QAtHeztgvaxvNOVI8GjMydTcypJKC0Qr2MVRylLv7LNK1dJRPjz7XbkoKREcTx+KThwtg0uW0X3vMRzPNxP/bWNL1NAJJ3c9L3zT7Q6SItCeQWJV3RzNSGOr3irF9+knt+M8upKupv/QMqf2QFvchpFA0qxJI/oUppIj0TZGSkpKSkq6mun8BHJgfRL1oN5AAAAAASUVORK5CYII=</Image>
+			<ScaleMode>Uniform</ScaleMode>
+			<BorderWidth>0</BorderWidth>
+			<BorderColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<HorizontalAlignment>Center</HorizontalAlignment>
+			<VerticalAlignment>Center</VerticalAlignment>
+		</ImageObject>
+		<Bounds X="134" Y="57" Width="475.2" Height="475.2" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<ImageObject>
+			<Name>QR_1</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<Image>iVBORw0KGgoAAAANSUhEUgAAAUoAAAFKAQAAAABTUiuoAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAFaSURBVGje7dlBroQgEATQTjwAR/LqHMkDkDBCV4P45yezoxbVC8dpn6sKiGj118qioqKioqIk1FBHtfO6D5Za94r2KUpF+5/a1DjDYVwV5aEtRM/UDs/Z7/SwRTnp3YmDKD31THOq9ZGzKBntPz3YVKw/4jzneVWUhqJiQYJDtEWp6KseYJYoC73bZYRYIuw0ZlNRJupT5VD9rQzTp5ktwYoSUG9iqox36P7Eez3iRPfTVh5sTrNT4nZRMoq2n2HtH2NRlIr6IGwdvE3PFf9IWZSKYp9jPNiyj8BvwYpupXOVWC/chFWJHa9gRQno4auSii3FpU5RJjrLh+HI+fECIMpCI0FMmvgo9n0DWHQ7xXyJNtKNszVY0f10fFwZgw/z5d/9LFEearECMWx7FFFaOudLqP+DFd1G+88VC/t1A1iUjKLWZUjL1N4bwKLb6S8lKioqKiq6m9b8ATr1hGcgzpq8AAAAAElFTkSuQmCC</Image>
+			<ScaleMode>Uniform</ScaleMode>
+			<BorderWidth>0</BorderWidth>
+			<BorderColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<HorizontalAlignment>Center</HorizontalAlignment>
+			<VerticalAlignment>Center</VerticalAlignment>
+		</ImageObject>
+		<Bounds X="134" Y="766.993103640107" Width="489.6" Height="475.2" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>EXP</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Top</VerticalAlignment>
+			<TextFitMode>ShrinkToFit</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String xml:space="preserve">02/03/2025</String>
+					<Attributes>
+						<Font Family="Calibri" Size="6" Bold="True" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="134" Y="547.2" Width="442.846705120647" Height="120" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>PREP_BY</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Top</VerticalAlignment>
+			<TextFitMode>ShrinkToFit</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String xml:space="preserve">TLD</String>
+					<Attributes>
+						<Font Family="Calibri" Size="6" Bold="True" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="712.911905593794" Y="541.827599347324" Width="205.777727613966" Height="120" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>LOT_1</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Top</VerticalAlignment>
+			<TextFitMode>ShrinkToFit</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String xml:space="preserve">QCVOL
+_D3095
+_20250103</String>
+					<Attributes>
+						<Font Family="Calibri" Size="6" Bold="True" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="824.766317478983" Y="769.241411537959" Width="528.233682521017" Height="400.689669367911" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>EXP_1</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Top</VerticalAlignment>
+			<TextFitMode>ShrinkToFit</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String xml:space="preserve">02/03/2025</String>
+					<Attributes>
+						<Font Family="Calibri" Size="6" Bold="True" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="134" Y="1238" Width="442.846705120647" Height="120" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>PREP_BY_1</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Top</VerticalAlignment>
+			<TextFitMode>ShrinkToFit</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String xml:space="preserve">TLD</String>
+					<Attributes>
+						<Font Family="Calibri" Size="6" Bold="True" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="720" Y="1238" Width="205.777727613966" Height="120" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>COUNTER_1</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Top</VerticalAlignment>
+			<TextFitMode>ShrinkToFit</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String xml:space="preserve">1 of 20</String>
+					<Attributes>
+						<Font Family="Calibri" Size="6" Bold="True" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="1041.01537046304" Y="1238" Width="311.984629536957" Height="120" />
+	</ObjectInfo>
+</DieCutLabel>

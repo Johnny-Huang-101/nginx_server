@@ -1,0 +1,642 @@
+
+{% extends "form_template.html" %}
+{% set module_name = 'specimens' %}
+{% block form %}
+
+<style>
+  .comment-box{
+    border:1px solid #b8daff;   /* light blue */
+    border-radius:6px;
+    padding:.5rem .75rem;
+    margin-bottom:.5rem;
+    background:#fff;            /* keep content readable */
+  }
+  .comment-meta{
+    font-size:.875rem;
+    color:#6c757d;              /* muted */
+  }
+  .is-invalid { border: 2px solid #dc3545 !important; }
+</style>
+
+
+    <div class="form-group">
+        <div class="row form-group mb-4">
+            {{form.start_time}}
+            <div class="col">
+                {{form.case_id.label}}
+                {{form.case_id}}
+            </div>
+            {% if kwargs['from_autopsy'] %}
+                <div class="col" style="background: #fdfd96">
+                    {{form.container_id.label}}
+                    {{ form.container_id(id="container_id") }}
+                </div>
+            {% else %}
+                <div class="col">
+                    {{form.container_id.label}}
+                    {{ form.container_id(id="container_id") }}
+                </div>
+            {% endif %}
+            <div class="col">
+                {{form.parent_specimen.label}}
+                {{form.parent_specimen}}
+                <div class="form-group mb-0" style="display: inline-block">
+                    {{form.sub_specimen(class="")}}
+                    {{form.sub_specimen.label}}
+                </div>
+            </div>
+        </div>
+        <div class="row form-group mb-4">
+            <div class="col">
+                {{ form.discipline.label }}
+                {{ form.discipline(id="discipline") }}
+            </div>
+            <div class="col">
+                {{form.specimen_type_id.label}}
+                {{form.specimen_type_id(id="specimen_type_id")}}
+                <div class="form-group mb-0">
+                    <a href="{{ url_for('specimen_types.view_list') }}">Specimen description</a>
+                </div>
+            </div>
+        </div>
+        <div class="row form-group mb-4" style="display: none" id="other-specimen">
+            <div class="col">
+                {{form.other_specimen.label}}
+                {{form.other_specimen}}
+            </div>
+        </div>
+        <hr style="border-width:3px">
+        <div class="row form-group my-4">
+            {% if kwargs['from_autopsy'] %}
+                <div class="col" style="background: #fdfd96">
+                    {{ form.collection_date.label }}<span style="color:red">*</span>
+                    {{ form.collection_date(id="collection_date", class="form-control js-collection-dt", type='date') }}
+                    <div class="form-group mb-0">
+                        {{ form.no_collection_date(class="") }}
+                        {{ form.no_collection_date.label }}
+                    </div>
+                    </div>
+
+                    <div class="col" style="background: #fdfd96">
+                    {{ form.collection_time.label }} e.g., HHMM (no colon)<span style="color:red">*</span>
+                    {{ form.collection_time(id="collection_time", class="form-control js-collection-dt") }}
+                    <div id="collection-datetime-hint" class="text-danger small d-none"></div>
+                    <div class="form-group mb-0">
+                        {{ form.no_collection_time(class="") }}
+                        {{ form.no_collection_time.label }}
+                    </div>
+                    </div>
+
+                <div class="col" style="background: #fdfd96">
+                    {{form.collection_container_id.label}}
+                    {{form.collection_container_id}}
+                </div>
+                <div class="col" style="background: #fdfd96">
+                    {{form.collected_by.label}}
+                    {{form.collected_by}}
+                </div>
+            {% else %}
+                <div class="col">
+  {{ form.collection_date.label }}<span style="color:red">*</span>
+  {{ form.collection_date(id="collection_date", class="form-control js-collection-dt") }}
+  <div class="form-group mb-0" style="display:inline-block">
+    {{ form.no_collection_date(class="") }}
+    {{ form.no_collection_date.label }}
+  </div>
+  <div class="form-group mb-0 ml-3" style="display:inline-block">
+    {{ form.future_collection_date(class="") }}
+    {{ form.future_collection_date.label }}
+  </div>
+</div>
+
+<div class="col">
+  {{ form.collection_time.label }} e.g., HHMM (no colon)<span style="color:red">*</span>
+  {{ form.collection_time(id="collection_time", class="form-control js-collection-dt") }}
+  <div id="collection-datetime-hint" class="text-danger small d-none"></div>
+  <div class="form-group mb-0">
+    {{ form.no_collection_time(class="") }}
+    {{ form.no_collection_time.label }}
+  </div>
+</div>
+
+                <div class="col">
+                    {{form.collection_container_id.label}}
+                    {{form.collection_container_id}}
+                </div>
+                <div class="col">
+                    {{form.collected_by.label}}
+                    {{form.collected_by}}
+                     <div class="form-group mb-0">
+                        {{form.no_collected_by(class="")}}
+                        {{form.no_collected_by.label}}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        <div class="row form-group my-4">
+            <div class="col">
+               {{form.submitted_sample_amount.label}}
+                <div class="input-group">
+                    {{form.submitted_sample_amount}}
+                    <div class="input-group-append">
+                        <div class="input-group-text" id="specimen-units">{{kwargs['units']}}</div>
+                    </div>
+                </div>
+                <div class="form-group mb-0" style="display: inline-block">
+                    {{form.unknown_sample_amount(class="")}}
+                    {{form.unknown_sample_amount.label}}
+                </div>
+            </div>
+            <div class="col">
+                {{form.condition.label}}
+                {{form.condition}}
+                <div class="form-group mb-0">
+                    <a href="../static/filesystem/Samples Infographic 20241031.pdf" target="_blank">Specimen Conditions Reference</a>
+                </div>
+            </div>
+        </div>
+        <hr style="border-width:3px">
+        <div class="row form-group my-4">
+            <div class="col">
+                {{form.evidence_comments.label}}
+                {{form.evidence_comments}}
+                 <div style="font-size:0.9rem">
+                    <a href="#" data-toggle="modal" data-target="#comments_modal">Add comment</a>
+                    |
+                    <a href="#!" id="sort" >Sort</a>
+                    |
+                    <a href="#!" id="undo" >Undo</a>
+                    |
+                    <a href="#!" id="clear" >Clear</a>
+                 </div>
+            </div>
+        </div>
+        {% if function != 'Add' %}
+            <div class="row form-group mt-4">
+                <div class="col">
+                    <b>Comments</b><br>
+                    {% if kwargs['comments']|length >= 1 %}
+                        {% for comment in kwargs['comments'] %}
+                            <div class="comment-box">
+                            <div>{{ comment.comment_text | e }}</div>
+                            <div class="comment-meta">
+                                — {{ comment.created_by }} {{ comment.create_date.strftime('%m/%d/%Y') }}
+                            </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        No Comments to Display
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+        <div class="row form-group mt-4">
+            {% if function == 'Add' %}
+                <div class="col">
+                    {{form.comments.label}}
+                    {{form.comments(id="comments-text")}}
+                    <a href="javascript:void(0);" onclick="insertText('Alias:\nMRN:')">Alias, MRN:</a>
+                </div>
+            {% endif %}
+            <div class="col">
+                {{ form.communications.label }} (SFOCME Internal Use Only)
+                {{ form.communications }}
+            </div>
+        </div>
+    </div>
+    {% if not kwargs['give_custody'] and function != 'Add' %}
+    {% elif function != 'Update' or kwargs['custody_input'] %}
+        <div class="alert alert-info">
+            <b>Transfer Custody</b>
+            <div class="row form-group mt-4">
+                <div class="col">
+                    {{form.custody_type.label}}
+                    {{form.custody_type}}
+                </div>
+                <div class="col">
+                    {{form.custody.label}}
+                    {{form.custody}}
+                    <a href="../static/filesystem/LockerLayout.jpg" target="_blank" id="locker-layout">Locker Layout</a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    <div class="modal" tabindex="-1" role="dialog" id="close_modal">
+        <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Select comments</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p style="text-align: center">
+                        By confirming, you will submit the current container.
+                        <br>
+                        To submit more specimen, you will need to print initial labels again
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <div class="col">
+                        {{form.hidden_tag()}}
+                        {{form.submit_close(class='btn btn-primary submitBtnHisto', style='width: 100%', **{'data-class': 'specimens'})}}
+                    </div>
+                    <div class="col">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" style="width: 100%">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block buttons %}
+    {% if function == 'Add' %}
+        {{form.submit(class='btn btn-primary submitBtnHisto', **{'data-class': 'specimens'})}}
+        {% if kwargs['from_autopsy'] %}
+            <a data-target="#close_modal" data-toggle="modal" class="btn btn-primary">Submit and Close Container</a>
+        {% endif %}
+        {{form.submit_exit(class='btn btn-primary submitBtnHisto', **{'data-class': 'specimens'})}}
+        {{form.submit_attach(class='btn btn-primary submitBtnHisto', **{'data-class': 'specimens'})}}
+    {% endif %}
+    {% if function != 'Add' %}
+        {{form.submit_attach(class='btn btn-primary')}}
+    {% endif %}
+{% endblock %}
+
+
+{% block modals %}
+
+<div class="modal" tabindex="-1" role="dialog" id="comments_modal">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select comments</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="evidence_comment_form">
+                    {% for field in kwargs['evidence_comment_form'] %}
+                    {% if field.name not in ['csrf_token'] %}
+                    <div class="form-group">
+                        {{field.label}}
+                        {{field(class='form-control')}}
+                        <div class="invalid-feedback" id="{{field.name}}_invalid">
+                        </div>
+                    </div>
+
+                    {% endif %}
+                    {% endfor %}
+                </form>
+                <a href="/static/filesystem/evidence_comments/evidence_envelope_reference.pdf" target="_blank">Evidence Envelope Reference</a>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button class="btn btn-primary" id="submit_comment">Submit</button>
+            </div>
+        </div>
+        <div id="success" align="center">WELP</div>
+    </div>
+</div>
+
+
+<!-- Modal: Confirm specimen type change -->
+<div class="modal fade" id="specimenTypeChangeModal" tabindex="-1" role="dialog" aria-labelledby="specimenTypeChangeLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="specimenTypeChangeLabel">Confirm Specimen Type Change</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="specimenTypeChangeMessage">
+        <p id="specimenTypeChangeMessage"></p>
+        <br><br>
+        <b>Please re-print accession labels.<b>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelSpecimenChange">Cancel</button>
+        <button type="button" class="btn btn-primary" id="confirmSpecimenChange">Yes, Continue</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+    const autopsyViewUrl = "{{url_for('cases.autopsy_view')}}";
+</script>
+<script src="/static/js/evidence_comments.js"></script>
+<script src="/static/js/specimens.js"></script>
+<script src = "../../static/js/label_printing.js" type="text/javascript" charset="UTF-8"> </script>
+{% if function == 'Edit' %}
+    <script>
+      $(function(){
+        $('a.btn.btn-secondary').each(function(){
+          // `this` is the old <a>
+          $(this).replaceWith(
+            $('<a>', {
+              href:  '',
+              class: 'btn btn-secondary',
+              html:  'Exit',
+              style: 'display: none',
+            })
+          );
+        });
+      });
+    </script>
+{% endif %}
+<script>
+//Adding JS for Alias and MRN
+function insertText(text) {
+  const textarea = document.getElementById('comments-text');
+  if (!textarea) return;
+  const normalized = text.replace(/\\n/g, '\n');
+  const needsBreak = textarea.value && !textarea.value.endsWith('\n') ? '\n' : '';
+  textarea.value = (textarea.value || '') + needsBreak + normalized;
+  textarea.focus();
+}
+</script>
+<script>
+// --- Live validation (non-blocking): specimen (collection date+time) vs container (submission date+time)
+(function () {
+  // Elements (IDs must exist in your template)
+  const elContainer = document.getElementById('container_id');
+  const elDate      = document.getElementById('collection_date');
+  const elTime      = document.getElementById('collection_time');
+  const elHint      = document.getElementById('collection-datetime-hint');
+  const elNoDate    = document.getElementById('no_collection_date'); // optional
+  const elNoTime    = document.getElementById('no_collection_time');  // optional
+
+  if (!elContainer || !elDate || !elTime || !elHint) return;
+
+  const form = elDate.closest('form') || elTime.closest('form') || document;
+
+  // --- Helpers ---
+  const debounce = (fn, ms = 250) => {
+    let t;
+    return (...args) => { clearTimeout(t); t = setTimeout(() => fn.apply(null, args), ms); };
+  };
+
+  // While typing: strip non-digits, cap at 4 (no padding)
+  function normalizeTimeForTyping(val) {
+    if (!val) return '';
+    const digits = String(val).replace(/\D/g, '');
+    return digits.slice(0, 4);
+  }
+
+  // On blur / for validation: pad 3 digits to 4; cap at 4 otherwise
+  function padTimeOnBlur(val) {
+    if (!val) return '';
+    const digits = String(val).replace(/\D/g, '');
+    if (digits.length === 3) return '0' + digits;
+    return digits.slice(0, 4);
+  }
+
+  function toggleInvalidStyles(isInvalid, message) {
+    // Red outline on date & time inputs (both have .js-collection-dt in your template)
+    const group = form.querySelectorAll('.js-collection-dt');
+    group.forEach(el => el.classList.toggle('is-invalid', !!isInvalid));
+
+    // Inline warning text
+    if (isInvalid && message) {
+      elHint.textContent = message;
+      elHint.classList.remove('d-none');
+    } else {
+      elHint.textContent = '';
+      elHint.classList.add('d-none');
+    }
+
+    // IMPORTANT: do NOT disable submission — allow submit regardless.
+    // (No button disabling here.)
+  }
+
+  function getValidateEndpoint() {
+    const segs = window.location.pathname.split('/').filter(Boolean);
+    const moduleName = segs[0] || 'specimens';
+    return `/${moduleName}/validate-collection`;
+  }
+
+  async function validateNow() {
+    // If user explicitly set "no date/time", don't warn
+    if ((elNoDate && elNoDate.checked) || (elNoTime && elNoTime.checked)) {
+      toggleInvalidStyles(false);
+      return;
+    }
+
+    const containerId = elContainer.value;
+    const collDate    = elDate.value;                 // yyyy-mm-dd or mm/dd/yyyy (backend tolerant)
+    const collTime    = padTimeOnBlur(elTime.value);  // ensure HHMM for comparison
+
+    // Incomplete → clear warning, don't block user
+    if (!containerId || !collDate || !collTime || collTime.length !== 4) {
+      toggleInvalidStyles(false);
+      return;
+    }
+
+    try {
+      const endpoint = getValidateEndpoint();
+      const params = new URLSearchParams({
+        container_id: containerId,
+        collection_date: collDate,
+        collection_time: collTime
+      });
+
+      const res = await fetch(`${endpoint}?${params.toString()}`, {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (!res.ok) {
+        toggleInvalidStyles(false); // fail-open on network issues
+        return;
+      }
+
+      const data = await res.json();
+      if (data && data.ok === false) {
+        toggleInvalidStyles(true, data.message || 'Warning: Specimen collection is be after container submission date/time.');
+      } else {
+        toggleInvalidStyles(false);
+      }
+    } catch {
+      toggleInvalidStyles(false); // fail-open on exceptions
+    }
+  }
+
+  const validateDebounced = debounce(validateNow, 250);
+
+  // --- Events ---
+  ['change', 'keyup', 'blur'].forEach(evt => {
+    elContainer.addEventListener(evt, validateDebounced);
+    elDate.addEventListener(evt, validateDebounced);
+    elTime.addEventListener(evt, validateDebounced);
+  });
+  if (elNoDate) elNoDate.addEventListener('change', validateDebounced);
+  if (elNoTime) elNoTime.addEventListener('change', validateDebounced);
+
+  // Time input: sanitize on input (no padding while typing)
+  elTime.addEventListener('input', () => {
+    const norm = normalizeTimeForTyping(elTime.value);
+    if (norm !== elTime.value) elTime.value = norm;
+  });
+
+  // Time blur: pad 3-digit times like "240" -> "0240", then validate
+  elTime.addEventListener('blur', () => {
+    const padded = padTimeOnBlur(elTime.value);
+    if (padded !== elTime.value) elTime.value = padded;
+    validateDebounced();
+  });
+
+  // Initial pass for prefilled edits
+  document.addEventListener('DOMContentLoaded', validateNow);
+})();
+</script>
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // --- Elements ---
+  const specimenSelect = document.getElementById("specimen_type_id");
+  if (!specimenSelect) return;
+
+
+  const selectedText = specimenSelect.options[specimenSelect.selectedIndex]?.textContent?.trim();
+  if (!selectedText || selectedText === "Please select a specimen type" || selectedText === "No discipline selected") {
+    return; // Skip all confirmation logic
+  }
+
+
+  const initialSpecimenType = specimenSelect.value;
+  const form = document.querySelector("form");
+  const submitAttachBtn = document.getElementById("submit_attach");
+  const submitBtn = document.getElementById("submit");
+
+  let confirmed = false; // global confirmation tracker
+
+  // --- Shared function for handling both buttons ---
+  function handleSubmitClick(event, buttonType) {
+    const currentType = specimenSelect.value;
+
+    // Only block if changed and not confirmed yet
+    if (currentType !== initialSpecimenType && !confirmed) {
+      event.preventDefault();
+      event.stopPropagation();
+    
+
+      const oldText = specimenSelect.querySelector(`option[value='${initialSpecimenType}']`)?.textContent || initialSpecimenType;
+      const newText = specimenSelect.querySelector(`option[value='${currentType}']`)?.textContent || currentType;
+
+      const messageEl = document.getElementById("specimenTypeChangeMessage");
+      if (messageEl) {
+        messageEl.innerHTML = `The specimen type has been changed from <b>"${oldText}"</b> to <b>"${newText}"</b>.<br><br>Please <b>re-print</b> the accession label.`;
+      }
+
+
+      // Show modal
+      $("#specimenTypeChangeModal").modal("show");
+
+      // Modal buttons
+      const confirmBtn = document.getElementById("confirmSpecimenChange");
+      const cancelBtn = document.getElementById("cancelSpecimenChange");
+
+      confirmBtn.onclick = function () {
+        $("#specimenTypeChangeModal").modal("hide");
+        confirmed = true;  // mark as confirmed
+
+        if (buttonType == "attach"){
+            submitAttachBtn.click();
+        }
+        else{
+            submitBtn.click();
+        }
+       
+      };
+
+      cancelBtn.onclick = function () {
+        $("#specimenTypeChangeModal").modal("hide");
+        confirmed = false;
+      };
+    }
+    // else: no type change, normal submit continues
+  }
+
+  // --- Event listeners ---
+  if (submitAttachBtn)
+    submitAttachBtn.addEventListener("click", function(e) {
+      handleSubmitClick(e, "attach");
+    });
+
+  if (submitBtn)
+    submitBtn.addEventListener("click", function(e) {
+      handleSubmitClick(e, "submit");
+    });
+});
+</script>
+
+
+
+{% endblock %}
+
+
+
+
+
+<!--$(function() {-->
+<!--  // Declare array-->
+<!--  let myList = [];-->
+<!--  let idList = [];-->
+
+<!--  // Function to handle the change event-->
+<!--  function handleSelectChange() {-->
+<!--    // Clear existing values in the list-->
+<!--    myList = [];-->
+
+<!--    // Iterate over each select element with an id starting with "location_"-->
+<!--    $('select[id^="location_"]').each(function() {-->
+<!--      // Push the selected value for each matching element-->
+<!--      let selectedValue = $(this).val();-->
+<!--      let htmlID = $(this).attr("id");-->
+<!--      myList.push(selectedValue);-->
+<!--      idList.push(htmlID);-->
+<!--    });-->
+<!--    console.log("My List:", myList)-->
+<!--    console.log("ID List:", idList);-->
+<!--    // Make a single AJAX request with the entire myList array-->
+<!--    $.getJSON('/get_spec_audit_choices/', {-->
+<!--      location_list: myList,-->
+<!--      id_list: idList-->
+<!--    }, function(data) {-->
+<!--      console.log("choices:", data.choices);-->
+<!--      Object.entries(data.choices).forEach(([key, value]) => {-->
+<!--        console.log("Key:", key);-->
+<!--        console.log("Value:", value);-->
+<!--        $('#'+key+'_1').html(value);-->
+<!--        // $('#'+key+'_1').selectpicker('val', 0);-->
+<!--        // $('#'+key+'_1').selectpicker('refresh');-->
+<!--        // $('#'+key+'_1').selectpicker('render');-->
+
+<!--      });-->
+
+<!--      console.log(optionHTML);-->
+<!--    });-->
+
+<!--    console.log(myList);-->
+<!--  }-->
+
+<!--  handleSelectChange();-->
+
+<!--  // Attach the event handler to the change event of all select elements-->
+<!--  $('select[id^="location_"]:not([id$="_1"])').change(handleSelectChange);-->
+
+<!--});-->

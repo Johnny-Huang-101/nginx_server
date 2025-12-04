@@ -1,0 +1,345 @@
+{% extends "view_template.html" %}
+
+{% block alerts %}
+{% endblock %}
+
+{% block buttons %}
+{% endblock %}
+
+{% block view %}
+{% endblock %}
+
+{% block accordion %}
+<div class="card">
+    <div class="card-header view-card-header" id="details">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#details-coll" aria-expanded="false" aria-controls="details">
+            <span><i class="fa-solid fa-chevron-down mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Compound Details
+        </button>
+    </div>
+    <div id="details-coll" class="collapse show" aria-labelledby="details">
+        <div class="card-body">
+            {% if item.iupac %}
+            <div align="center">
+                <img src="../static/filesystem/structures/{{item.id}}.png">
+            </div>
+            {% endif %}
+            <div class="my-3">
+                <table class="table table-hover table-striped details-table" style="width:100%">
+                    <tr>
+                        <th>SFOCME Name</th>
+                        <td>{{item.name}}</td>
+                    </tr>
+                    <tr>
+                        <th>Synonyms</th>
+                        <td>{{item.synonyms}}</td>
+                    </tr>
+                    <tr>
+                        <th>Code</th>
+                        <td>{{item.code}}</td>
+                    </tr>
+                    <tr>
+                        <th>Drug Class</th>
+                        <td>
+                            <a href="{{ url_for('drug_classes.view', item_id=item.id) }}">
+                                {{item.drug_class.name}}
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Date Added</th>
+                        <td>
+                            {% if item.inventory_add_date %}
+                                {{item.inventory_add_date.strftime('%m/%d/%Y')}}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>IUPAC Name</th>
+                        <td>
+                            {{item.iupac}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>CAS No.</th>
+                        <td>{{item.cas_no}}</td>
+                    </tr>
+                    <tr>
+                        <th>Molecular Formula</th>
+                        <td>{{item.formula}}</td>
+                    </tr>
+                    <tr>
+                        <th>Exact Mass</th>
+                        <td>{{item.mass}}</td>
+                    </tr>
+                    <tr>
+                        <th>InChIKey</th>
+                        <td>{{item.inchikey}}</td>
+                    </tr>
+                    <tr>
+                        <th>SMILES</th>
+                        <td>{{item.smiles}}</td>
+                    </tr>
+                    <tr>
+                        <th>PubChem</th>
+                        <td>
+                            {% if item.inchikey %}
+                                <a href="https://pubchem.ncbi.nlm.nih.gov/#query={{item.inchikey}}" target="_blank">
+                                    View <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header view-card-header" id="drug-monographs" >
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#drug-monographs-collapse" aria-expanded="false" aria-controls="drug-monographs">
+            <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Drug Monograph
+        </button>
+    </div>
+    <div id="drug-monographs-collapse" class="collapse" aria-labelledby="drug-monographs-heading">
+        <div class="card-body">
+            <div class="my-3">
+                {% if item.monograph %}
+                <table class="table table-hover table-striped details-table" style="width:100%">
+                    <tr>
+                        <th>Monograph Name</th>
+                        <td>
+                            <a href="{{url_for('drug_monographs.view', item_id=item.monograph.id)}}">
+                                {{item.monograph.name}}
+                            </a>
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Formulation/Trade Names</th>
+                        <td>{{item.monograph.formulation_tradename}}</td>
+                    </tr>
+                    <tr>
+                        <th>Pharm Class</th>
+                        <td>{{item.monograph.pharm_class}}</td>
+                    </tr>
+                    <tr>
+                        <th>Intended Use</th>
+                        <td>{{item.monograph.intended_use}}</td>
+                    </tr>
+                    <tr>
+                        <th>Mechanism of Action</th>
+                        <td>{{item.monograph.mech_of_action}}</td>
+                    </tr>
+                    <tr>
+                        <th>Effects and Toxicity</th>
+                        <td>{{item.monograph.effects_and_tox}}</td>
+                    </tr>
+                    <tr>
+                        <th>Impairment</th>
+                        <td>{{item.monograph.impairment}}</td>
+                    </tr>
+                    <tr>
+                        <th>Elimination Half-life</th>
+                        <td>{{item.monograph.half_life}}</td>
+                    </tr>
+                    <tr>
+                        <th>Time to Peak Concentration</th>
+                        <td>{{item.monograph.time_to_peak_conc}}</td>
+                    </tr>
+                    <tr>
+                        <th>AM Non-toxic Blood or Serum Concentration</th>
+                        <td>{{item.monograph.am_nontox_blood_serum_conc}}</td>
+                    </tr>
+                    <tr>
+                        <th>AM Non-toxic Blood or Serum Concentration Information</th>
+                        <td>{{item.monograph.am_nontox_information}}</td>
+                    </tr>
+                    <tr>
+                        <th>PM Toxic/Lethal Blood or Serum Concentration</th>
+                        <td>{{item.monograph.pm_tox_blood_serum_conc}}</td>
+                    </tr>
+                    <tr>
+                        <th>AM and PM Toxic/Lethal Blood or Serum Concentration Information</th>
+                        <td>{{item.monograph.ampm_tox_lethal_coc_info}}</td>
+                    </tr>
+                    <tr>
+                        <th>Blood to Serum Ratio</th>
+                        <td>{{item.monograph.blood_to_serum_ratio}}</td>
+                    </tr>
+                    <tr>
+                        <th>ADME: Absorption, Distribution, Metabolism, Excretion</th>
+                        <td>{{item.monograph.adme}}</td>
+                    </tr>
+                    <tr>
+                        <th>PK Variability</th>
+                        <td>{{item.monograph.pk_variability}}</td>
+                    </tr>
+                    <tr>
+                        <th>DDI (Drug-Drug Interactions)</th>
+                        <td>{{item.monograph.drug_interaction}}</td>
+                    </tr>
+                    <tr>
+                        <th>DDI Reference</th>
+                        <td>{{item.monograph.drug_interaction_ref}}</td>
+                    </tr>
+                    <tr>
+                        <th>Postmortem Redistribution</th>
+                        <td>{{item.monograph.pm_redistributions}}</td>
+                    </tr>
+                    <tr>
+                        <th>Postmortem Considerations</th>
+                        <td>{{item.monograph.pm_considerations}}</td>
+                    </tr>
+                    <tr>
+                        <th>Human Performance Considerations</th>
+                        <td>{{item.monograph.hp_considerations}}</td>
+                    </tr>
+                    <tr>
+                        <th>References</th>
+                        <td>{{item.monograph.references}}</td>
+                    </tr>
+                </table>
+                {% else %}
+                    <p align="center">No monograph details</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header view-card-header" id="components-card">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#components-card-collapse" aria-expanded="false" aria-controls="components-card">
+            <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Components
+        </button>
+    </div>
+    <div id="components-card-collapse" class="collapse" aria-labelledby="components-card-heading">
+        <div class="card-body">
+            <a class="btn btn-secondary mb-3 export" href="#" name="components">Export</a>
+            <div class="table display">
+                <div class="table-responsive">
+                    <table class="display table-striped table-hover nowrap small view-table" style="width:100%" id="components-table">
+                        <thead>
+                        <tr>
+                            <th>Component Name</th>
+                            <th>Drug Class</th>
+                            <th>Rank</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for component in kwargs['components'] %}
+                        <tr>
+                            <td>
+                                <a href="{{url_for('components.view', item_id=component.id)}}">
+                                    {{component.name}}
+                                </a>
+                            </td>
+                            <td>{{component.drug_class.name}}</td>
+                            <td>{{component.rank}}</td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header view-card-header" id="scope-card">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#scope-card-collapse" aria-expanded="false" aria-controls="scope-card">
+            <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Scope
+        </button>
+    </div>
+    <div id="scope-card-collapse" class="collapse" aria-labelledby="scope-card-heading">
+        <div class="card-body">
+            <a class="btn btn-secondary mb-3 export" href="#" name="scope">Export</a>
+            <div class="table display">
+                <div class="table-responsive">
+                    <table class="display table-striped table-hover nowrap small view-table" style="width:100%;" id="scope-table">
+                        <thead>
+                        <tr>
+                            <th>Assay</th>
+                            <th>Component</th>
+                            <th>Limit of Detection</th>
+                            <th>Internal Standard?</th>
+                            <th>Internal Standard Conc.</th>
+                            <th>Units</th>
+                            <th>Validated</th>
+                            <th>Report Notes</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for scope in kwargs['scope'] %}
+                        <tr>
+                            <td>{{scope.assay.assay_name}}</td>
+                            <td>
+                                <a href="{{url_for('scope.view', item_id=scope.id)}}">
+                                    {{scope.component.name}}
+                                </a>
+                            </td>
+                            <td>{{scope.limit_of_detection}}</td>
+                            <td>{{scope.internal_standard}}</td>
+                            <td>{{scope.internal_standard_conc}}</td>
+                            <td>{{scope.unit.name}}</td>
+                            <td>{{scope.validated}}</td>
+                            <td>{{scope.report_notes}}</td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $.each($('#details-table td'), function () {
+            var text = $(this).html()
+            var regex = /\[(\d+(?:,\d+)*)\]/g;
+            const matches = text.matchAll(regex)
+            for (const match of matches) {
+              var text = text.replace(match[0], match[0].sup())
+            }
+
+            $(this).html(text);
+        });
+    });
+</script>
+<script>
+   $(document).ready( function () {
+        $('#components-table').DataTable({
+            pageLength: -1,
+            scrollX: true,
+            scrollY: '50vh',
+            scrollCollapse: true,
+            lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+            order: [],
+        });
+    });
+</script>
+<script>
+   $(document).ready( function () {
+        $('#scope-table').DataTable({
+            pageLength: -1,
+            scrollX: true,
+            scrollY: '50vh',
+            scrollCollapse: true,
+            lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+            order: [],
+        });
+    });
+</script>
+{% endblock %}

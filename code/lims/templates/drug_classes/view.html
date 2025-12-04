@@ -1,0 +1,219 @@
+{% extends "view_template.html" %}
+
+{% block alerts %}
+{% endblock %}
+
+{% block buttons %}
+{% endblock %}
+
+{% block view %}
+{% endblock %}
+
+{% block accordion %}
+    <div class="card">
+        <div class="card-header view-card-header" id="details">
+            <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#details-coll" aria-expanded="false" aria-controls="details">
+                <span><i class="fa-solid fa-chevron-down mr-2 chevron" style="border: '#FF0000'"></i></span>
+                Drug Class Details
+            </button>
+        </div>
+        <div id="details-coll" class="collapse show" aria-labelledby="details">
+            <div class="card-body">
+                <div class="my-3">
+                    <table class="table table-hover table-striped details-table" style="width:50%" id="details-table">
+                        <tr>
+                            <th>Name</th>
+                            <td>{{item.name}}</td>
+                        </tr>
+                        <tr>
+                            <th>PM Rank</th>
+                            <td>{{item.pm_rank}}</td>
+                        </tr>
+                        <tr>
+                            <th>D/M/P/N/C Rank</th>
+                            <td>{{item.m_d_rank}}</td>
+                        </tr>
+                        <tr>
+                            <th>X Rank</th>
+                            <td>{{item.x_rank}}</td>
+                        </tr>
+                        <tr>
+                            <th>Q Rank</th>
+                            <td>{{item.q_rank}}</td>
+                        </tr>
+                        <tr>
+                            <th>Scope Rank</th>
+                            <td>{{item.scope_rank}}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header view-card-header" id="compounds">
+            <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#compounds-collapse" aria-expanded="false" aria-controls="compounds">
+                <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+                Compounds
+            </button>
+        </div>
+        <div id="compounds-collapse" class="collapse" aria-labelledby="compounds-heading">
+            <div class="card-body">
+                <div class="table display">
+                    <div class="table-responsive">
+                        <table class="display table-striped table-hover nowrap small datatable" style="width:100%;" id="compounds-table">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Code</th>
+                                <th>Monograph</th>
+                                <th>IUPAC Name</th>
+                                <th>CAS No.</th>
+                                <th>Molecular Formula</th>
+                                <th>Exact Mass</th>
+                                <th>InChIKey</th>
+                                <th>SMILES</th>
+                                <th>Date Created</th>
+                                <th>Created By</th>
+                                <th>Modify Date</th>
+                                <th>Modified By</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            {% for item in kwargs['compounds'] %}
+                            <tr>
+                                <td>
+                                    <a href="{{url_for('compounds.view', item_id=item.id)}}">
+                                        {{item.name}}
+                                    </a>
+                                </td>
+                                <td>{{item.code}}</td>
+                                <td>
+                                    {% if item.monograph %}
+                                    <a href="{{url_for('drug_monographs.view', item_id=item.monograph.id)}}">
+                                        {{item.monograph.name}}
+                                    </a>
+                                    {% endif %}
+                                </td>
+                                <td>{{item.iupac}}</td>
+                                <td>
+                                    <a href="https://pubchem.ncbi.nlm.nih.gov/#query={{item.cas_no}}" target="_blank">
+                                        {{item.cas_no}}
+                                    </a>
+                                </td>
+                                <td>{{item.formula}}</td>
+                                <td>{{item.mass}}</td>
+                                <td>{{item.inchikey}}</td>
+                                <td>{{item.smiles}}</td>
+                                <td>{{item.create_date.strftime('%m/%d/%Y %H:%M')}}</td>
+                                <td>{{item.created_by}}</td>
+                                <td>
+                                    {% if item.modify_date %}
+                                    {{item.modify_date.strftime('%m/%d/%Y %H:%M')}}
+                                    {% endif %}
+                                </td>
+                                <td>{{item.modified_by}}</td>
+                            </tr>
+
+                            {% endfor %}
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header view-card-header" id="components">
+            <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#components-collapse" aria-expanded="false" aria-controls="components">
+                <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+                Components
+            </button>
+        </div>
+        <div id="components-collapse" class="collapse" aria-labelledby="components-heading">
+            <div class="card-body">
+                <div class="table display">
+                    <div class="table-responsive">
+                        <table class="display table-striped table-hover nowrap small datatable" style="width:100%;" id="components-table">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Rank</th>
+                                <th>Date Created</th>
+                                <th>Created By</th>
+                                <th>Modify Date</th>
+                                <th>Modified By</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            {% for item in kwargs['components'] %}
+                            <tr>
+                                <td>
+                                    <a href="{{url_for('components.view', item_id=item.id)}}">
+                                        {{item.name}}
+                                    </a>
+                                </td>
+                                <td>{{item.rank}}</td>
+                                <td>{{item.create_date.strftime('%m/%d/%Y %H:%M')}}</td>
+                                <td>{{item.created_by}}</td>
+                                <td>
+                                    {% if item.modify_date %}
+                                    {{item.modify_date.strftime('%m/%d/%Y %H:%M')}}
+                                    {% endif %}
+                                </td>
+                                <td>{{item.modified_by}}</td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function () {
+        $('#compounds-table').DataTable({
+            pageLength: 100,
+            scrollX: true,
+            scrollY: '50vh',
+            scrollCollapse: true,
+            order: [],
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('#components-table').DataTable({
+            pageLength: 100,
+            scrollX: true,
+            scrollY: '50vh',
+            scrollCollapse: true,
+            order: [],
+        });
+    });
+</script>
+
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,2713 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="utf-8">
+
+    <link rel="shortcut icon" href="{{ config['ICON_IMG'] }}" type="image/png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/plug-ins/1.13.5/features/searchHighlight/dataTables.searchHighlight.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker3.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.21.4/dist/bootstrap-table.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.22/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/1.7.0/css/select.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/colreorder/1.7.0/css/colReorder.dataTables.min.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/4.3.0/css/fixedColumns.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap4.min.css">
+
+    <!--Selectable-->
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js" integrity="sha384-+sLIOodYLS7CIrQpBjl+C7nPvqq+FbNUBDunl/OZv93DB7Ln/533i8e/mZXLi/P+" crossorigin="anonymous"></script>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/js/bootstrap-datepicker.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
+    <script src="https://cdn.datatables.net/plug-ins/1.13.5/features/searchHighlight/dataTables.searchHighlight.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.21.4/dist/bootstrap-table.min.js" ></script>
+    <script src="https://unpkg.com/bootstrap-table@1.21.4/dist/extensions/filter-control/bootstrap-table-filter-control.min.js" ></script>
+
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/fixedheader/3.2.3/js/dataTables.fixedHeader.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src=https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js></script>
+    <script src="https://bartaz.github.io/sandbox.js/jquery.highlight.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+    <script src="https://cdn.datatables.net/scroller/2.2.0/js/dataTables.scroller.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/fixedcolumns/4.3.0/js/dataTables.fixedColumns.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
+    <script src="https://cdn.datatables.net/select/1.7.0/js/dataTables.select.min.js"></script>
+    <script src="https://cdn.datatables.net/colreorder/1.7.0/js/dataTables.colReorder.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.22.1/dist/bootstrap-table-locale-all.min.js" ></script>
+    <script src="//cdn.rawgit.com/rainabba/jquery-table2excel/1.1.0/dist/jquery.table2excel.min.js" ></script>
+
+<!--    VVVV DO NOT DELETE VVVVV-->
+     <!-- The Font Awesome used is linked to OCME.FLD@sfgov.org -->
+<!--    <script src="https://kit.fontawesome.com/643d090ed8.js" crossorigin="anonymous"></script>-->
+
+        <!-- The Font Awesome used is linked to sue.pearring@sfgov.org -->
+    <script src="https://kit.fontawesome.com/8f7ddd2719.js" crossorigin="anonymous"></script>
+
+<!--        ^^^^ DO NOT DELETE ^^^^-->
+
+    <script src = "../static/dymo.connect.framework.js" type="text/javascript" charset="UTF-8"> </script>
+    <style>
+
+    mark {
+        background-color: yellow;
+        padding-left: 0px;
+        padding-right: 0px;
+    }
+
+:root {
+    --bg: hsl(201, 27%, 10%);
+  }
+
+  #icon,
+  #icon2 {
+    width: 22px;
+    height: auto;
+    position: relative;
+    cursor: pointer;
+  }
+
+  #icon rect,
+  #icon path,
+  #icon2 path {
+    transition: all 0.5s ease-in-out;
+  }
+
+  #icon rect {
+    fill: green; /* Start with green */
+  }
+  #icon2 path#body {
+    fill: green; /* Start with green */
+  }
+
+  #icon path,
+  #icon2 path#hook {
+    stroke: green; /* Start with green */
+    stroke-dasharray: 20;
+  }
+
+  #icon.red rect,
+  #icon2.red path#body {
+    fill: red;
+  }
+
+  #icon.red path,
+  #icon2.red path#hook {
+    stroke: red;
+    stroke-dasharray: 30;
+    stroke-dashoffset: 5;
+  }
+
+.navbar {
+    background-color: #f8f9fa;
+    padding: 10px;
+    position: relative; /* Add this line */
+}
+
+
+.navbar-nav {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: row; /* Ensure items are displayed horizontally */
+}
+
+.nav-item {
+    margin-right: 10px;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: #333;
+}
+
+
+<!--.dropdown {-->
+<!--    position: static; /* Change position to static or remove this property */-->
+<!--}-->
+
+<!--.dropdown-menu {-->
+<!--    display: none;-->
+<!--    position: absolute; /* Change position to absolute */-->
+<!--    top: 100%; /* Position the dropdown menu below the dropdown toggle */-->
+<!--    left: 0; /* Align the dropdown menu with the left edge of the dropdown toggle */-->
+<!--    background-color: #fff;-->
+<!--    min-width: 150px;-->
+<!--    padding: 10px;-->
+<!--    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);-->
+<!--}-->
+
+<!--.dropdown:hover .dropdown-menu {-->
+<!--    display: block;-->
+<!--}-->
+
+
+
+
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+      }
+
+      @media (min-width: 48rem) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+
+      .b-example-divider {
+        width: 100%;
+        height: 3rem;
+        background-color: rgba(0, 0, 0, .1);
+        border: solid rgba(0, 0, 0, .15);
+        border-width: 1px 0;
+        box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
+      }
+
+      .b-example-vr {
+        flex-shrink: 0;
+        width: 1.5rem;
+        height: 100vh;
+      }
+
+      .bi {
+        vertical-align: -.125em;
+        fill: currentColor;
+      }
+
+      .nav-scroller {
+        position: relative;
+        z-index: 2;
+        height: 2.75rem;
+        overflow-y: hidden;
+      }
+
+      .nav-scroller .nav {
+        display: flex;
+        flex-wrap: nowrap;
+        padding-bottom: 1rem;
+        margin-top: -1px;
+        overflow-x: auto;
+        text-align: center;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .btn-bd-primary {
+        --bd-violet-bg: #712cf9;
+        --bd-violet-rgb: 112.520718, 44.062154, 249.437846;
+
+        --bs-btn-font-weight: 600;
+        --bs-btn-color: var(--bs-white);
+        --bs-btn-bg: var(--bd-violet-bg);
+        --bs-btn-border-color: var(--bd-violet-bg);
+        --bs-btn-hover-color: var(--bs-white);
+        --bs-btn-hover-bg: #6528e0;
+        --bs-btn-hover-border-color: #6528e0;
+        --bs-btn-focus-shadow-rgb: var(--bd-violet-rgb);
+        --bs-btn-active-color: var(--bs-btn-hover-color);
+        --bs-btn-active-bg: #5a23c8;
+        --bs-btn-active-border-color: #5a23c8;
+      }
+      .bd-mode-toggle {
+        z-index: 1500;
+      }
+
+      .btn-custom {
+        padding: 14px 40px;
+        font-size: 20px;
+        width: 200px
+      }
+
+      .datatable-input {
+      border-width: 0px;
+      }
+
+    .bootstrap-select .btn {
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        background-color: #fff;
+    }
+
+    .select-pending .btn {
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        background-color: #fff3cd;
+    }
+
+    .disabled-pending {
+        background-color: #fff3cd;
+    }
+
+    .bootstrap-select .disabled {
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        background-color: #e9ecef !important;
+        font-color: #495057;
+    }
+
+    .bgdiv {
+      max-width: 65rem;
+    }
+
+    .bgimg-wrap {
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bgimg {
+      opacity: 0.1;
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      max-width:100%;
+      vertical-align: middle;
+    }
+
+    .bg-content {
+      position: relative;
+      height: 100vh;
+      vertical-align: middle;
+    }
+
+    .jumbotroni {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    transform: translate(-50%, -50%);
+}
+    .form-control.is-invalid {
+    background-position: right calc(1rem + .1875rem) center;
+    }
+        .form-control.is-valid {
+    background-position: right calc(1rem + .1875rem) center;
+    }
+
+    #header {
+        position: fixed;
+    }
+
+    #body {
+        overflow: auto;
+        overflow-y: auto;
+        max-height: 100vh;
+    }
+
+#header-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+    .booleanfield {
+        height: 15px;
+        width: 15px;
+        position:relative;
+        left: 130px;
+        bottom: 40px;
+    }
+
+    .booleanfield2 {
+        height: 15px;
+        width: 15px;
+        position:relative;
+        left: 85px;
+        bottom: -4px;
+    }
+
+    .t-tip {
+        border-bottom: 1px dotted black
+    }
+
+    .ui-tooltip-content {
+      background: #007bff;
+      color: #FFFFFF;
+      max-width: 1000px;
+    }
+
+    .ui-tooltip {
+      background: #007bff;
+      border-radius: 10px;
+      max-width: 1000px;
+      box-shadow: none;
+    }
+
+    .vertical-center {
+      position: relative;
+      top: 50%;
+      -ms-transform: translateY(-50%);
+      transform: translateY(-50%);
+    }
+
+        .icon-list {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh; /* Adjust height as needed */
+            margin: 0;
+        }
+        .icon-list-item {
+            margin-bottom: 10px;
+            font-size: 34px; /* Adjust icon size as needed */
+        }
+
+
+#length {
+    padding-top: 0px;
+    padding-bottom: 0px;
+    height: 2rem;
+}
+
+.alert-list {
+    margin-bottom: 0px;
+}
+
+
+        .btn-size {
+        font-size: 0.72rem;
+        padding: 4px 8px;
+        height: 27px;
+        width: 27px;
+
+       }
+
+        .btn-icon {
+            font-size: 10px;
+        }
+
+        .datatable td {
+            padding-top: 6px !important;
+            padding-bottom: 6px !important;
+            align-content: center
+        }
+
+        .details-table th, .details-table td {
+            padding-top: 6px !important;
+            padding-bottom: 6px !important;
+        }
+
+        .version {
+            display: flex;
+            align-items: center;
+            font-size:12px;
+        }
+
+        .chevron {
+            width: 0.7vw;
+        }
+
+    .dropdown-submenu {
+        position: relative;
+    }
+
+    .dropdown-submenu .dropdown-menu {
+        top: 0;
+        left: 100%;
+        margin-top: -1px;
+        display: none;
+        position: absolute;
+    }
+
+    .dropdown-submenu:hover .dropdown-menu {
+        display: block;
+    }
+
+            .submit-anchor {
+            color: #007bff; /* Default link color (blue) */
+            cursor: pointer; /* Change cursor to pointer on hover */
+            border: none; /* Remove button border */
+            background: none; /* Remove button background */
+            padding: 0; /* Remove button padding */
+            font: inherit; /* Inherit font styles */
+            margin-left: 8%
+        }
+
+        .submit-anchor:hover {
+            text-decoration: underline; /* Underline text */
+        }
+
+        .disabled-link {
+            pointer-events: none;
+            color: gray; /* Optional: style it to look disabled */
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -1%;
+            right: -5%;
+            padding: 2.5% 5%;
+            border-radius: 50%;
+            background-color: white;
+            border: 0.5mm solid black;
+            color: blue;
+            font-size: 8px;
+            font-weight: bold;
+        }
+
+        .click {
+            display: none
+        }
+
+        .click-show {
+        }
+
+
+
+</style>
+
+
+</head>
+
+
+<body>
+
+<!--<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">-->
+<!--    <symbol id="case-icon">-->
+<!--        <path d="M184 48H328c4.4 0 8 3.6 8 8V96H176V56c0-4.4 3.6-8 8-8zm-56 8V96H64C28.7 96 0 124.7 0 160v96H192 320 512V160c0-35.3-28.7-64-64-64H384V56c0-30.9-25.1-56-56-56H184c-30.9 0-56 25.1-56 56zM512 288H320v32c0 17.7-14.3 32-32 32H224c-17.7 0-32-14.3-32-32V288H0V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V288z"/>-->
+<!--    </symbol>-->
+<!--</svg>-->
+<!--<svg width="35" height="35">-->
+<!--    <use xlink:href="#case-icon"></use>-->
+<!--</svg>-->
+
+<!--start of navbar-->
+
+<div class="container-fluid col">
+    <div class="row flex-nowrap">
+        <div class="container" style="width:5%; padding: 0px; display: none;" id="small-navbar">
+            <aside style="width: 5%; position:fixed; height:100%">
+                <div class="row">
+                    <div class="col border-right overflow-auto vh-100 border-right">
+                        <ul class="icon-list" style="text-align:center">
+                            <!--                    <a onclick="toggleSidebar()" href="#" style="text-align: right">-->
+                            <!--                        <i class="fa-solid fa-bars"></i>-->
+                            <!--                    </a>-->
+
+                            <li class="list-unstyled py-3">
+
+                                <a  href="{{url_for('core.index') }}" class="link-body-emphasis text-decoration-none">
+
+                                    <!--<img src="{{url_for('static',filename='current_display/city_seal.png')}}" width="100" height="100">-->
+                                    <img src="{{config['LOGO_IMG']}}" width="100" alt="">
+                                </a>
+                              <li class="alert alert-light text-center" role="alert" style="margin-top: 1rem;">
+                                {% if current_user.permissions in ['Admin', 'Owner', 'Developer'] or current_user.is_authenticated%}
+                                    Last FA sync: {{ minutes_since_import }} min ago.<br>
+                                    <a href="{{url_for('cases.force_export_fa_cases')}}" data-html="true" data-toggle="tooltip"
+                                        title = "
+                                            Forces export/import of most recent day.<br><br>
+                                            Regular scheduled imports:<br>
+                                            <ul>
+                                                <li><b>0-1 day old&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b> - Every 15 minutes.
+                                                <li><b>1-7 days old&nbsp;&nbsp;&nbsp;&nbsp;</b> - Top of every hour.
+                                                <li><b>8-31 days old&nbsp;&nbsp;</b> - 6am and 7pm, daily.
+                                                <li><b>0-365 days old</b> - 4am, daily.
+                                            </ul>
+                                        ">
+                                        Force FA Sync
+                                    </a><br>
+                                {% else %}
+                                    <a>Last FA sync: {{ minutes_since_import }} min ago.</a>
+                                {% endif %}
+                              </li>
+                            {% if current_user.is_authenticated and current_user.permissions in ['Admin', 'Owner', 'ADM-Management'] %}
+                            <a class="link-body-emphasis all-drops-collapse py-3"
+                               style="font-weight:bold; padding-right:0px;" data-toggle="tooltip" title="Dashboard" href="{{ url_for('dashboard.get_dashboard')}}">
+                                <i class="fa-solid fa-gauge-high"
+                                   style="font-size:35px;"></i>
+                            </a>
+                            {% endif %}
+                            {% if current_user.is_authenticated and current_user.permissions in ['Admin', 'Owner', 'ADM-Management'] %}
+                            <a href="{{ url_for('drug_prevalence.get_drug_prevalence') }}" data-toggle="tooltip" title="Drug Prevalence" class="all-drops-collapse py-3" style="display: none;">
+                                <!--    drug prevalence -->
+                                <i class="fa-solid fa-arrow-trend-up"
+                                   style="font-size:35px;"></i>
+                            </a>
+                            {% endif %}
+                            {% if current_user.is_authenticated and current_user.permissions in ['Admin', 'Owner', 'ADM-Management'] %}
+                            <a onclick="toggleSidebar()" href="#" class="all-drops-collapse py-3"  data-toggle="tooltip" data-placement="left" title="OD Tracker">
+                                <!--    OD Tracker -->
+                                <i class="fa-solid fa-person-falling-burst"
+                                   style="font-size:35px;"></i>
+                            </a>
+                            {% endif %}
+                            {% if current_user.is_authenticated and current_user.permissions in ['Admin', 'Owner', 'ADM-Management'] %}
+                            <a href="{{ url_for('case_map.map')}}" class="all-drops-collapse py-3"  data-toggle="tooltip" title="Case Map" style="display:none;">
+                                <!--    case map -->
+                                <i class="fa-solid fa-map-location-dot"
+                                   style="font-size:35px;"></i>
+                            </a>
+                            {% endif %}
+                            {% if current_user.is_authenticated and current_user.status == 'Active' %}
+                            <li class="border-top my-3" style="border-width:4px !important"></li>
+                            <a href="#" onclick="toggleSidebar()" class="all-drops-collapse sidebar-img py-3" id="case-management-img"  data-toggle="tooltip" title="Case Management" data-target="case-management">
+
+                                <i class="fa-solid fa-briefcase"
+                                   style="font-size:35px;"></i>
+                            </a>
+
+                            {% if current_user.is_authenticated and current_user.permissions not in ['INV', 'MED', 'ADM', 'MED-Autopsy'] %}
+                            <a href="#" onclick="toggleSidebar()" class="all-drops-collapse sidebar-img py-3" id="testing-img" data-target="testing"  data-toggle="tooltip" title="Testing">
+                                <i class="fa-solid fa-flask-vial"
+                                   style="font-size:35px;"></i>
+                            </a>
+
+                            <a href="#" onclick="toggleSidebar()" class="all-drops-collapse sidebar-img py-3" id="resources-img" data-target="resource-management"  data-toggle="tooltip" title="Resources">
+                                <i class="fa-solid fa-toolbox" aria-hidden="true"
+                                   style="font-size:35px;"></i>
+                            </a>
+
+                            <a href="#" onclick="toggleSidebar()" class="all-drops-collapse sidebar-img py-3" id="quality-assurance-img" data-target="quality-assurance"  data-toggle="tooltip" title="Quality Assurance">
+                                <i class="fa-solid fa-ranking-star"
+                                   style="font-size:35px;"></i>
+                            </a>
+
+                            <a href="#" onclick="toggleSidebar()" class="all-drops-collapse sidebar-img py-3" id="connections-img" data-target="connection-management"  data-toggle="tooltip" title="Connections">
+                               <i class="fa-solid fa-address-book"
+                                   style="font-size:35px;"></i>
+                            </a>
+
+                            <a href="#" onclick="toggleSidebar()" class="all-drops-collapse sidebar-img py-3" id="custom-lists-img" data-target="custom-lists"  data-toggle="tooltip" title="Custom Lists">
+                                <i class="fa-solid fa-list pr-1"
+                                   style="font-size:35px;"></i>
+                            </a>
+                            {% endif %}
+
+                            {% if current_user.is_authenticated and current_user.permissions in ['Admin', 'Owner', 'ADM-Management'] %}
+                            <a href="#" onclick="toggleSidebar()" class="all-drops-collapse sidebar-img py-3" id="admin-img" data-target="admin"  data-toggle="tooltip" title="Admin">
+                                <i class="fa-solid fa-unlock"
+                                   style="font-size:35px"></i>
+                            </a>
+                            {% endif %}
+
+                            <div class="dropdown py-3">
+                                <span data-toggle="dropdown">
+                                    <a href="#" class="all-drops-collapse sidebar-img" id="profile-img" data-toggle="tooltip" title="{{current_user.full_name}}">
+                                        <i class="fa-solid fa-circle-user"
+                                           style="font-size:35px"></i>
+                                    </a>
+                                </span>
+                                <ul class="dropdown-menu dropdown-menu-right">
+                                    <li><a href="{{ url_for('users.update_password', item_id=current_user.id) }}" class="dropdown-item">Change Password</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a  href="{{ url_for('users.logout') }}" class="dropdown-item">Log out</a></li>
+                                </ul>
+                            </div>
+                            {% endif %}
+
+
+                        </ul>
+                    </div>
+                </div>
+            </aside>
+        </div>
+        <div class="flex-shrink-0 pl-3" style="width: 15%; border-style; display: none;" id="sidebar" >
+            <aside style="width: 15%; position:fixed; height:100%">
+                <div class="stay">
+                    <div class="list-group overflow-auto border-right" style="height:97vh" id="scroll">
+                        <div style="display: flex; justify-content: space-between">
+                            <!--                       <div id="lock-click" class="status-unlocked">-->
+                            <!--                           <div id="icon">-->
+                            <!--                               <div id="icon2">-->
+                            <!--                                   <svg viewBox="0 0 22 25" xmlns="http://www.w3.org/2000/svg">-->
+                            <!--                                       <path id="hook"-->
+                            <!--                                             d="M5.73633 10.4592V7.32508C5.73633 4.31064 8.18002 1.86694 11.1944 1.86694C14.2089 1.86694 16.6526 4.31064 16.6526 7.32508V10.4592"-->
+                            <!--                                             stroke-width="3.5" fill="none"/>-->
+                            <!--                                       <path id="body"-->
+                            <!--                                             d="M3.50537 10.1519H18.8831C20.5399 10.1519 21.8831 11.4951 21.8831 13.1519V21.4387C21.8831 23.0956 20.5399 24.4387 18.8831 24.4387H3.50537C1.84852 24.4387 0.505371 23.0956 0.505371 21.4387V13.1519C0.505371 11.4951 1.84852 10.1519 3.50537 10.1519ZM11.1945 13.9858C10.0865 13.9858 9.18823 14.884 9.18823 15.9921V18.3328C9.18823 19.4408 10.0865 20.3391 11.1945 20.3391C12.3026 20.3391 13.2008 19.4408 13.2008 18.3328V15.9921C13.2008 14.884 12.3026 13.9858 11.1945 13.9858Z"-->
+                            <!--                                             fill="none"/>-->
+                            <!--                                   </svg>-->
+                            <!--                               </div>-->
+                            <!--                           </div>-->
+                            <!--                       </div>-->
+
+                            <a href="#" onclick="toggleLock()" id="lock-click-second">
+                                <i class="fa-solid fa-lock-open"></i>
+                            </a>
+
+                            <a href="#" onclick="toggleLock()" id="lock-click-third" style="display:none">
+                                <i class="fa-solid fa-lock"></i>
+                            </a>
+                            <a href="#" onclick="toggleSidebar()"
+                               style="text-align: right; padding-right: 7px; padding-top: 3px;" id="x-sidebar-toggle">
+                                <i class="fa-solid fa-x" style="font-size: 1.3rem;"></i>
+                            </a>
+                        </div>
+
+
+
+
+                        <div class="py-3" style="text-align: center">
+                            <a href="{{url_for('core.index') }}" class="link-body-emphasis text-decoration-none">
+                                <!--<img src="{{url_for('static',filename='current_display/city_seal.png')}}" width="100" height="100">-->
+                                <img src="{{config['LOGO_IMG']}}" width="150"  alt="">
+                            </a>
+                        </div>
+                        <span style="font-size:52px; font-weight:bold; color: #7AD7EA; text-align: center;" id="current-system-type"></span>
+                        <div style="text-align: center">
+
+                            <a href="{{url_for('core.index') }}" class="link-body-emphasis text-decoration-none">
+                                <span style="font-size:32px; font-weight:bold;">CLIO</span>
+<!--                                <span style="font-size:2rem; font-weight:bold;">OCME FLDB</span>-->
+                            </a>
+                        </div>
+                      <div class="alert alert-light text-center" role="alert" style="margin-top: 1rem;">
+                            {% if current_user.permissions in ['Admin', 'Owner', 'Developer'] or current_user.is_authenticated %}
+                                Last FA sync: {{ minutes_since_import }} min ago.<br>
+                                <a href="{{url_for('cases.force_export_fa_cases')}}" data-html="true" data-toggle="tooltip"
+                                        title = "
+                                            Forces export/import of most recent day.<br><br>
+                                            Regular scheduled imports:<br>
+                                            <ul>
+                                                <li><b>0-1 day old&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b> - Every 15 minutes.
+                                                <li><b>1-7 days old&nbsp;&nbsp;&nbsp;&nbsp;</b> - Top of every hour.
+                                                <li><b>8-31 days old&nbsp;&nbsp;</b> - 6am and 7pm, daily.
+                                                <li><b>0-365 days old</b> - 4am, daily.
+                                            </ul>
+                                        ">
+                                    Force FA Sync
+                                </a><br>
+                            {% else %}
+                                <a>Last FA sync: {{ minutes_since_import }} min ago.</a>
+                            {% endif %}
+                      </div>
+                        {% if current_user.is_authenticated and current_user.status == 'Active' %}
+                        <!--            <button onclick="vanish()">Remove</button>-->
+
+                        {% endif %}
+                        <!--         <div class="row">-->
+                        <!--            <div class="col">--> 
+                        <!--                <img src="\static\city_seal.png" width="100" height="100">-->
+                        <!--            </div>-->
+                        <!--            <div class="col">-->
+                        <!--                <a href="{{url_for('core.index') }}" class="link-body-emphasis text-decoration-none">-->
+                        <!--                    <span style="font-size:32px">FLDB</span>-->
+                        <!--                </a>-->
+                        <!--            </div>-->
+                        <!--        </div>-->
+                        {% if current_user.permissions in ['Admin', 'Developer', 'Owner', 'ADM-Management'] %}
+                        <ul class="list-unstyled my-3">
+                            <li class="border-top"></li>
+                            <li class="my-3">
+                                <a href="{{ url_for('dashboard.get_dashboard')}}" class="link-body-emphasis" style="font-weight:bold">
+                                    <i class="fa-solid fa-gauge-high fa-lg"></i>
+                                    FLD Dashboard
+                                </a>
+                            </li>
+                            <li class="my-3" style="display: none;">
+                                <a href="{{ url_for('drug_prevalence.get_drug_prevalence') }}" class="link-body-emphasis" style="font-weight:bold">
+                                    <i class="fa-solid fa-arrow-trend-up fa-lg"></i>
+                                    Drug Prevalence
+                                </a>
+                            </li>
+                            <li class="my-3" style="display: none;">
+                                {% if current_user.is_authenticated and current_user.permissions in ['Admin', 'Owner', 'ADM-Management'] %}
+                                <a href="#" class="link-body-emphasis" style="font-weight:bold; display: none;">
+                                    <i class="fa-solid fa-solid fa-person-falling-burst"></i>
+                                    OD Tracker
+                                </a>
+                                {% endif %}
+                            </li>
+
+                            {% if current_user.is_authenticated and current_user.status == 'Active' %}
+                            <li class="my-3" style="display:none;">
+                                <a href="{{ url_for('case_map.map')}}" class="link-body-emphasis" style="font-weight:bold; display: none;">
+                                    <i class="fa-solid fa-map-location-dot fa-lg"></i>
+                                    Case Map
+                                </a>
+                            </li>
+                            {% endif %}
+                            <li class="my-3">
+                                <a href="{{ url_for('cases.autopsy_view')}}" class="link-body-emphasis" style="font-weight:bold">
+                                    <i class="fa fa-user-md" aria-hidden="true"></i>
+                                    Autopsy View
+                                </a>
+                            </li>
+                            <li class="border-top"></li>
+                        <li class="my-3">
+                            {% if current_user.permissions == 'MED' and current_user.initials == 'CSL' %}
+                            <a href="{{ url_for('ame_dashboard.get_ame_dashboard')}}" class="link-body-emphasis" style="font-weight:bold;">
+                                <i class="fa-solid fa-laptop-medical"></i>
+                                CME Dashboard
+                            </a>
+                            {% elif current_user.permissions == 'MED' %}
+                                <a href="{{ url_for('ame_dashboard.get_ame_dashboard')}}" class="link-body-emphasis" style="font-weight:bold; display: none;">
+                                <i class="fa-solid fa-laptop-medical"></i>
+                                AME Dashboard
+                            </a>
+                            {% elif current_user.permissions in ['Owner','Admin', 'ADM-Management'] %}
+                            <a href="{{ url_for('ame_dashboard.get_ame_dashboard')}}" class="link-body-emphasis" style="font-weight:bold;">
+                                <i class="fa-solid fa-laptop-medical"></i>
+                                CME Dashboard
+                            </a>
+                            {% endif %}
+                        </li>
+                        </ul>
+
+                        {% if current_user.is_authenticated and current_user.status == 'Active' and current_user.permissions != 'View' %}
+
+                            <ul class="list-unstyled my-1">
+                                <form method='GET' action="{{ url_for('cases.parse_case_number')}}" target="_blank">
+                                    <div class="row">
+                                        <div style="col">
+                                            <input class="form-control ml-3" name=case_number placeholder="Enter Case Number" style="width:12.5rem" oninput="this.value = this.value.toUpperCase()">
+                                        </div>
+                                        <div style="col">
+                                            <button class="btn btn-primary ml-2" type="submit">Go</button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                                <p style="color: red; font-size: 0.90rem">{{session['case_search_error']}}</p>
+
+                                <li class="border-top"></li>
+                                <div class="pr-2" align="right" style="font-size: 0.8rem">
+                                    <a href="#" id="expand">Expand</a> | <a href="#" id="collapse">Collapse</a>
+                                </div>
+
+                            <li class="list-unstyled my-3 ">
+                                <a href="#" class="link-body-emphasis dropdown-toggle section" style="font-weight:bold" data-toggle="collapse" data-target="#case-management-collapse" aria-expanded="false" id="case-management">
+                                    <i class="fa-solid fa-briefcase fa-lg pr-1"></i>
+                                    Case Management
+                                </a>
+                                <div class="coll-toggle collapse show" id="case-management-collapse">
+                                    <ul class="btn-toggle-nav list-unstyled fw-normal">
+                                        <li>
+                                            <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis" data-toggle="collapse" data-target="#cases-collapse"></i></a>
+                                            <a href="{{ url_for('cases.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="cases_alert">
+                                                Cases
+                                            </a>
+                                            <div class="collapse" id="cases-collapse">
+                                                <ul style="left-padding: 12px">
+                                                    <li>
+                                                        <a href="{{ url_for('case_types.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="case_types_alert">
+                                                            Case Types
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{ url_for('default_clients.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="default_clients_alert">
+                                                           Default Clients
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{ url_for('retention_policies.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="retention_policies_alert">
+                                                            Retention Policies
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{ url_for('genders.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="genders_alert">
+                                                            Genders
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{ url_for('races.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="races_alert">
+                                                            Races
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{ url_for('narratives.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="narratives_alert">
+                                                            Narratives
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                        {% if current_user.permissions in ['Owner', 'Admin', 'Developer', 'FLD', 'FLD-MethodDevelopment'] %}
+                                            <li>
+                                                <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis" style="font-weight:bold" data-toggle="collapse" data-target="#containers-collapse"></i></a>
+                                                <a href="{{ url_for('containers.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="containers_alert">
+                                                    Containers
+                                                </a>
+                                                <div class="collapse" id="containers-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('container_types.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="container_types_alert">
+                                                                Container Types
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis"  data-toggle="collapse" data-target="#specimens-collapse"></i></a>
+                                                <a href="{{ url_for('specimens.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="specimens_alert">
+                                                    Specimens
+                                                </a>
+                                                <div class="collapse" id="specimens-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('specimen_types.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="specimen_types_alert">
+                                                                Specimen Types
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{{ url_for('specimen_conditions.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="specimen_conditions_alert">
+                                                                Specimen Conditions
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{{ url_for('specimen_collection_containers.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="specimen_collection_containers_alert">
+                                                                Collection Vessels
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{{ url_for('specimen_collection_container_types.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="specimen_collection_container_types_alert">
+                                                                Collection Vessel Types
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{{ url_for('specimen_audit.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="specimen_audit_alert">
+                                                                Specimen Audit
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                        {% endif %}
+                                        <li><a href="{{ url_for('tests.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="tests_alert">Tests</a></li>
+                                        <li>
+                                            <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis"  data-toggle="collapse" data-target="#batches-collapse"></i></a>
+                                            <a href="{{url_for('batches.view_list')}}" class="link-body-emphasis d-inline-flex my-1 module" id="batches_alert">
+                                                Batches
+                                            </a>
+                                            <div class="collapse" id="batches-collapse">
+                                                <ul style="left-padding: 12px">
+                                                    <li>
+                                                        <a href="{{ url_for('batch_templates.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="batch_templates_alert">
+                                                            Batch Templates
+                                                        </a>
+                                                    </li>
+<!--                                                    <li>-->
+<!--                                                        <a href="{{ url_for('sequence_header_mappings.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="sequence_header_mappings_alert">-->
+<!--                                                            Sequence Header Mappings-->
+<!--                                                        </a>-->
+<!--                                                    </li>                                                    -->
+                                                    <li>
+                                                        <a href="{{ url_for('batch_records.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="batch_records_alert">
+                                                            Batch Records
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{ url_for('batch_constituents.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="batch_constituents">
+                                                            Batch Constituents
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{ url_for('sample_formats.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="sample_formats_alert">
+                                                            Sample Formats
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                        <li><a href="{{url_for('results.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="results_alert">Results</a></li>
+                                        <li><a href="{{url_for('cases.drafting') }}" class="link-body-emphasis d-inline-flex my-1 module" id="drafting_alert">Drafting</a></li>
+                                        <li>
+                                            <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis"  data-toggle="collapse" data-target="#reports-collapse"></i></a>
+                                            <a href="{{url_for('reports.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="reports_alert">
+                                                Reports
+                                            </a>
+                                            <div class="collapse" id="reports-collapse">
+                                                <ul style="left-padding: 12px">
+                                                    <li>
+                                                        <a href="{{ url_for('report_templates.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="report_templates_alert">
+                                                            Report Templates
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{ url_for('report_results.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="report_results_alert">
+                                                            Report Results
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{ url_for('report_comments.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="report_comments_alert">
+                                                            Report Comments
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                        {% if current_user.is_authenticated and current_user.permissions in ['Admin', 'Owner', 'ADM-Management'] %}
+                                            <li>
+                                                <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis"  data-toggle="collapse" data-target="#records-collapse"></i></a>
+                                                <a href="{{url_for('records.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="records_alert">
+                                                    Records
+                                                </a>
+                                                <div class="collapse" id="records-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('record_types.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="record_types_alert">
+                                                                Record Types
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                        {% endif %}
+                                        <li>
+                                            <a href="{{url_for('disseminations.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="disseminations_alert">
+                                                Disseminations
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis"  data-toggle="collapse" data-target="#requests-collapse"></i></a>
+                                            <a href="{{url_for('requests.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="requests_alert">
+                                                Requests
+                                            </a>
+                                            <div class="collapse" id="requests-collapse">
+                                                <ul style="left-padding: 12px">
+                                                    <li>
+                                                        <a href="{{ url_for('request_types.view_list') }}" class="link-body-emphasis d-inline-flex" style="color:black" aria-expanded="true">
+                                                            Request Types
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <a href="{{url_for('returns.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="returns_alert">
+                                                Returns
+                                            </a>
+                                        </li>
+<!--                                        <li><a href="#" class="link-body-emphasis d-inline-flex my-1 module" id="litigation_packets_alert">Litigation Packets</a></li>-->
+                                         <li>
+                                             {% if current_user.is_authenticated and current_user.permissions in ['Admin', 'Owner', 'Developer', 'ADM-Management', 'FLD-Administrative', 'FLD'] %}
+                                            <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis"  data-toggle="collapse" data-target="#litigation-packet-collapse"></i></a>
+
+                                                <a href="{{url_for('litigation_packets.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="litigation_packets_alert">
+                                                    Packets
+                                                </a>
+                                                  {% if current_user.is_authenticated and current_user.permissions in ['Admin', 'Owner', 'Developer', 'ADM-Management'] %}
+                                                <div class="collapse" id="litigation-packet-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li style="display: none">
+                                                            <a href="{{ url_for('litigation_packet_templates.view_list') }}" class="link-body-emphasis d-inline-flex" style="color:black" aria-expanded="true">
+                                                                Packet Content Templates
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{{ url_for('lit_packet_admin_templates.view_list') }}" class="link-body-emphasis d-inline-flex" style="color:black" aria-expanded="true">
+                                                                Packet Admin
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                                  {% endif %}
+                                                 {% endif %}
+                                            </li>
+                                            <li>
+                                                <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis"  data-toggle="collapse" data-target="#bookings-collapse"></i></a>
+                                                <a href="{{url_for('bookings.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="bookings_alert">
+                                                    Bookings
+                                                </a>
+                                                <div class="collapse" id="bookings-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('booking_purposes.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="booking_purposes_alert">
+                                                                Purposes
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{{ url_for('booking_formats.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="booking_formats_alert">
+                                                                Formats
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{{ url_for('booking_locations.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="booking_locations_alert">
+                                                                Locations
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{{ url_for('booking_changes.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="booking_changes_alert">
+                                                                Changes
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{{url_for('booking_information_provided.view_list')}}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="booking_information_provided_alert">
+                                                                Information Provided
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{{url_for('booking_information_provider.view_list')}}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="booking_information_provider_alert">
+                                                                Information Provider
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{{ url_for('booking_jurisdiction.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="booking_jurisdiction_alert">
+                                                                Jurisdiction
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{{ url_for('booking_types.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="booking_types_alert">
+                                                                Types
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis"  data-toggle="collapse" data-target="#comments-collapse"></i></a>
+                                                <a href="{{url_for('comments.view_list')}}" class="link-body-emphasis d-inline-flex my-1 module" id="comments_alert">
+                                                    Comments Reference
+                                                </a>
+                                                <div class="collapse" id="comments-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('comment_instances.view_list') }}" class="link-body-emphasis d-inline-flex" style="color:black" aria-expanded="true">
+                                                                Comment Instances
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li><li>
+                                                <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis"  data-toggle="collapse" data-target="#evidence-comments-collapse"></i></a>
+                                                <a href="{{url_for('evidence_comments.view_list')}}" class="link-body-emphasis d-inline-flex my-1 module" id="evidence_comments_alert">
+                                                    Evidence Comments
+                                                </a>
+                                                <div class="collapse" id="evidence-comments-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('evidence_comments_reference.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="evidence_comments_reference_alert">
+                                                                Evidence Comments Reference
+                                                            </a>
+                                                        </li>
+                                                        {% if current_user.permissions in ['Admin', 'Owner', 'ADM-Management'] %}
+                                                            <li>
+                                                                <a href="{{ url_for('evidence_comments.upload_envelope_reference') }}" class="link-body-emphasis d-inline-flex" style="color:black" aria-expanded="true">
+                                                                    Upload Evidence Envelope Reference
+                                                                </a>
+                                                            </li>
+                                                        {% endif %}
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                        <hr class="dropdown-divider">
+                                    </div>
+                                </li>
+                                <li class="list-unstyled my-3 ">
+                                    <a href="#" class="link-body-emphasis dropdown-toggle fw-bold section" style="font-weight:bold" data-toggle="collapse" data-target="#testing-collapse" aria-expanded="false">
+                                        <i class="fa-solid fa-flask-vial pr-1"></i>
+                                        Testing
+                                    </a>
+                                    <div class="coll-toggle collapse show" id="testing-collapse">
+                                        <ul class="btn-toggle-nav list-unstyled fw-normal">
+                                            <li>
+                                                <a href="{{ url_for('drug_classes.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="drug_classes_alert">
+                                                    Drug Classes
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{ url_for('compounds.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="compounds_alert">
+                                                    Compounds (RMI Index)
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{ url_for('drug_monographs.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="drug_monographs_alert">
+                                                    Drug Monographs
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis"  data-toggle="collapse" data-target="#components-collapse"></i></a>
+                                                <a href="{{ url_for('components.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="components_alert">
+                                                    Components
+                                                </a>
+                                                <div class="collapse" id="components-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('compounds_components_reference.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="compounds_components_reference_alert">
+                                                                Compound/Component Reference
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis"  data-toggle="collapse" data-target="#assays-collapse"></i></a>
+                                                <a href="{{ url_for('assays.view_list', query='non-obsolete') }}" class="link-body-emphasis d-inline-flex my-1 module" id="assays_alert">
+                                                    Assays
+                                                </a>
+                                                <div class="collapse" id="assays-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('assay_constituents.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="assay_constituents_alert">
+                                                                Assay Constituent Types
+                                                            </a>
+                                                        </li>
+                                                         <li>
+                                                            <a href="{{ url_for('default_assay_constituents.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="default_assay_constituents_alert">
+                                                                Default Assay Constituents
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{{ url_for('sequence_constituents.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="sequence_constituents_alert">
+                                                                Sequence Constituents
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                            <li><a href="{{ url_for('scope.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="scope_alert">Scope</a></li>
+                                        </ul>
+                                        <hr class="dropdown-divider">
+                                    </div>
+                                </li>
+                                <li class="my-3">
+                                    <a href="" class="link-body-emphasis dropdown-toggle section" style="font-weight:bold" data-toggle="collapse" data-target="#resource-management" aria-expanded="false">
+                                        <i class="fa-solid fa-toolbox pr-1" aria-hidden="true"></i>
+                                        Resources
+                                    </a>
+                                    <div class="coll-toggle collapse show" id="resource-management">
+                                        <ul class="btn-toggle-nav list-unstyled fw-normal">
+                                            <hr style="justify-content:right; margin: 6px">
+                                            <p align="right" style="font-size: 0.8rem; margin: 0px">
+                                                <b>Primary</b>
+                                            </p>
+                                            <li><a href="{{ url_for('rooms.view_list') }}" class="link-body-emphasis d-inline-flex mt-2 module" id="rooms_alert">Rooms</a></li>
+                                            <hr style="margin: 6px">
+                                            <p align="right" style="font-size: 0.8rem; margin: 0px">
+                                                <b>Secondary</b>
+                                            </p>
+                                            <li>
+                                                <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis" data-toggle="collapse" data-target="#cabinet-types-collapse"></i></a>
+                                                <a href="{{url_for('cabinets.view_list', query='non-obsolete')}}" class="link-body-emphasis d-inline-flex mb-1 module" id="cabinets_alert">Cabinets</a>
+                                                <div class="collapse" id="cabinet-types-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('cabinet_types.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="cabinet_types_alert">
+                                                                Types
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis" data-toggle="collapse" data-target="#bench-types-collapse"></i></a>
+                                                <a href="{{url_for('benches.view_list', query='non-obsolete')}}" class="link-body-emphasis d-inline-flex my-1 module" id="benches_alert">
+                                                    Benches
+                                                </a>
+                                                <div class="collapse" id="bench-types-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('bench_types.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="bench_types_alert">
+                                                                Types
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis" data-toggle="collapse" data-target="#storage-types-collapse"></i></a>
+                                                <a href="{{url_for('compactors.view_list', query='non-obsolete')}}" class="link-body-emphasis d-inline-flex my-1 module" id="compactors_alert">Storage</a>
+                                                <div class="collapse" id="storage-types-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('storage_types.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="storage_types_alert">
+                                                                Types
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis" data-toggle="collapse" data-target="#hood-types-collapse"></i></a>
+                                                <a href="{{url_for('fume_hoods.view_list', query='non-obsolete')}}" class="link-body-emphasis d-inline-flex my-1 module" id="fume_hoods_alert">
+                                                    Hoods
+                                                </a>
+                                                <div class="collapse" id="hood-types-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('hood_types.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="hood_types_alert">
+                                                                Types
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis" data-toggle="collapse" data-target="#cooled-storage-collapse"></i></a>
+                                                <a href="{{url_for('cooled_storage.view_list', query='non-obsolete')}}" class="link-body-emphasis d-inline-flex my-1 module" id="cooled_storage_alert">
+                                                    Cooled Storage
+                                                </a>
+                                                <div class="collapse" id="cooled-storage-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('cooled_storage_types.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="cooled_storage_types_alert">
+                                                                Types
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                            <li><a href="{{url_for('evidence_lockers.view_list', query='non-obsolete')}}" class="link-body-emphasis d-inline-flex my-1 module" id="evidence_lockers_alert">Evidence Lockers</a></li>
+                                            <li>
+                                                <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis" data-toggle="collapse" data-target="#evidence-storage-types-collapse"></i></a>
+                                                <a href="{{url_for('evidence_storage.view_list', query='non-obsolete')}}" class="link-body-emphasis d-inline-flex my-1 module" id="evidence_storage_alert">Evidence Storage</a>
+                                                <div class="collapse" id="evidence-storage-types-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('evidence_storage_types.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="evidence_storage_types_alert">
+                                                                Types
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                            <hr style="margin: 6px">
+                                            <p align="right" style="font-size: 0.8rem; margin: 0px">
+                                                <b>Tertiary</b>
+                                            </p>
+                                            <li>
+                                                <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis"  data-toggle="collapse" data-target="#instruments-collapse"></i></a>
+                                                <a href="{{ url_for('instruments.view_list', query='non-obsolete') }}" class="link-body-emphasis d-inline-flex module" id="instruments_alert">
+                                                    Instruments
+                                                </a>
+                                                <div class="collapse" id="instruments-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('instrument_types.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="instrument_types_alert">
+                                                                Instrument Types
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                {% if current_user.is_authenticated and current_user.permissions in ['Admin', 'Owner', 'ADM-Management'] %}
+                                                <a href="#"><i class="link-body-emphasis fa-solid fa-chevron-right chevron link-body-emphasis"  data-toggle="collapse" data-target="#reference-materials-collapse"></i></a>
+                                                <a href="{{ url_for('reference_materials.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="reference_materials_alert">
+                                                    RMI Source
+                                                </a>
+                                                <div class="collapse" id="reference-materials-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('reference_material_solvents.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="reference_material_solvents_alert">
+                                                                Solvents
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                                {% endif %}
+                                            </li>
+                                            <li><a href="{{ url_for('solvents_and_reagents.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="solvents_and_reagents">Purchased Reagents</a></li>
+                                            <li>
+                                                <a href="#"><i class="link-body-emphasis fa-solid fa-chevron-right chevron link-body-emphasis"  data-toggle="collapse" data-target="#standards-and-solutions-collapse"></i></a>
+                                                <a href="{{ url_for('standards_and_solutions.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="standards_and_solutions">
+                                                    Prepared Standards and Reagents
+                                                </a>
+                                                <div class="collapse" id="standards-and-solutions-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('preservatives.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="preservatives_alert">
+                                                                Preservatives
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{{ url_for('solution_types.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="solution_types_alert">
+                                                                Solution Types
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <a href="#"><i class="link-body-emphasis fa-solid fa-chevron-right chevron link-body-emphasis"  data-toggle="collapse" data-target="#general-labware-collapse"></i></a>
+                                                <a href="{{ url_for('general_labware.view_list', query='non-obsolete') }}" class="link-body-emphasis d-inline-flex my-1 module" id="general_labware_alert">
+                                                    General Labware
+                                                </a>
+                                                <div class="collapse" id="general-labware-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('general_labware_types.view_list') }}" class="link-body-emphasis d-inline-flex" style="color:black" aria-expanded="true">
+                                                                Types
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <a href="#"><i class="link-body-emphasis fa-solid fa-chevron-right chevron link-body-emphasis"  data-toggle="collapse" data-target="#calibrated-labware-collapse"></i></a>
+                                                <a href="{{ url_for('calibrated_labware.view_list', query='non-obsolete') }}" class="link-body-emphasis d-inline-flex my-1 module" id="calibrated_labware_alert">
+                                                    Calibrated Labware
+                                                </a>
+                                                <div class="collapse" id="calibrated-labware-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('calibrated_labware_types.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="calibrated_labware_types_alert">
+                                                                Types
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                            <li><a href="{{ url_for('hubs.view_list') }}" class="link-body-emphasis d-inline-flex mt-2 module" id="hubs_alert">Hubs</a></li>
+                                            <li><a href="{{ url_for('probes.view_list') }}" class="link-body-emphasis d-inline-flex mt-2 module" id="probes_alert">Probes</a></li>
+                                            <li>
+                                                <a href="#"><i class="link-body-emphasis fa-solid fa-chevron-right chevron link-body-emphasis"  data-toggle="collapse" data-target="#histology-equipment-collapse"></i></a>
+                                                <a href="{{ url_for('histology_equipment.view_list', query='non-obsolete') }}" class="link-body-emphasis d-inline-flex my-1 module" id="histology_equipment_alert">
+                                                    Histology Equipment
+                                                </a>
+                                                <div class="collapse" id="histology-equipment-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('histology_equipment_types.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="histology_equipment_types_alert">
+                                                                Types
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                            <hr style="margin: 6px">
+                                            <li class="mt-3">
+                                                <a href="#"><i class="link-body-emphasis fa-solid fa-chevron-right chevron link-body-emphasis"  data-toggle="collapse" data-target="#services-collapse"></i></a>
+                                                <a href="{{ url_for('services.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="services_alert">
+                                                    Services
+                                                </a>
+                                                <div class="collapse" id="services-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('service_types.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="service_types_alert">
+                                                                Types
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+
+                                            <hr>
+                                        </ul>
+                                    </div>
+                                </li>
+                                <li class="my-3">
+                                    <a href="#" class="link-body-emphasis dropdown-toggle fw-bold section" style="font-weight:bold" data-toggle="collapse" data-target="#quality-assurance" aria-expanded="false">
+                                        <i class="fa-solid fa-ranking-star pr-1"></i>
+                                        Quality Assurance
+                                    </a>
+                                    <div class="coll-toggle collapse show" id="quality-assurance">
+                                        <ul class="btn-toggle-nav list-unstyled fw-normal pt-2">
+                                            <li><a href="{{ url_for('pt_cases.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="pt_cases_alert">PT Cases</a></li>
+                                            <li><a href="{{ url_for('pt_results.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="pt_results_alert">PT Results</a></li>
+                                            <li><a href="#" class="link-body-emphasis d-inline-flex mt-2 module" id="memoranda_alert" >Memoranda</a></li>
+                                            <li><a href="#" class="link-body-emphasis d-inline-flex my-2 module" id="corrective_actions_alert">Corrective Actions</a></li>
+                                            <hr class="dropdown-divider">
+                                        </ul>
+                                    </div>
+                                </li>
+                                <li class="my-3">
+                                    <a href="#" class="link-body-emphasis dropdown-toggle fw-bold section" style="font-weight:bold" data-toggle="collapse" data-target="#connection-management" aria-expanded="true">
+                                        <i class="fa-solid fa-address-book pr-1"></i>
+                                        Connections
+                                    </a>
+                                    <div class="coll-toggle collapse show" id="connection-management">
+                                        <ul class="btn-toggle-nav list-unstyled fw-normal">
+                                            <li>
+                                                <a href="{{ url_for('personnel.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="personnel_alert">
+                                                    Personnel
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{ url_for('divisions.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="divisions_alert">
+                                                    Divisions
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{ url_for('agencies.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="agencies_alert">
+                                                    Agencies
+                                                </a>
+                                            </li>
+                                            <hr class="dropdown-divider">
+                                        </ul>
+                                    </div>
+                                </li>
+
+                                <li class="my-3">
+                                    <a href="#" class="link-body-emphasis dropdown-toggle section" style="font-weight:bold" data-toggle="collapse" data-target="#custom-lists" aria-expanded="true">
+                                        <i class="fa-solid fa-list pr-1"></i>
+                                        Custom Lists
+                                    </a>
+                                    <div class="coll-toggle collapse show" id="custom-lists">
+                                        <ul class="btn-toggle-nav list-unstyled fw-normal">
+                                            {% if current_user.is_authenticated and current_user.permissions in ['Admin', 'Owner', 'ADM-Management'] %}
+                                            <li><a href="{{ url_for('salts.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="salts_alert">Salts</a></li>
+                                            {% endif %}
+                                            <li><a href="{{ url_for('states_of_matter.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="states_of_matter_alert">States of Matter</a></li>
+                                            <li><a href="{{ url_for('statuses.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="statuses_alert">Statuses</a></li>
+                                            {% if current_user.is_authenticated and current_user.permissions in ['Admin', 'Owner', 'ADM-Management'] %}
+                                            <li><a href="{{ url_for('storage_temperatures.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="storage_temperatures_alert">Temperatures</a></li>
+                                            {% endif %}
+                                            <li><a href="{{ url_for('united_states.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="united_states_alert">United States</a></li>
+                                            <li>
+                                            <a href="#"><i class="link-body-emphasis fa-solid fa-chevron-right chevron link-body-emphasis" data-toggle="collapse" data-target="#units-collapse"></i></a>
+                                                <a href="{{ url_for('units.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="units_alert">
+                                                    Units
+                                                </a>
+                                                <div class="collapse" id="units-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('unit_types.view_list') }}" class="link-body-emphasis d-inline-flex sub-module" style="color:black" aria-expanded="true" id="unit_types_alert">
+                                                                Unit Types
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                            <li><a href="{{ url_for('zipcodes.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="zipcodes_alert">Zip Codes</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                        </ul>
+                                    </div>
+                                </li>
+
+
+                                {% if current_user.is_authenticated and current_user.permissions in ['Admin', 'Owner', 'ADM-Management'] %}
+
+                                <li class="my-3">
+                                    <a href="#" class="link-body-emphasis dropdown-toggle section" style="font-weight:bold" data-toggle="collapse" data-target="#admin" aria-expanded="true">
+                                        <i class="fa-solid fa-unlock fa-lg pr-1"></i>
+                                        Admin
+                                    </a>
+                                    <div class="coll-toggle collapse show" id="admin">
+                                        <ul class=" list-unstyled pb-1">
+                                            <li><a href="{{ url_for('users.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="users_alert">Users</a></li>
+                                            <li><a href="{{ url_for('user_log.view_list') }}" class="link-body-emphasis d-inline-flex my-1 hover">User Log</a></li>
+                                            <li><a href="{{ url_for('modifications.view_list') }}" class="link-body-emphasis d-inline-flex my-1 hover">Modifications</a></li>
+                                            <li>
+                                                <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis" data-toggle="collapse" data-target="#attachments-collapse"></i></a>
+                                                <a href="{{ url_for('attachments.view_list') }}" class="link-body-emphasis d-inline-flex my-1 hover">
+                                                    Attachments
+                                                </a>
+                                                <div class="collapse" id="attachments-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('attachment_types.view_list') }}" class="link-body-emphasis d-inline-flex" style="color:black" aria-expanded="true">
+                                                                Attachment Types
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                            <li><a href="{{ url_for('locations.view_list') }}" class="link-body-emphasis d-inline-flex my-1 hover">Locations</a></li>
+
+                                            <li><a href="{{ url_for('qr_reference.view_list') }}" class="link-body-emphasis d-inline-flex my-1 hover" >QR Reference</a></li>
+                                            <li>
+                                                <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis" data-toggle="collapse" data-target="#current-system-collapse"></i></a>
+                                                <a href="{{ url_for('current_system_display.view_list') }}" class="link-body-emphasis d-inline-flex my-1 hover">
+                                                    Current System Display
+                                                </a>
+                                                <div class="collapse" id="current-system-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('system_images.view_list') }}" class="link-body-emphasis d-inline-flex my-1 hover" style="color:black" aria-expanded="true">
+                                                                System Images
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{{ url_for('system_messages.view_list') }}" class="link-body-emphasis d-inline-flex my-1 hover" style="color:black" aria-expanded="true">
+                                                                System Text
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                            <li><a href="/add_special_project" class="link-body-emphasis d-inline-flex my-1 hover">Add Special Project</a></li>
+                                            <li><a href="{{url_for('autopsy_view_buttons.view_list')}}" class="link-body-emphasis d-inline-flex my-1 hover">Autopsy View Labels</a></li>
+                                        </ul>
+                                    </div>
+                                </li>
+
+                                {% endif %}
+
+                                <li class="border-top my-3"></li>
+
+                                {% endif %}
+
+                                {% if current_user.is_authenticated %}
+
+                                <div class="dropdown">
+                                    <a href="#" class="d-flex align-items-center text-black text-decoration-none dropdown-toggle" style="font-weight:bold" data-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa-solid fa-circle-user fa-lg pr-1"></i>
+                                        {{ current_user.full_name }}
+                                    </a>
+
+                                    <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+    <!--                                    <li><a href="#" class="dropdown-item" data-toggle="modal" data-target="#import_all">Import DB</a></li>-->
+                                        <li><a href="#" class="dropdown-item" data-toggle="modal" data-target="#export_all">Export All</a></li>
+                                        <li><a href="{{ url_for('users.update_password', item_id=current_user.id) }}" class="dropdown-item">Change Password</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a  href="{{ url_for('users.logout') }}" class="dropdown-item">Log out</a></li>
+                                    </ul>
+                                </div>
+                                <i>{{ current_user.permissions }}</i>
+
+                                {% else %}
+
+                                <ul class="list-unstyled my-1">
+                                    <li class="b-3">
+                                        <a href="{{ url_for('users.login') }}" class="d-flex align-items-center text-black text-decoration-none" style="font-weight:bold">
+                                            <i class="fa-solid fa-circle-user fa-lg pr-1"></i>
+                                            Sign-in
+                                        </a>
+                                    </li>
+                                </ul>
+                            </ul>
+                        {% endif %}
+                    </div>
+
+
+                    {% elif current_user.permissions in ['FLD', 'FLD-MethodDevelopment', 'FLD-Administrative'] %}
+                        <ul class="list-unstyled my-3">
+                            <li class="border-top"></li>
+                            <li class="my-3">
+                                <a href="{{ url_for('dashboard.get_dashboard')}}" class="link-body-emphasis" style="font-weight:bold">
+                                    <i class="fa-solid fa-gauge-high fa-lg"></i>
+                                    FLD Dashboard
+                                </a>
+                            </li>
+                            <li class="my-3" style="display: none;">
+                                <a href="{{ url_for('drug_prevalence.get_drug_prevalence') }}" class="link-body-emphasis" style="font-weight:bold">
+                                    <i class="fa-solid fa-arrow-trend-up fa-lg"></i>
+                                    Drug Prevalence
+                                </a>
+                            </li>
+                            <li class="my-3">
+                                {% if current_user.is_authenticated and current_user.permissions in ['Admin', 'Owner', 'ADM-Management'] %}
+                                <a href="#" class="link-body-emphasis" style="font-weight:bold">
+                                    <i class="fa-solid fa-solid fa-person-falling-burst"></i>
+                                    OD Tracker
+                                </a>
+                                {% endif %}
+                            </li>
+
+                            {% if current_user.is_authenticated and current_user.status == 'Active' %}
+                            <li class="my-3" style="display: none;">
+                                <a href="{{ url_for('case_map.map')}}" class="link-body-emphasis" style="font-weight:bold">
+                                    <i class="fa-solid fa-map-location-dot fa-lg"></i>
+                                    Case Map
+                                </a>
+                            </li>
+                            {% endif %}
+                            <li class="border-top"></li>
+                        </ul>
+
+                        {% if current_user.is_authenticated and current_user.status == 'Active' and current_user.permissions != 'View' %}
+
+                            <ul class="list-unstyled my-1">
+                                <form method='GET' action="{{ url_for('cases.parse_case_number')}}" target="_blank">
+                                    <div class="row">
+                                        <div style="col">
+                                            <input class="form-control ml-3" name=case_number placeholder="Enter Case Number" style="width:12.5rem" oninput="this.value = this.value.toUpperCase()">
+                                        </div>
+                                        <div style="col">
+                                            <button class="btn btn-primary ml-2" type="submit">Go</button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                                <p style="color: red; font-size: 0.90rem">{{session['case_search_error']}}</p>
+
+                                <li class="border-top"></li>
+                                <div class="pr-2" align="right" style="font-size: 0.8rem">
+                                    <a href="#" id="expand">Expand</a> | <a href="#" id="collapse">Collapse</a>
+                                </div>
+
+                                {% if module_alerts['total_locked_by_user'] or module_alerts['total_pending_by_user'] %}
+                                    <div class="alert alert-primary">
+                                        <b>{{current_user.initials}}</b>:
+                                        {% if module_alerts['total_locked_by_user'] %}
+                                            <br><i class="fa-solid fa-lock"></i>  {{module_alerts['total_locked_by_user']}} items locked
+                                        {% endif %}
+                                        {% if module_alerts['total_pending_by_user'] %}
+                                            <br><i class="fa-solid fa-hourglass-half"></i>  {{module_alerts['total_pending_by_user']}} items pending review
+                                        {% endif %}
+
+                                    </div>
+                                {% endif %}
+
+                                <li class="list-unstyled my-3">
+                                    <a href="#" class="link-body-emphasis dropdown-toggle section" style="font-weight:bold" data-toggle="collapse" data-target="#case-management-collapse" aria-expanded="false" id="case-management">
+                                        <i class="fa-solid fa-briefcase fa-lg pr-1"></i>
+                                        Case Management
+                                    </a>
+                                    <div class="coll-toggle show" id="case-management-collapse">
+                                        <ul class="btn-toggle-nav list-unstyled fw-normal">
+                                            <li>
+                                                <a href="{{ url_for('cases.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="cases_alert">
+                                                    Cases
+                                                </a>
+                                            </li>
+                                            {% if current_user.permissions in ['Owner', 'Admin', 'Developer', 'FLD', 'FLD-MethodDevelopment'] %}
+                                                <li>
+                                                    <a href="{{ url_for('containers.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="containers_alert">
+                                                        Containers
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="{{ url_for('specimens.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="specimens_alert">
+                                                        Specimens
+                                                    </a>
+                                                </li>
+                                            {% endif %}
+                                            <li>
+                                                <a href="{{ url_for('tests.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="tests_alert">
+                                                    Tests
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{url_for('batches.view_list')}}" class="link-body-emphasis d-inline-flex my-1 module" id="batches_alert">
+                                                    Batches
+                                                </a>
+                                            </li>
+                                            <li><a href="{{url_for('results.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="results_alert">Results</a></li>
+                                            <li><a href="{{url_for('cases.drafting') }}" class="link-body-emphasis d-inline-flex my-1 module" id="drafting_alert">Drafting</a></li>
+                                            <li>
+                                                <a href="{{url_for('reports.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="reports_alert">
+                                                    Reports
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{url_for('records.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="records_alert">
+                                                    Records
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{url_for('disseminations.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="disseminations_alert">
+                                                    Disseminations
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{url_for('requests.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="requests_alert">
+                                                    Requests
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{url_for('returns.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="returns_alert">
+                                                    Returns
+                                                </a>
+                                            </li>
+    <!--                                        <li><a href="#" class="link-body-emphasis d-inline-flex my-1 module" id="litigation_packets_alert">Litigation Packets</a></li>-->
+                                             <li>
+                                                 {% if current_user.is_authenticated and current_user.permissions in ['Admin', 'Owner', 'ADM-Management', 'FLD-Administrative', 'FLD'] %}
+                                                <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis"  data-toggle="collapse" data-target="#litigation-packet-collapse"></i></a>
+
+                                                <a href="{{url_for('litigation_packets.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="litigation_packets_alert">
+                                                    Packets
+                                                </a>
+                                                  {% if current_user.is_authenticated and current_user.permissions in ['Admin', 'Owner', 'ADM-Management'] %}
+                                                <div class="collapse" id="litigation-packet-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li style="display: none">
+                                                            <a href="{{ url_for('litigation_packet_templates.view_list') }}" class="link-body-emphasis d-inline-flex" style="color:black" aria-expanded="true">
+                                                                Packet Content Templates
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="{{ url_for('lit_packet_admin_templates.view_list') }}" class="link-body-emphasis d-inline-flex" style="color:black" aria-expanded="true">
+                                                                Packet Admin
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                                  {% endif %}
+                                                 {% endif %}
+                                            </li>
+                                            <li>
+                                                <a href="{{url_for('bookings.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="bookings_alert">
+                                                    Bookings
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{url_for('comments.view_list')}}" class="link-body-emphasis d-inline-flex my-1">
+                                                    Comments Reference
+                                                </a>
+                                            </li><li>
+                                                <a href="{{url_for('evidence_comments.view_list')}}" class="link-body-emphasis d-inline-flex my-1 module" id="evidence_comments_alert">
+                                                    Evidence Comments
+                                                </a>
+                                            </li>
+                                        </ul>
+                                        <hr class="dropdown-divider">
+                                    </div>
+                                </li>
+                                <li>
+                                    <a href="#" class="link-body-emphasis dropdown-toggle fw-bold section" style="font-weight:bold" data-toggle="collapse" data-target="#testing-collapse" aria-expanded="false">
+                                        <i class="fa-solid fa-flask-vial pr-1"></i>
+                                        Testing
+                                    </a>
+                                    <div class="coll-toggle section" id="testing-collapse">
+                                        <ul class="btn-toggle-nav list-unstyled fw-normal">
+                                            <li>
+                                                <a href="{{ url_for('drug_classes.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="drug_classes_alert">
+                                                    Drug Classes
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{ url_for('compounds.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="compounds_alert">
+                                                    Compounds (RMI Index)
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{ url_for('drug_monographs.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="drug_monographs_alert">
+                                                    Drug Monographs
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{ url_for('components.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="components_alert">
+                                                    Components
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{ url_for('assays.view_list', query='non-obsolete') }}" class="link-body-emphasis d-inline-flex my-1 module" id="assays_alert">
+                                                    Assays
+                                                </a>
+                                            </li>
+                                            <li><a href="{{ url_for('scope.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="scope_alert">Scope</a></li>
+                                        </ul>
+                                        <hr class="dropdown-divider">
+                                    </div>
+                                </li>
+                                <li class="my-3">
+                                    <a href="" class="link-body-emphasis dropdown-toggle section" style="font-weight:bold" data-toggle="collapse" data-target="#resource-management" aria-expanded="false">
+                                        <i class="fa-solid fa-toolbox pr-1" aria-hidden="true"></i>
+                                        Resources
+                                    </a>
+                                    <div class="coll-toggle show" id="resource-management">
+                                        <ul class="btn-toggle-nav list-unstyled fw-normal">
+                                            <hr style="justify-content:right; margin: 6px">
+                                            <p align="right" style="font-size: 0.8rem; margin: 0px">
+                                                <b>Primary</b>
+                                            </p>
+                                            <li><a href="{{ url_for('rooms.view_list') }}" class="link-body-emphasis d-inline-flex mt-2 module" id="rooms_alert">Rooms</a></li>
+                                            <hr style="margin: 6px">
+                                            <p align="right" style="font-size: 0.8rem; margin: 0px">
+                                                <b>Secondary</b>
+                                            </p>
+                                            <li>
+                                                <a href="{{url_for('cabinets.view_list', query='non-obsolete')}}" class="link-body-emphasis d-inline-flex mb-1 module" id="cabinets_alert">Cabinets</a>
+
+                                            </li>
+                                            <li>
+                                                <a href="{{url_for('benches.view_list', query='non-obsolete')}}" class="link-body-emphasis d-inline-flex my-1 module" id="benches_alert">
+                                                    Benches
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{url_for('compactors.view_list', query='non-obsolete')}}" class="link-body-emphasis d-inline-flex my-1 module" id="compactors_alert">Storage</a>
+                                            </li>
+                                            <li>
+                                                <a href="{{url_for('fume_hoods.view_list', query='non-obsolete')}}" class="link-body-emphasis d-inline-flex my-1 module" id="fume_hoods_alert">
+                                                    Hoods
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{url_for('cooled_storage.view_list', query='non-obsolete')}}" class="link-body-emphasis d-inline-flex my-1 module" id="cooled_storage_alert">
+                                                    Cooled Storage
+                                                </a>
+                                            </li>
+                                            <li><a href="{{url_for('evidence_lockers.view_list', query='non-obsolete')}}" class="link-body-emphasis d-inline-flex my-1 module" id="evidence_lockers_alert">Evidence Lockers</a></li>
+                                            <li><a href="{{url_for('evidence_storage.view_list', query='non-obsolete')}}" class="link-body-emphasis d-inline-flex my-1 module" id="evidence_storage_alert">Evidence Storage</a></li>
+                                            <hr style="margin: 6px">
+                                            <p align="right" style="font-size: 0.8rem; margin: 0px">
+                                                <b>Tertiary</b>
+                                            </p>
+                                            <li>
+                                                <a href="{{ url_for('instruments.view_list', query='non-obsolete') }}" class="link-body-emphasis d-inline-flex module" id="instruments_alert">
+                                                    Instruments
+                                                </a>
+                                            </li>
+                                            <li>
+                                                {% if current_user.is_authenticated and current_user.permissions in ['Admin', 'Owner', 'ADM-Management'] %}
+                                                <a class="link-body-emphasis d-inline-flex my-1 module"
+                                                   href="{{ url_for('reference_materials.view_list') }}"
+                                                   id="reference_materials_alert">
+                                                    RMI Source
+                                                </a>
+                                                {% endif %}
+                                            </li>
+                                            <li><a href="{{ url_for('solvents_and_reagents.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="solvents_and_reagents">Purchased Reagents</a></li>
+                                            <li>
+                                                <a href="{{ url_for('standards_and_solutions.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="standards_and_solutions">
+                                                    Prepared Standards and Reagents
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{ url_for('general_labware.view_list', query='non-obsolete') }}" class="link-body-emphasis d-inline-flex my-1 module" id="general_labware_alert">
+                                                    General Labware
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{ url_for('calibrated_labware.view_list', query='non-obsolete') }}" class="link-body-emphasis d-inline-flex my-1 module" id="calibrated_labware_alert">
+                                                    Calibrated Labware
+                                                </a>
+                                            </li>
+                                            <li><a href="{{ url_for('hubs.view_list', query='non-obsolete') }}" class="link-body-emphasis d-inline-flex mt-2">Hubs</a></li>
+                                            <li><a href="{{ url_for('probes.view_list', query='non-obsolete') }}" class="link-body-emphasis d-inline-flex mt-2">Probes</a></li>
+                                            <li>
+                                                <a href="{{ url_for('histology_equipment.view_list', query='non-obsolete') }}" class="link-body-emphasis d-inline-flex my-1">
+                                                    Histology Equipment
+                                                </a>
+                                            </li>
+                                            <hr style="margin: 6px">
+                                            <li>
+                                                <a href="{{ url_for('services.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="services_alert">
+                                                    Services
+                                                </a>
+                                            </li>
+
+                                            <hr>
+                                        </ul>
+                                    </div>
+                                </li>
+                                <li class="my-3" style="display: none;">
+                                    <a href="#" class="link-body-emphasis dropdown-toggle fw-bold section" style="font-weight:bold" data-toggle="collapse" data-target="#quality-assurance" aria-expanded="false">
+                                        <i class="fa-solid fa-ranking-star pr-1"></i>
+                                        Quality Assurance
+                                    </a>
+                                    <div class="coll-toggle show" id="quality-assurance">
+                                        <ul class="btn-toggle-nav list-unstyled fw-normal pt-2">
+                                            <li><a href="{{ url_for('pt_cases.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="pt_cases_alert">PT Cases</a></a><span class="badge badge-danger ml-2" id="pt_cases_pending"></span></li>
+                                            <li><a href="{{ url_for('pt_results.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="pt_results_alert">PT Results</a></a><span class="badge badge-danger ml-2" id="pt_results_pending"></span></li>
+                                            <li><a href="#" class="link-body-emphasis d-inline-flex my-1 module" id="memoranda_alert">Memoranda</a></li>
+                                            <li><a href="#" class="link-body-emphasis d-inline-flex my-1 module" id="corrective_actions_alert">Corrective Actions</a></li>
+                                            <hr class="dropdown-divider">
+                                        </ul>
+                                    </div>
+                                </li>
+                                <li class="my-3">
+                                    <a href="#" class="link-body-emphasis dropdown-toggle fw-bold section" style="font-weight:bold" data-toggle="collapse" data-target="#connection-management" aria-expanded="true">
+                                        <i class="fa-solid fa-address-book pr-1"></i>
+                                        Connections
+                                    </a>
+                                    <div class="coll-toggle show" id="connection-management">
+                                        <ul class="btn-toggle-nav list-unstyled fw-normal">
+                                            <li>
+                                                <a href="{{ url_for('personnel.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="personnel_alert">
+                                                    Personnel
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{ url_for('divisions.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="divisions_alert">
+                                                    Divisions
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{ url_for('agencies.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="agencies_alert">
+                                                    Agencies
+                                                </a>
+                                            </li>
+                                            <hr class="dropdown-divider">
+                                        </ul>
+                                    </div>
+                                </li>
+
+                                <li class="my-3">
+                                    <a href="#" class="link-body-emphasis dropdown-toggle section" style="font-weight:bold" data-toggle="collapse" data-target="#custom-lists" aria-expanded="true">
+                                        <i class="fa-solid fa-list pr-1"></i>
+                                        Custom Lists
+                                    </a>
+                                    <div class="coll-toggle show" id="custom-lists">
+                                        <ul class="btn-toggle-nav list-unstyled fw-normal">
+                                            {% if current_user.is_authenticated and current_user.permissions in ['Admin', 'Owner', 'ADM-Management'] %}
+                                            <li><a href="{{ url_for('salts.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="salts_alert">Salts</a></li>
+                                            {% endif %}
+                                            <li><a href="{{ url_for('states_of_matter.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="states_of_matter_alert">States of Matter</a></li>
+                                            <li><a href="{{ url_for('statuses.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="statuses_alert">Statuses</a></li>
+                                            {% if current_user.is_authenticated and current_user.permissions in ['Admin', 'Owner', 'ADM-Management'] %}
+                                            <li><a href="{{ url_for('storage_temperatures.view_list') }}" class="link-body-emphasis d-inline-flex my-1" id="storage_temperatures_alert">Temperatures</a></li>
+                                            {% endif %}
+                                            <li><a href="{{ url_for('united_states.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="united_states_alert">United States</a></li>
+                                            <li>
+                                                <a href="{{ url_for('units.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="units_alert">
+                                                    Units
+                                                </a>
+                                            </li>
+                                            <li><a href="{{ url_for('zipcodes.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="zipcodes_alert">Zip Codes</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                        </ul>
+                                    </div>
+                                </li>
+
+
+                                {% if current_user.is_authenticated and current_user.permissions in ['Admin', 'Owner', 'ADM-Management'] %}
+
+                                <li class="my-3">
+                                    <a href="#" class="link-body-emphasis dropdown-toggle section" style="font-weight:bold" data-toggle="collapse" data-target="#admin" aria-expanded="true">
+                                        <i class="fa-solid fa-unlock fa-lg pr-1"></i>
+                                        Admin
+                                    </a>
+                                    <div class="coll-toggle show" id="admin">
+                                        <ul class=" list-unstyled pb-1">
+                                            <li><a href="{{ url_for('users.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="users_alert">Users</a></li>
+                                            <li><a href="{{ url_for('modifications.view_list') }}" class="link-body-emphasis d-inline-flex my-1 hover">Modifications</a></li>
+                                            <li><a href="{{ url_for('locations.view_list') }}" class="link-body-emphasis d-inline-flex my-1 hover">Locations</a></li>
+                                            <li>
+                                                <a href="#"><i class="fa-solid fa-chevron-right chevron link-body-emphasis" data-toggle="collapse" data-target="#attachments-collapse"></i></a>
+                                                <a href="{{ url_for('attachments.view_list') }}" class="link-body-emphasis d-inline-flex my-1 hover">
+                                                    Attachments
+                                                </a>
+                                                <div class="collapse" id="attachments-collapse">
+                                                    <ul style="left-padding: 12px">
+                                                        <li>
+                                                            <a href="{{ url_for('attachment_types.view_list') }}" class="link-body-emphasis d-inline-flex" style="color:black" aria-expanded="true">
+                                                                Attachment Types
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </li>
+                                            <li><a href="{{ url_for('qr_reference.view_list') }}" class="link-body-emphasis d-inline-flex my-1 hover" >QR Reference</a></li>
+                                            <li><a href="{{ url_for('current_system_display.view_list') }}" class="link-body-emphasis d-inline-flex my-1 hover" >Current System Display</a></li>
+                                            <li><a href="{{ url_for('system_images.view_list') }}" class="link-body-emphasis d-inline-flex my-1 hover">System Images</a></li>
+                                            <li><a href="{{ url_for('system_messages.view_list') }}" class="link-body-emphasis d-inline-flex my-1 hover">System Text</a></li>
+                                            <li><a href="/add_special_project" class="link-body-emphasis d-inline-flex my-1 hover">Add Special Project</a></li>
+                                            <li><a href="{{ url_for('user_log.view_list') }}" class="link-body-emphasis d-inline-flex my-1 hover">User Log</a></li>
+                                        </ul>
+                                    </div>
+                                </li>
+
+                                {% endif %}
+
+                                <li class="border-top my-3"></li>
+
+                            {% endif %}
+
+                            {% if current_user.is_authenticated %}
+
+                                <div class="dropdown">
+                                    <a href="#" class="d-flex align-items-center text-black text-decoration-none dropdown-toggle" style="font-weight:bold" data-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa-solid fa-circle-user fa-lg pr-1"></i>
+                                        {{ current_user.full_name }}
+                                    </a>
+
+                                    <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+    <!--                                    <li><a href="#" class="dropdown-item" data-toggle="modal" data-target="#import_all">Import DB</a></li>-->
+                                        <li><a href="#" class="dropdown-item" data-toggle="modal" data-target="#export_all">Export All</a></li>
+                                        <li><a href="{{ url_for('users.update_password', item_id=current_user.id) }}" class="dropdown-item">Change Password</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a  href="{{ url_for('users.logout') }}" class="dropdown-item">Log out</a></li>
+                                    </ul>
+                                </div>
+                                <i>{{ current_user.permissions }}</i>
+
+                                {% else %}
+
+                                <ul class="list-unstyled my-1">
+                                    <li class="b-3">
+                                        <a href="{{ url_for('users.login') }}" class="d-flex align-items-center text-black text-decoration-none" style="font-weight:bold">
+                                            <i class="fa-solid fa-circle-user fa-lg pr-1"></i>
+                                            Sign-in
+                                        </a>
+                                    </li>
+                                </ul>
+                            </ul>
+                        {% endif %}
+                    </div>
+                    {% elif current_user.permissions in ['MED-Autopsy', 'MED', 'INV', 'FLD-Administrative', 'ADM'] %}
+                        {% if current_user.permissions in ['MED-Autopsy', 'MED'] %}
+                            <ul class="list-unstyled my-3">
+                                
+                                <li class="my-3">
+                                    <a class="link-body-emphasis" href="{{url_for('cases.autopsy_view')}}" style="font-weight:bold">
+                                        <i aria-hidden="true" class="fa fa-user-md"></i>
+                                        Autopsy View
+                                    </a>
+                                </li>
+                    <ul class="list-unstyled my-3">
+                        
+                        <li class="border-top"></li>
+                        <li class="my-3">
+                            {% if current_user.permissions == 'MED' and current_user.initials == 'CSL' %}
+                            <a href="{{ url_for('ame_dashboard.get_ame_dashboard')}}" class="link-body-emphasis" style="font-weight:bold;">
+                                <i class="fa-solid fa-laptop-medical"></i>
+                                CME Dashboard
+                            </a>
+                            {% elif current_user.permissions == 'MED' %}
+                                <a href="{{ url_for('ame_dashboard.get_ame_dashboard')}}" class="link-body-emphasis" style="font-weight:bold; display: none;">
+                                <i class="fa-solid fa-laptop-medical"></i>
+                                AME Dashboard
+                            </a>
+                            {% elif current_user.permissions in ['Owner', 'Admin', 'ADM-Management'] %}
+                            <a href="{{ url_for('ame_dashboard.get_ame_dashboard')}}" class="link-body-emphasis" style="font-weight:bold;">
+                                <i class="fa-solid fa-laptop-medical"></i>
+                                CME Dashboard
+                            </a>
+                            {% endif %}
+                        </li>
+                            </ul>
+                            <hr class="dropdown-divider">
+                        {% endif %}
+                        <form method='GET' action="{{ url_for('cases.parse_case_number')}}" target="_blank">
+                                    <div class="row">
+                                        <div style="col">
+                                            <input class="form-control ml-3" name=case_number placeholder="Enter Case Number" style="width:12.5rem" oninput="this.value = this.value.toUpperCase()">
+                                        </div>
+                                        <div style="col">
+                                            <button class="btn btn-primary ml-2" type="submit">Go</button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                        <li class="list-unstyled my-3">
+                            <a href="#" class="link-body-emphasis dropdown-toggle section" style="font-weight:bold" data-toggle="collapse" data-target="#case-management-collapse" aria-expanded="false" id="case-management">
+                                <i class="fa-solid fa-briefcase fa-lg pr-1"></i>
+                                Case Management
+                            </a>
+                            <div class="coll-toggle show" id="case-management-collapse">
+                                <ul class="btn-toggle-nav list-unstyled fw-normal">
+                                    <li>
+                                        <a href="{{ url_for('cases.view_list') }}" class="link-body-emphasis d-inline-flex my-1 module" id="cases_alert">
+                                            Cases
+                                        </a>
+                                    </li>
+                                </ul>
+                                <hr class="dropdown-divider">
+                            </div>
+                        </li>
+                        {% if current_user.is_authenticated %}
+
+                            <div class="dropdown">
+                                <a href="#" class="d-flex align-items-center text-black text-decoration-none dropdown-toggle" style="font-weight:bold" data-toggle="dropdown" aria-expanded="false">
+                                    <i class="fa-solid fa-circle-user fa-lg pr-1"></i>
+                                    {{ current_user.full_name }}
+                                </a>
+
+                                <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+                                    <!--                                    <li><a href="#" class="dropdown-item" data-toggle="modal" data-target="#import_all">Import DB</a></li>-->
+                                    <!--                                    <li><a href="#" class="dropdown-item" data-toggle="modal" data-target="#export_all">Export All</a></li>-->
+                                    <li><a href="{{ url_for('users.update_password', item_id=current_user.id) }}" class="dropdown-item">Change Password</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a  href="{{ url_for('users.logout') }}" class="dropdown-item">Log out</a></li>
+                                </ul>
+
+                            </div>
+
+                        {% else %}
+                            <ul class="list-unstyled my-1">
+                                <li class="b-3">
+                                    <a href="{{ url_for('users.login') }}" class="d-flex align-items-center text-black text-decoration-none" style="font-weight:bold">
+                                        <i class="fa-solid fa-circle-user fa-lg pr-1"></i>
+                                        Sign-in
+                                    </a>
+                                </li>
+                            </ul>
+                        {% endif %}
+                    {% endif %}
+                <div class="version" style="height:3vh">
+                        {{session['VERSION']}} |  <a href="https://form.asana.com/?k=3jpLK3YqHQfhZ_zqNIjU8g&d=843318490710140">Feedback</a>
+                </div>
+            </aside>
+
+        </div>
+
+
+        <div class="col container-fluid" style="height: 97vh; max-width: 93%; overflow: auto; display: none" id="main-window">
+            <div class="container-fluid" style="height: 97vh;">
+                {% for message in get_flashed_messages(category_filter=['success']) %}
+                    <div class="alert alert-success alert-dismissible fade show mt-3 flash-alert" id="alert-success" role="alert">
+                        {{message}}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+                {% for message in get_flashed_messages(category_filter=['warning']) %}
+                    <div class="alert alert-warning alert-dismissible fade show mt-3 flash-alert" id="alert-warning" role="alert">
+                        {{message}}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+                {% for message in get_flashed_messages(category_filter=['error']) %}
+                    <div class="alert alert-danger alert-dismissible fade show mt-3 flash-alert" id="alert-error" role="alert">
+                        {{message}}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+                {% for message in get_flashed_messages(category_filter=['danger']) %}
+                    <div class="alert alert-danger alert-dismissible fade show mt-3 flash-alert" id="alert-error" role="alert">
+                        {{message}}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+                <!--Use 'message' in Flash(Markup()) to have alerts that persist and don't fade away. Upon page refresh, they will still disappear.-->
+                {% for message in get_flashed_messages(category_filter=['message']) %} 
+                    <div class="alert alert-info mt-3" role="alert">
+                        {{ message|safe }}
+                    </div>
+                {% endfor %}
+                {% block content %}
+                {% endblock %}
+
+                <!--modals.html-->
+                {% include "modals.html" %}
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!--
+    <script src="bootstrap.bundle.min.js"></script>
+
+      <script src="sidebars.js"></script>
+-->
+
+</body>
+
+<script type="text/javascript" src="/static/main.js"></script>
+
+<script type="text/javascript" src="/static/js/version.js"></script>
+
+<script>
+  $(window).on('load', function() {
+    const $toClick = $('.click, .click-show');
+
+    if ($toClick.length) {
+      // Show your spinner
+      $('.spinner-border').show();
+
+      // Wait a few ms, then click them all
+      setTimeout(function() {
+        $toClick.each(function() {
+          $(this).trigger('click');
+        });
+
+        // Hide your spinner again
+        $('.spinner-border').hide();
+      }, 20);  // adjust delay if needed
+    }
+  });
+</script>
+
+<script>
+    $(document).ready(function () {
+       console.log(localStorage)
+       var sideScrollPos = 0
+       var bodyScrollPos = 0
+       var windowScrollPos = 0
+
+       if (localStorage.getItem('sideScrollPos') != null) {
+        sideScrollPos = Number(localStorage.getItem("sideScrollPos"))
+
+       }
+       if (localStorage.getItem('bodyScrollPos') != null) {
+        bodyScrollPos = Number(localStorage.getItem("bodyScrollPos"))
+
+       }
+       if (localStorage.getItem('windowScrollPos') != null) {
+        windowScrollPos = Number(localStorage.getItem("windowScrollPos"))
+
+       }
+
+       console.log('Side Scroll Pos: ', sideScrollPos)
+       console.log('Body Scroll Pos: ', bodyScrollPos)
+       console.log('Body Scroll Pos: ', windowScrollPos)
+
+       $('#scroll').scrollTop(sideScrollPos)
+       $('#body').scrollTop(bodyScrollPos)
+       $('#main-window').scrollTop(windowScrollPos)
+
+    })
+
+</script>
+
+<script>
+    $('#main-window').scroll(function() {
+        //console.log('Scroll 1: ', $('#main-window').scrollTop());
+        localStorage.setItem("windowScrollPos", $('#main-window').scrollTop())
+        //console.log('Scroll 2: ', $('#main-window').scrollTop());
+    });
+</script>
+
+<script>
+    $('#scroll').on('scroll', function() {
+        //console.log('Scroll 1: ', $(this).scrollTop());
+        localStorage.setItem("sideScrollPos", $(this).scrollTop())
+        //console.log('Scroll 2: ', $(this).scrollTop());
+    });
+</script>
+
+<script>
+    $('#body').on('scroll', function() {
+        //console.log('Scroll Body 1: ', $(this).scrollTop());
+        localStorage.setItem("scrollPos", Number($('#body').scrollTop()))
+        //console.log('Scroll Body 2: ', $(this).scrollTop());
+    });
+</script>
+
+<script>
+    // Iterate through module_alerts_dict and add notification bubbles to the links with
+    // module alerts.
+    $(document).ready(function () {
+        var module_alerts_dict = {{module_alerts | safe}}
+        var tiers = ['normal', 'warning', 'danger']
+        // iterate through each section denoted by the "section" class
+        $('.section').each(function(idx, section) {
+            var section_alerts_normal = 0
+            var section_alerts_warning = 0
+            var section_alerts_danger = 0
+            var section_locked_by_user = 0
+            var section_pending_by_user = 0
+
+            // iterate through each section's modules denoted by the "module" class
+            $(section).siblings('div').find('.module').each(function(idx, module) {
+                // Get the module_id and remove the "_alert" at the end of the id.
+                var module_id = $(module).attr('id').replace("_alert", "");
+                var module_alerts_normal = 0
+                var module_alerts_warning = 0
+                var module_alerts_danger = 0
+                var module_locked_by_user = 0
+                var module_pending_by_user = 0
+
+                var sub_modules_total_alerts_normal = 0
+                var sub_modules_total_alerts_warning = 0
+                var sub_modules_total_alerts_danger = 0
+                var sub_modules_total_locked_by_user = 0
+                var sub_modules_total_pending_by_user = 0
+
+                // if the module_id is in module_alerts_dict. This is why the id needs to be
+                // <module_name>_alert
+
+                if (module_id+"_normal" in module_alerts_dict) {
+                    var module_alerts_normal = module_alerts_dict[module_id+"_normal"]
+                }
+
+                if (module_id+"_warning" in module_alerts_dict) {
+                    var module_alerts_warning = module_alerts_dict[module_id+"_warning"]
+                }
+
+                if (module_id+"_danger" in module_alerts_dict) {
+                    var module_alerts_danger = module_alerts_dict[module_id+"_danger"]
+                }
+
+                if (module_id+"_locked_by_user" in module_alerts_dict) {
+                    var module_locked_by_user = module_alerts_dict[module_id+"_locked_by_user"]
+                }
+
+                if (module_id+"_pending_by_user" in module_alerts_dict) {
+                    var module_pending_by_user = module_alerts_dict[module_id+"_pending_by_user"]
+                }
+
+                // Iterate through the modules sub-modules, if any.
+                $(module).siblings('div').find('.sub-module').each(function(idx, sub_module) {
+                    var sub_module_id = $(sub_module).attr('id').replace("_alert", "");
+
+                    var sub_module_alerts_normal = 0
+                    var sub_module_alerts_warning = 0
+                    var sub_module_alerts_danger = 0
+                    var sub_module_locked_by_user = 0
+                    var sub_module_pending_by_user = 0
+
+                    if (sub_module_id+"_normal" in module_alerts_dict) {
+                        var sub_module_alerts_normal = module_alerts_dict[sub_module_id+"_normal"]
+                    }
+
+                    if (sub_module_id+"_warning" in module_alerts_dict) {
+                        var sub_module_alerts_warning = module_alerts_dict[sub_module_id+"_warning"]
+                    }
+
+                    if (sub_module_id+"_danger" in module_alerts_dict) {
+                        var sub_module_alerts_danger = module_alerts_dict[sub_module_id+"_danger"]
+                    }
+
+                    if (sub_module_id+"_locked_by_user" in module_alerts_dict) {
+                        var sub_module_locked_by_user = module_alerts_dict[sub_module_id+"_locked_by_user"]
+                    }
+
+                    if (sub_module_id+"_locked_by_user" in module_alerts_dict) {
+                        var sub_module_pending_by_user = module_alerts_dict[sub_module_id+"_pending_by_user"]
+                    }
+
+                    // If there are sub-module alerts, add the alert badge after the sub-module link and
+                    // add the number of alerts to the sub_module_total_alerts variable.
+
+                    if (sub_module_locked_by_user > 0 || sub_module_pending_by_user) {
+
+                        $(sub_module).after('<span class="ml-1">(</span><span class="badge badge-primary ml-1">{{current_user.initials}}  </span>')
+
+                        if (sub_module_locked_by_user > 0) {
+                            sub_modules_total_locked_by_user += sub_module_locked_by_user
+                            var badge_html = $(sub_module).siblings('.badge-primary').html()
+                            $(sub_module).siblings('.badge-primary').html(badge_html+'<i class="fa-solid fa-lock" style="color: white"></i>&nbsp'+sub_module_locked_by_user+'&nbsp')
+                        }
+
+                        if (sub_module_pending_by_user > 0) {
+                            sub_modules_total_pending_by_user += sub_module_pending_by_user
+                            var badge_html = $(sub_module).siblings('.badge-primary').html()
+                            $(sub_module).siblings('.badge-primary').html(badge_html+'<i class="fa-solid fa-hourglass-half" style="color: white"></i>&nbsp'+sub_module_pending_by_user)
+                        }
+
+                        $(sub_module).siblings('.badge-primary').after('<span class="ml-1">)</span>')
+
+                    }
+
+                    if (sub_module_alerts_danger > 0) {
+                        sub_modules_total_alerts_danger += sub_module_alerts_danger
+                        $(sub_module).after('<span class="badge badge-danger ml-1">'+sub_module_alerts_danger+'</span>')
+                    }
+
+                    if (sub_module_alerts_warning > 0) {
+                        sub_modules_total_alerts_warning += sub_module_alerts_warning
+                        $(sub_module).after('<span class="badge badge-warning ml-1">'+sub_module_alerts_warning+'</span>')
+                    }
+
+                    if (sub_module_alerts_normal > 0) {
+                        sub_modules_total_alerts_normal += sub_module_alerts_normal
+                        $(sub_module).after('<span class="badge badge-primary ml-1">'+sub_module_alerts_normal+'</span>')
+                    }
+
+                });
+
+                // if sub_modules_total_alerts is greater than 0, add the alert badge, preceded by "|", to the corresponding module which
+                // will show the number of alerts across all of that modules' sub-modules.
+
+
+                if (sub_modules_total_alerts_danger > 0) {
+                    $(module).after('<span class="badge badge-danger ml-1">'+sub_modules_total_alerts_danger+'</span>')
+                }
+
+                if (sub_modules_total_alerts_warning > 0) {
+                    $(module).after('<span class="badge badge-warning ml-1">'+sub_modules_total_alerts_warning+'</span>')
+                }
+
+                if (sub_modules_total_alerts_normal > 0) {
+                    $(module).after('<span class="ml-1">|</span><span class="badge badge-primary ml-1">'+sub_modules_total_alerts_normal+'</span>')
+                }
+
+
+                // if module_alerts is greater than 0, add the alert badge to the module's link. If there are no alerts
+                // for the module but there are alerts for it's sub-modules, display an alert badge with 0
+
+                if (module_locked_by_user > 0 || module_pending_by_user > 0) {
+
+                    $(module).after('<span class="ml-1">(</span><span class="badge badge-primary ml-1">{{current_user.initials}}  </span>')
+
+                    if (module_locked_by_user > 0) {
+                        var badge_html = $(module).siblings('.badge-primary').html()
+                        $(module).siblings('.badge-primary').html(badge_html+'<i class="fa-solid fa-lock" style="color: white"></i>&nbsp'+module_locked_by_user+'&nbsp')
+                    }
+
+                    if (module_pending_by_user > 0) {
+                        var badge_html = $(module).siblings('.badge-primary').html()
+                        $(module).siblings('.badge-primary').html(badge_html+'<i class="fa-solid fa-hourglass-half" style="color: white"></i>&nbsp'+module_pending_by_user)
+                    }
+
+                    $(module).siblings('.badge-primary').after('<span class="ml-1">)</span>')
+
+                } else if (sub_modules_total_locked_by_user > 0 || sub_modules_total_pending_by_user > 0) {
+
+                     $(module).siblings('.badge-primary').after('<span class="ml-1">(</span><span class="badge badge-primary sub-module-total-badge ml-1">{{current_user.initials}}  </span>')
+
+                    if (sub_modules_total_locked_by_user > 0) {
+                        var badge_html = $('.sub-module-total-badge').html()
+                        $('.sub-module-total-badge').html(badge_html+'<i class="fa-solid fa-lock" style="color: white"></i>&nbsp'+sub_modules_total_locked_by_user+'&nbsp')
+                    }
+
+                    if (sub_modules_total_pending_by_user > 0) {
+                        var badge_html = $('.sub-module-total-badge').html()
+                        $('.sub-module-total-badge').html(badge_html+'<i class="fa-solid fa-hourglass-half" style="color: white"></i>&nbsp'+sub_modules_total_pending_by_user)
+                    }
+
+                    $('.sub-module-total-badge').after('<span class="ml-1">)</span>')
+
+                }
+
+                if (module_alerts_danger > 0) {
+                    $(module).after('<span class="badge badge-danger ml-1">'+module_alerts_danger+'</span>')
+                } else if (sub_modules_total_alerts_danger > 0) {
+                     $(module).after('<span class="badge badge-danger ml-1">-</span>')
+                }
+
+                if (module_alerts_warning > 0) {
+                    $(module).after('<span class="badge badge-warning ml-1">'+module_alerts_warning+'</span>')
+                } else if (sub_modules_total_alerts_warning > 0) {
+                     $(module).after('<span class="badge badge-warning ml-1">-</span>')
+                }
+
+                if (module_alerts_normal > 0) {
+                    $(module).after('<span class="badge badge-primary ml-1">'+module_alerts_normal+'</span>')
+                } else if (sub_modules_total_alerts_normal > 0) {
+                     $(module).after('<span class="badge badge-primary ml-1">-</span>')
+                }
+
+
+                section_alerts_normal += module_alerts_normal + sub_modules_total_alerts_normal
+                section_alerts_warning += module_alerts_warning + sub_modules_total_alerts_warning
+                section_alerts_danger += module_alerts_danger + sub_modules_total_alerts_danger
+                section_locked_by_user += module_locked_by_user + sub_modules_total_locked_by_user
+                section_pending_by_user += module_pending_by_user + sub_modules_total_pending_by_user
+            });
+
+            // If there are alerts in a section, display an alert badge after the section link.
+
+            if (section_locked_by_user > 0 || section_pending_by_user > 0) {
+
+                $(section).after('<span class="ml-1">(</span><span class="badge badge-primary ml-1">{{current_user.initials}}  </span>')
+
+                if (section_locked_by_user > 0) {
+                    var badge_html = $(section).siblings('.badge-primary').html()
+                    $(section).siblings('.badge-primary').html(badge_html+'<i class="fa-solid fa-lock" style="color: white"></i>&nbsp'+section_locked_by_user+'&nbsp')
+                }
+
+                if (section_pending_by_user > 0) {
+                    var badge_html = $(section).siblings('.badge-primary').html()
+                    $(section).siblings('.badge-primary').html(badge_html+'<i class="fa-solid fa-hourglass-half" style="color: white"></i>&nbsp'+section_pending_by_user)
+                }
+
+                $(section).siblings('.badge-primary').after('<span class="ml-1">)</span>')
+            }
+
+            if (section_alerts_danger > 0) {
+                $(section).after('<span class="badge badge-danger ml-1">'+section_alerts_danger+'</span>')
+            }
+            if (section_alerts_warning > 0) {
+                $(section).after('<span class="badge badge-warning ml-1">'+section_alerts_warning+'</span>')
+            }
+            if (section_alerts_normal > 0) {
+                $(section).after('<span class="badge badge-primary ml-1">'+section_alerts_normal+'</span>')
+            }
+
+        });
+    });
+  </script>
+
+<script>
+
+
+  function toggleSidebar() {
+  let sidebar = document.getElementById("sidebar");
+  let smallNavbar = document.getElementById("small-navbar");
+  let mainWindow = document.getElementById("main-window");
+
+    if (sidebar.style.display === "none") {
+          sidebar.style.display = "";
+          smallNavbar.style.display = "none";
+          mainWindow.style.maxWidth = "84%";
+          header.style.width = "81%";
+      } else {
+          sidebar.style.display = "none";
+          smallNavbar.style.display = "";
+          mainWindow.style.maxWidth = "93%";
+          header.style.width = "90%";
+      }
+
+      //$($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+      //$('#{{table_name}}').DataTable().destroy();
+      //initDataTable($('#{{table_name}}'), [], 100)
+
+  }
+
+  // responsible for opening individual drop-down for small navbar
+  $('.sidebar-img').on('click', function () {
+      const targetId = $(this).data('target');
+      $('.coll-toggle').removeClass('show').addClass('collapse');
+      document.getElementById(targetId).classList.add('show');
+  });
+
+
+
+       const toggleCaseManagement = () => {
+          let sidebar = document.getElementById("sidebar");
+          let smallNavbar = document.getElementById("small-navbar");
+
+          sidebar.style.display = ""
+          smallNavbar.style.display = "none"
+
+          document.getElementById('case-management').classList.add("show")
+
+       }
+
+
+  </script>
+
+<script>
+      window.onload = function() {
+      let sidebar = document.getElementById("sidebar");
+      let smallNavbar = document.getElementById("small-navbar");
+      let mainWindow = document.getElementById("main-window");
+      let header = document.getElementById("header");
+       let lockOn = localStorage.getItem("lockOn");
+       mainWindow.style.display= "";
+       if (lockOn === "True") {
+          sidebar.style.display = "none";
+          smallNavbar.style.display = "";
+          mainWindow.style.maxWidth = "93%";
+          header.style.width = "90%";
+       } else {
+          sidebar.style.display = "";
+          smallNavbar.style.display = "none";
+          mainWindow.style.maxWidth = "84%";
+          header.style.width = "81%";
+          //$('#{{table_name}}').DataTable().destroy();
+          //initDataTable($('#{{table_name}}'), [], 100)
+       }
+
+
+    let lockState = localStorage.getItem("lockState");
+
+    // Check lockState and update lock icons accordingly
+    let lockClickSecond = document.getElementById("lock-click-second");
+    let lockClickThird = document.getElementById("lock-click-third");
+    if (lockState === "locked") {
+        lockClickSecond.style.display = "none";
+        lockClickThird.style.display = "";
+    } else {
+        lockClickSecond.style.display = "";
+        lockClickThird.style.display = "none";
+    }
+};
+</script>
+
+<script>
+    // If user searches for a pending case, show the modal to confirm whether they want to
+    // edit/approve the case or view only.
+    $(document).ready( function () {
+        if ('{{session['case_pending']}}' == 'True') {
+            if ('{{session['func']}}' == 'Edit') {
+                $('#locking').modal('show');
+            } else {
+                $('#view_review').modal('show');
+            }
+            $('.case-number').html('{{session['pending_case_number']}}');
+            $('.func_text').html('{{session['func']}}');
+            $('#edit-review').html('{{session['func']}}');
+            {% if session['pending_case_id'] is not none and session['pending_case_id'] != '' %}
+                $('#edit-review').attr('href', "{{url_for('cases.view', item_id=session['pending_case_id'], view_only=False)}}");
+                $('#view-only').attr('href', "{{url_for('cases.view', item_id=session['pending_case_id'], view_only=True)}}");
+            {% endif %}
+        }
+    });
+</script>
+
+<script>
+    //$('.dataTables_scrollBody').on('scroll', function() {
+    //    console.log('Scroll: ');
+        //localStorage.setItem("sideScrollPos", $(this).scrollTop())
+    //});
+</script>
+
+<script>
+      $('#expand').on('click', function () {
+          $('.coll-toggle').each(function () {
+             if ($(this).hasClass('show') == false) {
+                  $(this).addClass('show');
+              }
+              $(this).parents('li').removeClass('dropright')
+          });
+      });
+
+
+</script>
+
+<script>
+      $('#collapse').on('click', function () {
+          $('.coll-toggle').each(function () {
+              console.log($(this).hasClass('show'))
+              if ($(this).hasClass('show')) {
+                  console.log('has show');
+                  $(this).removeClass('show');
+              }
+              $(this).parents('li').addClass('dropright');
+          });
+      });
+  </script>
+
+<script>
+    $('.section').on('click', function () {
+        var parent = $(this).parents('li');
+        if (parent.hasClass('dropright')) {
+            parent.removeClass('dropright')
+        } else {
+            parent.addClass('dropright')
+        }
+
+    });
+</script>
+
+<!--  <script>-->
+<!--      // Add click event listener to dropdown toggles-->
+<!--      $(document).ready(function() {-->
+<!--          // Close all dropdown menus initially-->
+<!--          $('.dropdown-menu').hide();-->
+
+<!--       $('.coll-toggle').each(function () {-->
+<!--                  if ($(this).hasClass('show')) {-->
+<!--                      $(this).removeClass('show');-->
+<!--                  }-->
+<!--                  $(this).addClass('collapse');-->
+<!--              });-->
+
+
+<!--          // Add click event listener to dropdown toggles-->
+<!--          $('.dropdown-toggle').on('click', function (e) {-->
+<!--              e.preventDefault();-->
+<!--              let dropdownMenu = $(this).next('.dropdown-menu');-->
+<!--              dropdownMenu.toggle();-->
+<!--          });-->
+<!--      });-->
+
+
+<!--      &lt;!&ndash;    $('.dropdown-item.dropdown').on('click', function(e) {&ndash;&gt;-->
+<!--      &lt;!&ndash;  if (!$(this).next().hasClass('show')) {&ndash;&gt;-->
+<!--      &lt;!&ndash;    $(this).parents('.dropdown-menu').first().find('.show').removeClass('show');&ndash;&gt;-->
+<!--      &lt;!&ndash;  }&ndash;&gt;-->
+<!--      &lt;!&ndash;  var $subMenu = $(this).next('.dropdown-menu');&ndash;&gt;-->
+<!--      &lt;!&ndash;  $subMenu.toggleClass('show');&ndash;&gt;-->
+<!--      &lt;!&ndash;  $(this).parents('li.nav-item.dropdown.show').on('hidden.bs.dropdown', function(e) {&ndash;&gt;-->
+<!--      &lt;!&ndash;    $('.dropdown-submenu .show').removeClass('show');&ndash;&gt;-->
+<!--      &lt;!&ndash;  });&ndash;&gt;-->
+<!--      &lt;!&ndash;  return false;&ndash;&gt;-->
+<!--      &lt;!&ndash;});&ndash;&gt;-->
+<!--  </script>-->
+
+<script>
+      const lockClick = document.getElementById('lock-click')
+      const closeNavbar = document.getElementById('x-sidebar-toggle')
+
+
+            let sidebar = document.getElementById("sidebar");
+          let smallNavbar = document.getElementById("small-navbar");
+
+          function toggleLock() {
+        let lockClickSecond = document.getElementById("lock-click-second");
+        let lockClickThird = document.getElementById("lock-click-third");
+
+        if (lockClickSecond.style.display === "none") {
+            lockClickSecond.style.display = "";
+            lockClickThird.style.display = "none";
+            localStorage.setItem("lockState", "unlocked");
+
+                     localStorage.setItem("lockOn", "True");
+      console.log('now locked')
+        } else {
+            lockClickSecond.style.display = "none";
+            lockClickThird.style.display = "";
+            localStorage.setItem("lockState", "locked");
+             console.log('now unlocked')
+            localStorage.setItem("lockOn", "False");
+    }
+    }
+</script>
+
+</html>

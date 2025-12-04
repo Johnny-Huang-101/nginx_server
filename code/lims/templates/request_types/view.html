@@ -1,0 +1,44 @@
+{% extends "view_template.html" %}
+
+{% block alerts %}
+{% endblock %}
+
+{% block buttons %}
+{% endblock %}
+
+{% block view %}
+{% endblock %}
+
+{% block accordion %}
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+   $(document).ready( function () {
+        $('#divisions-table').DataTable({
+            pageLength: -1,
+            scrollX: true,
+            scrollY: '50vh',
+            scrollCollapse: true,
+            lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+            order: [],
+        });
+    });
+</script>
+<script>
+   $(document).ready( function () {
+        $('#personnel-table').DataTable({
+            pageLength: -1,
+            scrollX: true,
+            scrollY: '50vh',
+            scrollCollapse: true,
+            lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+            order: [],
+        });
+    });
+</script>
+{% endblock %}

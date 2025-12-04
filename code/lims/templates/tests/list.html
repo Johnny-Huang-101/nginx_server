@@ -1,0 +1,129 @@
+{% extends "list_template.html" %}
+<!-- Icon to use next to heading -->
+{% block icon %}
+    <i class="fa-solid fa-vial-circle-check"></i>
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+
+<div class="dropdown" style="display: inline-block;">
+    <button aria-expanded="false" aria-haspopup="true" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown"
+            id="specimens-filter" style="margin-top:0px; background-color: black; border-color: black;"
+            type="button">
+        Discipline {% if query is not none %} | {{ query }} {% endif %}
+    </button>
+    <div class="dropdown-menu" aria-labelledby="specimens-filter">
+        {% for option in kwargs['discipline'] %}
+            <a href="{{ url_for(table_name~'.view_list', query_type='discipline', query=option) }}" class="dropdown-item">{{ option }}</a>
+        {% endfor %}
+    </div>
+</div>
+<div class="dropdown" style="display: inline-block;">
+    <button class="btn btn-secondary dropdown-toggle" type="button" id="batches-filter" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Filter
+    </button>
+    <div class="dropdown-menu" aria-labelledby="batches-filter">
+        <div class="dropdown-submenu dropright">
+            <a class="dropdown-item dropdown-toggle" href="#">Assay</a>
+            <ul class="dropdown-menu" style="height:30vh; overflow: scroll">
+                {% for assay in kwargs['assays'] %}
+                    <li><a class="dropdown-item" href="{{url_for(table_name~'.view_list', query_type='assay', query=assay)}}">{{assay}}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+         <div class="dropdown-submenu dropright">
+            <a class="dropdown-item dropdown-toggle" href="#">Status</a>
+            <ul class="dropdown-menu">
+                 {% for status in kwargs['statuses'] %}
+                <li><a class="dropdown-item" href="{{url_for(table_name~'.view_list', query_type='status', query=status)}}">{{status}}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Case Number</th>
+    <th>Accession Number</th>
+    <th>Code</th>
+    <th>Assay</th>
+    <th>Test Name</th>
+    <th>Batch ID</th>
+    <th>Test ID</th>
+    <th>Description</th>
+    <th>Dilution</th>
+    <th>Test Status</th>
+    <th>Directives</th>
+{% endblock %}
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        {% if item.case.priority == 'High' %} 
+        <span style="color: red;"> <strong>P</strong> </span>
+        {% endif %}
+        <a href="{{url_for('cases.view', item_id=item.case_id, view_only='True') }}">
+            {{item.case.case_number}}
+        </a>
+    </td>
+    <td>{{item.specimen.accession_number}}</td>
+    <td>
+        {% if item.specimen %}
+        [{{item.specimen.type.code}}]
+        {% endif %}
+    </td>
+    <td>{{item.assay.assay_name}}</td>
+    <td>
+      <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+          {{item.test_name}}
+      </a>
+    </td>
+    <td>
+        {% if item.batch_id %}
+            {{item.batch.batch_id}}
+        {% endif %}
+    </td>
+    <td>{{item.test_id}}</td>
+    <td>
+        {% if item.specimen %}
+        {{item.specimen.type.name}}
+        {% endif %}
+    </td>
+
+    <td>{{item.dilution}}</td>
+
+    <td>{{item.test_status}}</td>
+    <td>{{item.directives}}</td>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+    let tableName = "{{table_name}}"
+    let currentUser = "{{current_user.permissions}}"
+</script>
+<script src="/static/js/remove-add.js"></script>
+<script>
+    function removePendingSubmitter() {
+
+        const header = document.querySelector('.tests-pending-submitter-heading')
+
+        if(header){
+            header.remove()
+        }
+
+        // use all to grab every cell
+        const cells = document.querySelectorAll('.tests-pending-submitter')
+        if(cells){
+               // loop through cells and remove all
+            cells.forEach(cell => cell.remove())
+        }
+
+    }
+    removePendingSubmitter()
+
+</script>
+{% endblock %}

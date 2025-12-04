@@ -1,0 +1,690 @@
+{% extends "view_template.html" %}
+
+{% block buttons %}
+    {% if item.db_status == 'Pending' %}
+        {% if not item.parent_standard_lot %}
+            {% if kwargs['approval_ready'] %}
+                <a class="btn btn-primary" data-toggle="modal" data-target="#submit_modal">Submit</a>
+            {% else %}
+                <a class="btn btn-outline-secondary" data-toggle="tooltip" title="The following information needs to be filled out before submitting: <ul>{% for field in kwargs['missing_fields'] %}<li>{{field}}</li>{% endfor %}</ul>">Submit</a>
+            {% endif %}
+        {% endif %}
+        <a class="btn btn-primary" href="{{ url_for(table_name~'.update', item_id = item.id)}}">Update</a>
+        {% if item.type.name == 'Blank Matrix' %}
+            <a href="{{ url_for(table_name~'.update', item_id=item.id)}}" class="btn btn-primary">Edit Initial Information</a>
+        {% endif %}
+        <a href="{{url_for(table_name~'.additional_information', item_id=item.id)}}" class="btn btn-primary">Add Additional Information</a>
+        {% if item.type.name in kwargs['series_names'] %}
+            <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#series_modal">Add Series</button>
+        {% endif %}
+    {% elif item.db_status == 'Active' and current_user.permissions in ['Admin', 'Owner']%}
+        <a class="btn btn-primary" href="{{ url_for(table_name~'.additional_information', item_id = item.id)}}">Update</a>
+    {% elif item.db_status == 'Submitted' and item.type.requires_admin and current_user.permissions in ['Admin', 'Owner'] and current_user.initials != item.pending_submitter and current_user.id != item.prepared_by %}
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#approve_modal">Approve</button>
+    {% elif item.db_status == 'Submitted' and not item.type.requires_admin and current_user.initials != item.pending_submitter and current_user.id != item.prepared_by %}
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#approve_modal">Approve</button>
+    {% endif %}
+    <a class="btn btn-secondary" href="{{ url_for(table_name~'.attach', item_id=item.id) }}">Add Attachment</a>
+    <a class="btn btn-secondary" href="{{url_for('comment_instances.add', comment_item_type=item_name, comment_item_id=item.id, redirect_url=redirect_url)}}">Add Comment</a>
+    <a href="{{url_for(table_name~'.print_labels', item_id = item.id)}}" class="btn btn-secondary printLabelBtn">Print Label</a>
+    {% if current_user.permissions in ['Admin', 'Owner'] %}
+        {% if item.in_use %}
+            <a href="{{url_for(table_name~'.update_in_use', item_id=item.id)}}" class="btn btn-danger">Remove from Use</a>
+        {% else %}
+            <a href="{{url_for(table_name~'.update_in_use', item_id=item.id)}}" class="btn btn-primary">Set In Use</a>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block view %}
+    <div class="card">
+        <div class="card-header" id="details_heading">
+            <h5>
+                Standard/Reagent Information 
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col" align="left">
+                    <table class="table-hover table-striped nowrap" style="width:100%" id="standard_verification">
+                        <colgroup>
+                            <col style="width: 13%"><col style="width: 13%">
+                            <col style="width: 9%"><col style="width: 9%">
+                            <col style="width: 4%"><col style="width: 23%">
+                            <col style="width: 6%"><col style="width: 26%">
+                        </colgroup>
+                        <tbody>
+                            {% if not item.parent_standard_lot %}
+                                <tr>
+                                    <th>Solution Type</th>
+                                    <td>{{item.type.name}}</td>
+                                    <th>Constituent Type</th>
+                                    <td>{{item.constituent.name}}</td>
+                                    <th>Lot:</th>
+                                    <td>{{item.lot}}</td>
+                                    <th>Description</th>
+                                    <td>{{item.description}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Assays</th>
+                                    <td>
+                                        {% if kwargs['assays'] is not none %}
+                                            {% for assay in kwargs['assays'] %}
+                                                {{assay}}{% if loop.index < kwargs['assays']|length %}, {% endif %}{% if loop.index %2 == 0 %}<br>{% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    </td>
+                                    <th>Prepared By</th>
+                                    <td>{{item.prep_by.initials}}</td>
+                                    <th>Prep Date</th>
+                                    <td>
+                                        {% if item.prepared_date is not none %}
+                                            {{item.prepared_date.strftime('%m-%d-%Y')}}
+                                        {% endif %}
+                                    </td>
+                                    <th>Retest Date</th>
+                                    <td>
+                                        {% if item.retest_date is not none %}
+                                            {{item.retest_date.strftime('%m-%d-%Y')}}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Location</th>
+                                    <td>
+                                        {% if kwargs['location'] is not none %}
+                                            {{kwargs['location']}} -
+                                        {% else %}
+                                            N/A -
+                                        {% endif %}
+                                        <a href="{{url_for(table_name~'.update_location', item_id=item.id)}}"> Update</a>
+                                    </td>
+                                    <th></th>
+                                    <td colspan="5"></td>
+                                </tr>
+                                <tr>
+                                    <th>Equipment Used</th>
+                                    <td colspan="7">
+                                        {% if kwargs['eq_ids'] is not none and item.equipment_used is not none %}
+                                            {% for eq in kwargs['eq_ids'] %}
+                                                {{eq}}{% if loop.index < kwargs['eq_ids']|length %}, {% endif %}
+                                            {% endfor %}
+                                        {% elif item.equipment_used == 'N/A' %}
+                                            {{item.equipment_used}}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Pipette Check</th>
+                                    <td colspan="7">
+                                        {% if 'pipette_check' in item.type.expected_fields %}
+                                            {% if not item.pipette_check %}
+                                                False
+                                            {% else %}
+                                                True
+                                            {% endif %}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Concentrator Multiplier</th>
+                                    <td colspan="7">{{item.concentrator_multiplier}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Parent Lot</th>
+                                    <td colspan="7">
+                                        {% if 'parent_standard_lot' in item.type.expected_fields and item.parent_standard_lot is not none %}
+                                            <a href="{{url_for(table_name~'.view', item_id=item.parent_standard_lot)}}">{{kwargs['parent']}}</a>
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Part A</th>
+                                    <td colspan="2">
+                                        {% if kwargs['part_a'] %}
+                                            {{kwargs['part_a']}}
+                                        {% endif %}
+                                    </td>
+                                    <th>Part B</th>
+                                    <td colspan="2">
+                                        {% if kwargs["part_b"] %}
+                                            {{kwargs['part_b']}}
+                                        {% endif %}
+                                    </td>
+                                    <th>Part C</th>
+                                    <td>
+                                        {% if kwargs['part_c'] %}
+                                            {{kwargs['part_c']}}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Solvent Used</th>
+                                    <td colspan="7">
+                                        {% if 'solvent_used' in item.type.expected_fields %}
+                                            {{item.solvent.name}}{% if item.solvent_used is not none %} - {{item.solvent.lot}}{% endif %}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Preservatives</th>
+                                    <td colspan="7">
+                                        {% if 'preservatives' in item.type.expected_fields %}
+                                            {{item.preservative.name}}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Component(s)</th>
+                                    <td colspan="7">
+                                        {% if 'component' in item.type.expected_fields %}
+                                            {{kwargs['component']}}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Volume Prepared</th>
+                                    <td colspan="7">
+                                        {% if 'volume_prepared' in item.type.expected_fields %}
+                                            {{item.volume_prepared}}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Aliquot Volume</th>
+                                    <td colspan="3">
+                                        {% if 'aliquot_volume' in item.type.expected_fields %}
+                                            {{item.aliquot_volume}}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                    <th>Total Aliquots</th>
+                                    <td colspan="3">
+                                        {% if 'total_aliquots' in item.type.expected_fields %}
+                                            {{item.total_aliquots}}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Verification Batches</th>
+                                    <td colspan="7">
+                                        {% if kwargs['verification'] is not none %}
+                                            {% for batch in kwargs['verification'] %}
+                                                {{batch}}{% if loop.index < kwargs['verification']|length %}, {% endif %}
+                                            {% endfor %}
+                                        {% elif item.verification_batches == 'N/A' %}
+                                            {{item.verification_batches}}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Verification Comments</th>
+                                    <td colspan="7">{{item.verification_comments}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Previous Lot(s)</th>
+                                    <td colspan="7">
+                                        {% if kwargs['previous_lots'] is not none %}
+                                            {% for lot in kwargs['previous_lots'] %}
+                                                {{lot}}{% if loop.index < kwargs['previous_lots']|length %}, {% endif %}
+                                            {% endfor %}
+                                        {% elif item.previous_lot == 'N/A' %}
+                                            {{item.previous_lot}}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Previous Lot Comments</th>
+                                    <td colspan="7">{{item.previous_lot_comments}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Calibration Comments</th>
+                                    <td colspan="7">{{item.calibration_comments}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Qualitative Comments</th>
+                                    <td colspan="7">{{item.qualitative_comments}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Quantitative Comments</th>
+                                    <td colspan="7">{{item.quantitative_comments}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Additional Comments</th>
+                                    <td colspan="7">{{item.additional_comments}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Location and Labels Verified By</th>
+                                    <td colspan="7">
+                                        {% if item.verified_by is not none %}
+                                            {{item.verif_by.initials}}
+                                        {% else %}
+                                            <a href="" data-toggle="modal" data-target="#verify_modal">Verify</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Attachments</th>
+                                    <td colspan="7">{{kwargs['attachments']}}</td>
+                                </tr>
+                                {% if kwargs['child_standards'] %}
+                                    <tr>
+                                        <th>Child Standards</th>
+                                        <td colspan="7">
+                                            {% for standard in kwargs['child_standards'] %}
+                                                <a href="{{url_for(table_name~'.view', item_id=standard.id)}}">{{standard.lot}}</a>
+                                            {% endfor %}
+                                        </td>
+                                    </tr>  
+                                {% endif %}
+                            {% else %}
+                                <tr>
+                                    <th>Solution Type</th>
+                                    <td>{{item.type.name}}</td>
+                                    <th>Constituent Type</th>
+                                    <td>{{item.constituent.name}}</td>
+                                    <th>Lot:</th>
+                                    <td>{{item.lot}}</td>
+                                    <th>Description</th>
+                                    <td>{{item.description}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Assays</th>
+                                    <td>
+                                        {% if kwargs['assays'] is not none %}
+                                            {% for assay in kwargs['assays'] %}
+                                                {{assay}}{% if loop.index < kwargs['assays']|length %}, {% endif %}{% if loop.index %2 == 0 %}<br>{% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    </td>
+                                    <th>Prepared By</th>
+                                    <td>{{item.prep_by.initials}}</td>
+                                    <th>Prep Date</th>
+                                    <td>
+                                        {% if item.prepared_date is not none %}
+                                            {{item.prepared_date.strftime('%m-%d-%Y')}}
+                                        {% endif %}
+                                    </td>
+                                    <th>Retest Date</th>
+                                    <td>
+                                        {% if item.retest_date is not none %}
+                                            {{item.retest_date.strftime('%m-%d-%Y')}}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Location</th>
+                                    <td>
+                                        {% if kwargs['location'] is not none %}
+                                            {{kwargs['location']}} -
+                                        {% else %}
+                                            N/A -
+                                        {% endif %}
+                                        <a href="{{url_for(table_name~'.update_location', item_id=item.id)}}"> Update</a>
+                                    </td>
+                                    <th></th>
+                                    <td colspan="5"></td>
+                                </tr>
+                                <tr>
+                                    <th>Equipment Used</th>
+                                    <td colspan="7">
+                                        {% if kwargs['eq_ids'] is not none and item.equipment_used is not none %}
+                                            {% for eq in kwargs['eq_ids'] %}
+                                                {{eq}}{% if loop.index < kwargs['eq_ids']|length %}, {% endif %}
+                                            {% endfor %}
+                                        {% elif item.equipment_used == 'N/A' %}
+                                            {{item.equipment_used}}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Pipette Check</th>
+                                    <td colspan="7">
+                                        {% if 'pipette_check' in item.type.expected_fields %}
+                                            {% if not item.pipette_check %}
+                                                False
+                                            {% else %}
+                                                True
+                                            {% endif %}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Concentrator Multiplier</th>
+                                    <td colspan="7">{{item.concentrator_multiplier}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Parent Lot</th>
+                                    <td colspan="7">
+                                        {% if 'parent_standard_lot' in item.type.expected_fields and item.parent_standard_lot is not none %}
+                                            <a href="{{url_for(table_name~'.view', item_id=item.parent_standard_lot)}}">{{kwargs['parent']}}</a>
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Part A</th>
+                                    <td>
+                                        {% if item.part_a != 'N/A' %}
+                                            {{item.part_a}} - {{item.part_a_lot}}
+                                            {% if item.part_a_exp is not none %} {{item.part_a_exp.strftime('%d-%m-%Y')}}
+                                            {% elif item.no_part_a_exp %} N/A{% endif %}
+                                        {% else %}
+                                            {{item.part_a}}
+                                        {% endif %}
+                                    </td>
+                                    <th>Part B</th>
+                                    <td>
+                                        {% if item.part_b != 'N/A' %}
+                                            {{item.part_b}} - {{item.part_b_lot}}
+                                            {% if item.part_b_exp is not none %} {{item.part_b_exp.strftime('%d-%m-%Y')}}
+                                            {% elif item.no_part_b_exp %} N/A{% endif %}
+                                        {% else %}
+                                            {{item.part_b}}
+                                        {% endif %}
+                                    </td>
+                                    <th>Part C</th>
+                                    <td>
+                                        {% if item.part_c != 'N/A' %}
+                                            {{item.part_c}} - {{item.part_c_lot}}
+                                            {% if item.part_c_exp is not none %} {{item.part_c_exp.strftime('%d-%m-%Y')}}
+                                            {% elif item.no_part_c_exp %} N/A{% endif %}
+                                        {% else %}
+                                            {{item.part_c}}
+                                        {% endif %}
+                                    </td>
+                                    <th></th>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <th>Solvent Used</th>
+                                    <td colspan="7">
+                                        {% if 'solvent_used' in item.type.expected_fields %}
+                                            <i style="color: #818589">{{kwargs['parent_standard'].solvent.name}}{% if kwargs['parent_standard'].solvent_used is not none %} - {{kwargs['parent_standard'].solvent.lot}}{% endif %}</i>
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Preservatives</th>
+                                    <td colspan="7">
+                                        {% if 'preservatives' in kwargs['parent_standard'].type.expected_fields %}
+                                            <i style="color: #818589">{{kwargs['parent_standard'].preservative.name}}</i>
+                                        {% else %}
+                                            <i style="color: #818589">N/A</i>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Volume Prepared</th>
+                                    <td colspan="7">
+                                        {% if 'volume_prepared' in item.type.expected_fields %}
+                                            {{item.volume_prepared}}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Aliquot Volume</th>
+                                    <td colspan="3">
+                                        {% if 'aliquot_volume' in item.type.expected_fields %}
+                                            {{item.aliquot_volume}}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                    <th>Total Aliquots</th>
+                                    <td colspan="3">
+                                        {% if 'total_aliquots' in item.type.expected_fields %}
+                                            {{item.total_aliquots}}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Verification Batches</th>
+                                    <td colspan="7">
+                                        {% if kwargs['verification'] is not none %}
+                                            {% for batch in kwargs['verification'] %}
+                                                <i style="color: #818589">{{batch}}{% if loop.index < kwargs['verification']|length %}, {% endif %}</i>
+                                            {% endfor %}
+                                        {% elif kwargs['parent_standard'].verification_batches == 'N/A' %}
+                                            <i style="color: #818589">{{item.verification_batches}}</i>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Verification Details</th>
+                                    <td colspan="7">
+                                        <i style="color: #818589">{{kwargs['parent_standard'].verification_comments}}</i>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Previous Lot(s)</th>
+                                    <td colspan="7">
+                                        {% if kwargs['previous_lots'] is not none %}
+                                            {% for lot in kwargs['previous_lots'] %}
+                                                <i style="color: #818589">{{lot}}{% if loop.index < kwargs['previous_lots']|length %}, {% endif %}</i>
+                                            {% endfor %}
+                                        {% elif kwargs['parent_standard'].previous_lot == 'N/A' %}
+                                            <i style="color: #818589">{{kwargs['parent_standard'].previous_lot}}</i>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Previous Lot Details</th>
+                                    <td colspan="7">
+                                        <i style="color: #818589">{{kwargs['parent_standard'].previous_lot_comments}}</i>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Calibration Details</th>
+                                    <td colspan="7">
+                                        <i style="color: #818589">{{kwargs['parent_standard'].calibration_comments}}</i>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Qualitative Details</th>
+                                    <td colspan="7">
+                                        <i style="color: #818589">{{kwargs['parent_standard'].qualitative_comments}}</i>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Quantitative Details</th>
+                                    <td colspan="7">
+                                        <i style="color: #818589">{{kwargs['parent_standard'].quantitative_comments}}</i>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Additional Details</th>
+                                    <td colspan="7">
+                                        <i style="color: #818589">{{kwargs['parent_standard'].additional_comments}}</i>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Location and Labels Verified By</th>
+                                    <td colspan="7">
+                                        {% if item.verified_by is not none %}
+                                            {{item.verif_by.initials}}
+                                        {% else %}
+                                            <a href="" data-toggle="modal" data-target="#verify_modal">Verify</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Attachments</th>
+                                    <td colspan="7">{{kwargs['attachments']}}</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    <div class="card-header view-card-header" id="batches">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#batches-coll" aria-expanded="false" aria-controls="batches">
+            <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Batches
+        </button>
+    </div>
+    <div id="batches-coll" class="collapse" aria-labelledby="batches-heading">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col" align="left">
+                        <table class="table-hover table-striped nowrap" style="width:100%" id="batches">
+                            <tbody>
+                                {% for batch in kwargs['batches'] %}
+                                    <tr>
+                                        <td>
+                                            {{batch.batch_id}}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block modals %}
+<div class="modal" tabindex="-1" role="dialog" id="submit_modal">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Submit for Approval</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+            <div class="modal-body" style="text-align: center">
+                <p>By clicking "Confirm", you <b>({{current_user.initials}})</b> are submitting the following for approval:</p>
+                <p><b>{{item.lot}}</b></p>
+            </div>
+            <div class="modal-footer">
+                <a href="{{url_for(table_name~'.submit', item_id=item.id)}}" class="btn btn-primary">Confirm</a>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for approval (with date picker) -->
+<div class="modal" tabindex="-1" role="dialog" id="approve_modal">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form action="{{ url_for(table_name ~ '.approve_with_date', item_id=item.id) }}" method="POST">
+        <div class="modal-header">
+          <h5 class="modal-title">Confirm approval</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body" style="text-align: left">
+          <p>By clicking <b>Approve</b>, you <b>({{ current_user.initials }})</b> authorize the following lot for use:</p>
+          <p><b>{{ item.lot }}</b></p>
+
+          <div class="form-group">
+            <label for="authorized_date"><b>Authorized Date</b></label>
+            <input
+              type="date"
+              class="form-control"
+              id="authorized_date"
+              name="authorized_date"
+              required
+              value="{{ datetime.utcnow().strftime('%Y-%m-%d') }}"
+            >
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Approve</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+  <!-- Modal to verify log and labels -->
+<div class="modal" tabindex="-1" role="dialog" id="verify_modal">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Confirm approval</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <div class="modal-body" style="text-align: left">
+            <p>By clicking <b>Verify</b>, you <b>({{ current_user.initials }})</b> are verifying the location and labels are correct for the following lot:</p>
+            <p><b>{{ item.lot }}</b></p>
+        </div>
+        <div class="modal-footer">
+            <a href="{{url_for(table_name~'.log_labels_verify', item_id=item.id)}}" class="btn btn-primary">Verify</a>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Series Addition-->
+  {# https://getbootstrap.com/docs/4.1/components/modal/ #}
+  {# Notice how the link with the id to the button above! #}
+  <div class="modal" tabindex="-1" role="dialog" id="series_modal">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">How many additional standards in the series do you wish to add?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form action="{{url_for(table_name~'.series', item_id=item.id)}}" method="GET" id="modal_form">
+            <div class="modal-body" style="text-align: center">
+                <input type="text" name="series_num" id="series_num">
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Confirm</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+
+{% block scripts %}
+    <script src = "../../static/js/label_printing.js" type="text/javascript" charset="UTF-8"></script>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container-fluid">
+    <div style="margin-top:6px">
+        <a href="{{ url_for('dashboard.get_dashboard') }}"><i class="fa-solid fa-house"></i></a>
+        > <a href="{{ url_for('dashboard.add_special_project') }}">Add Special Project</a>
+    </div>
+    <hr style="border-width:5px; margin-top: 6px">
+    <h1>Add Special Project</h1>
+    <hr style="border-width:5px">
+    <form method="POST" id="specialProjectForm" novalidate="novalidate">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            <div class="row form-group mb-4">
+                <div class="col-md-4">
+                    {{ form.special_project_name.label }}
+                    {{ form.special_project_name(class_='form-control', id='special_project_name') }}
+                </div>
+                <div class="col">
+                    {{ form.num_items.label }}
+                    {{ form.num_items(class_='form-control', id='num_items') }}
+                </div>
+                <div class="col">
+                    {{ form.num_completed.label }}
+                    {{ form.num_completed(class_='form-control', id='num_completed') }}
+                </div>
+            </div>
+            <div class="form-group my-4">
+                {{ form.submit(class='btn btn-primary', id='submitBtn') }}
+                <a type="button" class="btn btn-secondary" id="exit" href="{{ url_for('dashboard.get_dashboard') }}">Exit</a>
+            </div>
+        </div>
+    </form>
+    <div id="successMessage" class="alert alert-success" style="display:none; margin-top: 20px;">
+        Successfully submitted!
+    </div>
+</div>
+
+<script>
+document.getElementById('specialProjectForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent the default form submission
+
+    // Create a FormData object to send the form data via AJAX
+    var formData = new FormData(this);
+
+    // Send the form data using fetch
+    fetch('{{ url_for("dashboard.add_special_project") }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': '{{ form.csrf_token._value() }}'
+        }
+    }).then(response => response.json()).then(data => {
+        if (data.success) {
+            // Clear the form fields
+            document.getElementById('special_project_name').value = '';
+            document.getElementById('num_items').value = '';
+            document.getElementById('num_completed').value = '';
+
+            // Display the success message
+            document.getElementById('successMessage').style.display = 'block';
+        } else {
+            alert('An error occurred. Please try again.');
+        }
+    }).catch(error => {
+        alert('An error occurred. Please try again.');
+    });
+});
+</script>
+
+{% endblock %}

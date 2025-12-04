@@ -1,0 +1,99 @@
+{% extends "form_template.html" %}
+
+<!-- ALERTS -->
+{% block alerts %}
+{% endblock %}
+
+<!-- HEADER -->
+{% block header %}
+{% endblock %}
+
+<!-- FORM -->
+{% block form %}
+    <div class="row form-group mb-4">
+        <div class="col">
+            {{form.agency_id.label}}
+            {{form.agency_id}}
+        </div>
+        <div class="col">
+            {{form.name.label}} If N/A, enter Agency Name.
+            {{form.name}}
+        </div>
+        <div class="col">
+            {{form.abbreviation.label}}
+            {{form.abbreviation}}
+        </div>
+    </div>
+    <hr style="border-width:3px">
+    <div class="row form-group mb-4">
+        <div class="col">
+            {{form.street_number.label}}
+            {{form.street_number}}
+        </div>
+        <div class="col">
+            {{form.street_address.label}}
+            {{form.street_address}}
+        </div>
+        <div class="col">
+            {{form.unit_number.label}}
+            {{form.unit_number}}
+        </div>
+        <div class="col">
+            {{form.floor.label}}
+            {{form.floor}}
+        </div>
+    </div>
+    <div class="row form-group mb-4">
+        <div class="col">
+            {{form.city.label}}
+            {{form.city}}
+        </div>
+        <div class="col">
+            {{form.state_id.label}}
+            {{form.state_id}}
+        </div>
+        <div class="col">
+            {{form.zipcode.label}}
+            {{form.zipcode}}
+        </div>
+    </div>
+    <hr style="border-width:3px">
+    <div class="row form-group mb-4">
+        <div class="col">
+            {{form.email.label}}
+            {{form.email}}
+        </div>
+    </div>
+    <hr style="border-width:3px">
+    <div class="form-group">
+        {{form.client.label}} - Receives INF-0007.
+        {{form.client}}
+    </div>
+    <div class="form-group">
+        {{form.stakeholder.label}} - Includes all Clients and indirect users of SFOCME data; receives Feedback Survey.
+        {{form.stakeholder}}
+    </div>
+        <div class="form-group">
+        {{form.reference_material_provider.label}} - Query for annual verification of accreditation.
+        {{form.reference_material_provider}}
+    </div>
+        <div class="form-group">
+        {{form.service_provider.label}} - (e.g., calibration, repair, preventive maintenance); also, query for annual verification of accreditation.
+        {{form.service_provider}}
+    </div>
+    <hr style="border-width:3px">
+    <div class="form-group">
+        {{form.notes.label}}
+        {{form.notes}}
+    </div>
+{% endblock %}
+
+<!--MODALS-->
+{% block modals %}
+{% endblock %}
+
+<!--SCRIPTS-->
+{% block scripts %}
+    <!-- divisions.js file-->
+    <script src="/static/js/divisions.js"></script>
+{% endblock %}

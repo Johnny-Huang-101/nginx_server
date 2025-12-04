@@ -1,0 +1,70 @@
+{% extends "form_template.html" %}
+{% block form %}
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.equipment_id.label}}
+        {{form.equipment_id}}
+    </div>
+    <div class="col">
+        {{form.serial_number.label}}
+        {{form.serial_number}}
+    </div>
+    <div class="col">
+        {{form.acquired_date.label}}
+        {{form.acquired_date(type='date')}}
+    </div>
+    <div class="col">
+        {{form.type_id.label}}
+        {{form.type_id}}
+    </div>
+</div>
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.status_id.label}}
+        {{form.status_id}}
+    </div>
+    <div class="col">
+        {{form.last_service_date.label}}
+        {{form.last_service_date(type='date')}}
+    </div>
+    <div class="col">
+        {{form.due_service_date.label}}
+        {{form.due_service_date(type='date')}}
+    </div>
+    <div class="col">
+        {{form.vendor_id.label}}
+        {{form.vendor_id}}
+    </div>
+</div>
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.manufacturer_id.label}}
+        {{form.manufacturer_id}}
+    </div>
+    <div class="col">
+        {{form.model_number.label}}
+        {{form.model_number}}
+    </div>
+    <div class="col">
+        {{form.bms_name.label}}
+        {{form.bms_name}}
+    </div>
+</div>
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.location_table.label}}
+        {{form.location_table}}
+    </div>
+    <div class="col">
+        {{form.location_id.label}}
+        {{form.location_id}}
+    </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/locations.js"></script>
+{% endblock %}

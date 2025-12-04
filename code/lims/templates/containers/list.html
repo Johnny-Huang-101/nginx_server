@@ -1,0 +1,85 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+<div class="dropdown" style="display: inline-block;">
+    <button aria-expanded="true" aria-haspopup="true" class="btn btn-secondary dropdown-toggle"
+            data-toggle="dropdown"
+            id="containers-filter" type="button" style="background-color: black; border-color: black;">
+        Discipline {% if query is not none %} | {{ query }} {% endif %}
+    </button>
+    <div aria-labelledby="specimens-filter" class="dropdown-menu">
+        {% for option in kwargs['discipline'] %}
+        <a class="dropdown-item" href="{{ url_for(table_name~'.view_list', query_type='discipline', query=option) }}">
+            {{ option }}</a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block header %}
+    <th>Accession Number</th>
+    <th>Code</th>
+    <th>Description</th>
+    <th>Discipline</th>
+    <th>Case Number</th>
+    <th>Number of Specimens (Accessioned/Submitted)</th>
+    <th>Submitted By</th>
+    <th>Submission Date</th>
+    <th>Submission Time</th>
+    <th>Submission Route Type</th>
+    <th>Location Type</th>
+    <th>Submission Location</th>
+    <th>Evidence Comments</th>
+{% endblock %}
+
+{% block body scoped %}
+    <td>
+        {% if current_user.permissions not in ['Admin', 'Owner'] %}
+            <a href="{{url_for(table_name~'.view', item_id=item.id, view_only='True')}}">
+                {{item.accession_number}}
+            </a>
+        {% else %}
+            <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+                {{item.accession_number}}
+            </a>
+        {% endif %}
+    </td>
+    <td>[{{item.type.code}}]</td>
+    <td>{{item.type.name}}</td>
+    <td>{{item.discipline}}</td>
+    <td>
+        {% if item.case.id %}
+        <a href="{{url_for('cases.view', item_id=item.case.id, view_only=True)}}">
+            {{item.case.case_number}}
+        </a>
+        {% endif %}
+    </td>
+    <td>{{item.n_specimens}}/{{item.n_specimens_submitted}}</td>
+    <td>{{item.submitter.full_name}}</td>
+    <td>
+        {% if item.submission_date %}
+            {{item.submission_date.strftime('%m/%d/%Y')}}
+        {% endif %}
+    </td>
+    <td>{{item.submission_time}}</td>
+    <td>{{item.submission_route_type}}</td>
+    <td>{{item.location_type}}</td>
+    <td>{{item.submission_route}}</td>
+    <td>{{item.evidence_comments}}</td>
+
+{% endblock %}
+
+{% block scripts %}
+    <script type="text/javascript">
+    let tableName = "{{table_name}}"
+    let currentUser = "{{current_user.permissions}}"
+    </script>
+<script src="/static/js/remove-add.js"></script>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends "form_template.html" %}
+{% block form %}
+<div>
+    <div class="alert alert-info alert-dismissible fade show" id="customAlert" role="alert" style="display: none;">
+        <span id="alertMessage"></span>
+    </div>
+</div>
+<div class="row form-group mb-4">
+    <div class="col">
+        {{ form.case_id.label }}
+        {{ form.case_id }}
+    </div>
+    <div class="col">
+        {{ form.agency_id.label }}
+        {{ form.agency_id(class_="selectpicker", id="agency_id", data_live_search="true") }}
+    </div>
+<div class="col">
+    {{ form.division_id.label }}
+    {{ form.division_id(class_="selectpicker", id="division_id", data_live_search="true") }}
+</div>
+    <div class="col">
+        {{ form.personnel_id.label }}
+        {{ form.personnel_id(class_="selectpicker", id="personnel_id", data_live_search="true") }}
+    </div>
+</div>
+<div class="row form-group mb-4">
+    <div class="col">
+        {{ form.requested_date.label }}
+        {{ form.requested_date }}
+    </div>
+    <div class="col">
+        {{ form.due_date.label }}
+        {{ form.due_date }}
+    </div>
+</div>
+
+<hr style="border-width: 2.5px;">
+
+<div class="row form-group mb-4 conditional-fields">
+    <div class="col">
+        {{ form.delivery_date.label }}
+        {{ form.delivery_date }}
+    </div>
+    <div class="col">
+        {{ form.del_agency_id.label }}
+        {{ form.del_agency_id }}
+    </div>
+    <div class="col">
+        {{ form.del_division_id.label }}
+        {{ form.del_division_id }}
+    </div>
+    <div class="col">
+        {{ form.del_personnel_id.label }}
+        {{ form.del_personnel_id }}
+    </div>
+            <div class="col">
+            {{ form.n_pages.label }}
+            {{ form.n_pages }}
+        </div>
+</div>
+    <div class="row form-group mb-4 conditional-fields">
+        <div class="col">
+            {{ form.postage_and_delivery.label }}
+            {{ form.postage_and_delivery }}
+        </div>
+        <div class="col">
+            {{ form.additional_costs.label }}
+            {{ form.additional_costs }}
+        </div>
+        <div class="col">
+            {{ form.total_costs.label }}
+            {{ form.total_costs }}
+        </div>
+        <div class="col">
+            {{ form.paid_date.label }}
+            {{ form.paid_date }}
+        </div>
+    </div>
+
+    {% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+    function toggleFieldsBasedOnExecuteNow() {
+        var selectedValue = $('#execute_now').val();
+        if (selectedValue === 'No') {
+            $('.conditional-fields').hide();  // Hide all conditional fields
+        } else {
+            $('.conditional-fields').show();  // Show all conditional fields
+        }
+    }
+
+$(document).ready(function() {
+    $('#agency_id').change(function() {
+        var agencyId = $(this).val();
+        if (agencyId != 0) {
+            $.getJSON('/get_divisions/' + agencyId, function(data) {
+                console.log("Divisions received:", data);
+                var divisionOptions = '<option value="0">Please select a division</option>';
+                $.each(data, function(index, division) {
+                    divisionOptions += '<option value="' + division[0] + '">' + division[1] + '</option>';
+                });
+                $('#division_id').html(divisionOptions);
+                $('#division_id').selectpicker('refresh');  // Refresh the dropdown if using Bootstrap selectpicker
+            });
+        } else {
+            $('#division_id').html('<option value="0">Please select a division</option>');
+            $('#division_id').selectpicker('refresh');
+        }
+    });
+
+    $('#division_id').change(function() {
+        console.log("Division changed:", $(this).val());
+        var divisionId = $(this).val();
+        if (divisionId != 0) {
+            $.getJSON('/get_personnel/' + divisionId, function(data) {
+                console.log("Personnel received:", data);
+                var personnelOptions = '<option value="0">Please select personnel</option>';
+                $.each(data, function(index, person) {
+                    personnelOptions += '<option value="' + person[0] + '">' + person[1] + '</option>';
+                });
+                $('#personnel_id').html(personnelOptions);
+                $('#personnel_id').selectpicker('refresh');  // Refresh the dropdown if using Bootstrap selectpicker
+            });
+        } else {
+            $('#personnel_id').html('<option value="0">Please select personnel</option>');
+            $('#personnel_id').selectpicker('refresh');
+        }
+    });
+});
+</script>
+{% endblock %}

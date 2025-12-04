@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+<div class="container-fluid">
+    <hr style="border-width:5px">
+    <h1 align="center">
+        {{item.batch_id}} | {{item.batch_status}}
+    </h1>
+    <hr style="border-width:5px">
+    <div class="mb-2" id="buttons">
+        <button id="select_all" class="btn btn-primary">Select all specimens</button>
+        {% for location in unique %}
+            {% if location != current_user.initials %}
+                <button class="btn btn-primary location-button" id="btn_{{location}}" name="{{location}}">Select all specimens from {{location}}</button>
+            {% endif %}
+        {% endfor %}
+        <button id="clear" class="btn btn-secondary">Clear selections</button>
+    </div>
+
+    <div>
+        <form method="POST" id="form" novalidate="novalidate">
+            {{form.hidden_tag()}}
+
+            <div class="form-group">
+                {{form.selected_specimens(class='form-control selectpicker')}}
+            </div>
+
+            <div class="form-group">
+                <div class="table display">
+                    <div class="table-responsive">
+                        <table class="table display table-hover small nowrap" style="width:100%; border:1px solid #ced4da" id="specimens">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Case</th>
+                                <th>Accession Number</th>
+                                <th>Custody</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for specimen in specimens %}
+                            <tr>
+                                <td>{{specimen.id}}</td>
+                                <td>{{specimen.case.case_number}}</td>
+                                <td>{{specimen.accession_number}}</td>
+                                {% if specimen.custody == unique[0] %}
+                                <td style="background-color:#0099ff">{{specimen.custody}}</td>
+                                {% elif specimen.custody == unique[1] %}
+                                <td style="background-color:#00ffff">{{specimen.custody}}</td>
+                                {% elif specimen.custody == unique[2] %}
+                                <td style="background-color:#00ccff">{{specimen.custody}}</td>
+                                {% elif specimen.custody == unique[3] %}
+                                <td style="background-color:#3399cc">{{specimen.custody}}</td>
+                                {% elif specimen.custody == unique[4] %}
+                                <td style="background-color:#6699ff">{{specimen.custody}}</td>
+                                {% elif specimen.custody == unique[5] %}
+                                <td style="background-color:#33cccc">{{specimen.custody}}</td>
+                                {% elif specimen.custody == unique[6] %}
+                                <td style="background-color:#0099ff">{{specimen.custody}}</td>
+                                {% elif specimen.custody == unique[7] %}
+                                <td style="background-color:#00ffff">{{specimen.custody}}</td>
+                                {% elif specimen.custody == unique[8] %}
+                                <td style="background-color:#00ccff">{{specimen.custody}}</td>
+                                {% elif specimen.custody == unique[9] %}
+                                <td style="background-color:#3399cc">{{specimen.custody}}</td>
+                                {% elif specimen.custody == unique[10] %}
+                                <td style="background-color:#6699ff">{{specimen.custody}}</td>
+                                {% elif specimen.custody == unique[11] %}
+                                <td style="background-color:#33cccc">{{specimen.custody}}</td>
+                                {% elif specimen.custody == unique[12] %}
+                                <td style="background-color:#0099ff">{{specimen.custody}}</td>
+                                {% elif specimen.custody == unique[13] %}
+                                <td style="background-color:#00ffff">{{specimen.custody}}</td>
+                                {% elif specimen.custody == unique[14] %}
+                                <td style="background-color:#00ccff">{{specimen.custody}}</td>
+                                {% elif specimen.custody == unique[15] %}
+                                <td style="background-color:#3399cc">{{specimen.custody}}</td>
+                                {% elif specimen.custody == unique[16] %}
+                                <td style="background-color:#6699ff">{{specimen.custody}}</td>
+                                {% elif specimen.custody == unique[17] %}
+                                <td style="background-color:#33cccc">{{specimen.custody}}</td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label style="font-weight:bold">Specimens currently in your possession</label>
+                <div class="table display">
+                    <div class="table-responsive">
+                        <table class="table display table-hover small nowrap" style="width:100%; border:1px solid #ced4da" id="specimens_in_users_possession">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Case</th>
+                                <th>Accession Number</th>
+                                <th>Custody</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for specimen in specimens_in_users_possession %}
+                            <tr>
+                                <td>{{specimen.id}}</td>
+                                <td>{{specimen.case.case_number}}</td>
+                                <td>{{specimen.accession_number}}</td>
+                                <td>{{specimen.custody}}</td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal" tabindex="-1" role="dialog" id="specimen_audit">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Confirm</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Confirm you are taking custody of the selected specimen(s):</p>
+                            <p id="confirmation-text"></p>
+                        </div>
+                        <div class="modal-footer">
+                            {{form.submit(class='btn btn-primary')}}
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <button class="btn btn-primary" type="button" data-toggle="modal" data-target="#specimen_audit" id="confirm-button" disabled>Confirm</button>
+                <a type="button" class="btn btn-secondary" href="{{url_for(table_name~'.view', item_id=item.id)}}">Exit</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Initialize the tests datatable
+    $(document).ready(function () {
+        $('#specimens').DataTable({
+            dom: 'tr',
+            scrollX: true,
+            //scrollY : "30vh",
+            //scrollCollapse: true,
+            pageLength: -1,
+            "aaSorting": [[ 0, "asc" ]],
+            "language": {
+             "emptyTable": "No specimens to collect"
+             }
+        });
+    });
+</script>
+
+<script>
+    // Initialize the tests datatable
+    $(document).ready(function () {
+       $('#specimens_in_users_possession').DataTable({
+            dom: 'tr',
+            scrollX: true,
+            //scrollY : "30vh",
+            //scrollCollapse: true,
+            pageLength: -1,
+            "aaSorting": [[ 0, "asc" ]],
+            "language": {
+             "emptyTable": "No specimens currently in your possession"
+             }
+        });
+    });
+</script>
+
+<script>
+    // Populate the text in the confirmation modal
+    function confirmText() {
+        var locDict = {}
+        $.each($('#specimens tbody tr.table-active'), function (){
+           var location = $(this).find('td').eq(-1).text();
+           if (location in locDict) {
+                locDict[location]++
+           } else {
+                locDict[location] = 1
+           }
+        })
+
+        text = "<ul>"
+        for (const [loc, count] of Object.entries(locDict)) {
+            text += "<li><b>"+loc+"</b>: "+count
+        }
+        text += "</ul>"
+        $('#confirmation-text').html(text)
+    }
+</script>
+
+<script>
+    $('#select_all').on('click', function () {
+        var selected_specimens = []
+        $.each($('#specimens tbody tr'), function () {
+            var specimen_id = Number($(this).find('td').eq(0).text());
+            if (specimen_id) {
+                selected_specimens.push(specimen_id);
+                $(this).addClass('table-active');
+            }
+        });
+
+        if (selected_specimens.length) {
+            $('#confirm-button').attr('disabled', false);
+            $('#selected_specimens').selectpicker('val', selected_specimens);
+             $('#selected_specimens').selectpicker('refresh');
+             $('#selected_specimens').selectpicker('render');
+        }
+    });
+</script>
+
+<script>
+    $('#clear').on('click', function () {
+        $.each($('#specimens tbody tr'), function () {
+            $(this).removeClass('table-active');
+        });
+        $('#confirm-button').attr('disabled', true);
+        $('#selected_specimens').selectpicker('val', []);
+        $('#selected_specimens').selectpicker('refresh');
+        $('#selected_specimens').selectpicker('render');
+    });
+</script>
+
+<script>
+$('.location-button').on('click', function () {
+    var selected_specimens = $('#selected_specimens').val() || []; // Ensure it's an array
+    var location = $(this).attr('name'); // Get the location from the button
+    selected_specimens = selected_specimens.map(Number); // Ensure all items are numbers
+
+    $.each($('#specimens tbody tr'), function () {
+        var current_location = $(this).find('td').eq(-1).text(); // Get current location
+        var specimen_id = $(this).find('td').eq(0).text(); // Get specimen ID
+
+        // Only proceed if current_location matches the location
+        if (current_location === location) {
+            if (!$(this).hasClass('table-active')) {
+                $(this).addClass('table-active'); // Add table-active class
+            }
+            if (!selected_specimens.includes(Number(specimen_id))) {
+                selected_specimens.push(Number(specimen_id)); // Add to selected_specimens
+            }
+        }
+    });
+
+    // If there are selected specimens, update the UI
+    if (selected_specimens.length) {
+        $('#confirm-button').attr('disabled', false); // Enable the confirm button
+        $('#selected_specimens').selectpicker('val', selected_specimens); // Update the selectpicker
+        $('#selected_specimens').selectpicker('refresh');
+        $('#selected_specimens').selectpicker('render');
+    }
+
+    confirmText(); // Call the confirmText function
+});
+
+
+</script>
+
+
+<script>
+    $('#specimens tbody tr').on('click', function () {
+        var selected_specimens = $('#selected_specimens').val().map(Number)
+        var specimen_id = Number($(this).find('td').eq(0).text());
+        var location = $(this).find('td').eq(-1).text();
+
+        if ($(this).hasClass('table-active')) {
+            $(this).removeClass('table-active')
+            // Remove the specimen_id from the selected_specimens list
+            spec_idx = selected_specimens.indexOf(specimen_id)
+            if (spec_idx != -1) {
+                selected_specimens.splice(spec_idx, 1);
+            }
+        } else {
+            $(this).addClass('table-active')
+            // Add the specimen_id to the selected_specimens list
+            selected_specimens.push(specimen_id);
+
+        }
+
+        // It the selected_specimen field is empty, disable the "Confirm" button
+        if (selected_specimens.length) {
+            $('#confirm-button').attr('disabled', false)
+        } else {
+            $('#confirm-button').attr('disabled', true)
+        }
+
+        confirmText()
+
+        // Update the selectpicker field
+        $('#selected_specimens').selectpicker('val', selected_specimens);
+        $('#selected_specimens').selectpicker('refresh');
+        $('#selected_specimens').selectpicker('render');
+    });
+</script>
+
+
+
+
+<script type="text/javascript">
+    $("#tests").on('click', 'tbody tr', function (e) {
+        var table = $('#specimens').DataTable();
+        var x = dataOrder.length + 1;
+        var dataArr = [];
+        let locArr = [];
+        $(this).toggleClass('table-active');
+
+        $.each($("#tests tr.table-active"), function () {
+            dataArr.push($(this).find('td').eq(0).text());
+        });
+
+        $.each($("#tests tr.table-active"), function () {
+            locArr.push($(this).find('td').eq(3).text());
+        });
+
+        $('#selected_specimens').selectpicker('val', dataArr);
+        $('#selected_specimens').selectpicker('refresh'); // Refresh the selectpicker
+
+        // Count occurrences of each value in locArr
+        var countObj = {};
+        locArr.forEach(function(value) {
+            countObj[value] = (countObj[value] || 0) + 1;
+        });
+
+        // Convert the count object to an array of objects
+        var countArray = Object.entries(countObj).map(([value, count]) => ({ value, count }));
+
+        // Update the content of the stored paragraph with the count information
+        var countText = countArray.map(item => `${item.value} (${item.count})`).join('<br>');
+        confirmationParagraph.html(`${countText}`);
+    });
+</script>
+
+
+
+
+{% endblock %}

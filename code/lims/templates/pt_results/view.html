@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class = "container-fluid">
+    <div class = "container-fluid">
+        <button type="button" class="btn btn-secondary" onclick="history.back()">Back</button>
+    </div>
+        {% for eval in evals %}
+            <div>
+                {{eval.case.case_number}}
+                {{eval.eval_date.strftime('%m/%d/%Y')}}
+                {{eval.case.last_name}}
+                {{eval.case.first_name}}
+                {{eval.result.test.specimen.id}}
+                <a href={{url_for("pt_results.update",item_id=eval.id)}}>{{eval.result.component_name}}</a>
+                {{eval.result.result}}
+                {{eval.eval_ABFT_conclusion}}
+                {{eval.eval_ABFT_display}}
+                {{eval.overall_conclusion}}
+                {{eval.eval_A_ref}}
+                {{eval.eval_B_ref}}
+                <br>
+            </div>
+        {% endfor %}
+</div>
+
+{% endblock %}

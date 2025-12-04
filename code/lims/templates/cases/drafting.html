@@ -1,0 +1,362 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+    <i class="fa-solid fa-pencil"></i>
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+    {% if kwargs['discipline_counts'] %}
+        <div class="alert alert-primary" role="alert">
+            <button type="button" class="close" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            The following <b>disciplines</b> have reports ready for drafting:
+            <ul class="alert-list">
+                {% for discipline, counts in kwargs['discipline_counts'].items() %}
+                    <li><b>{{discipline}}</b>: <a href="{{url_for('cases.drafting', discipline=discipline.lower())}}" style="font-weight:bold">{{counts}} cases</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+<!-- Header -->
+{% block header %}
+
+    <th>Case Number</th>
+    <th>Case Type</th>
+    <th>Last Name</th>
+    <th>First Name</th>
+    {% for discipline in kwargs['disciplines'] %}
+        {% if discipline == "Toxicology" %}
+            <th>{{discipline}}</th>
+            <th>_T1?</th>
+        {% elif discipline == "Biochemistry" %}
+            <th>{{discipline}}</th>
+            <th>_B1?</th>
+        {% elif discipline == "Histology" %}
+            <th>{{discipline}}</th>
+            <th>_1?</th>
+        {% elif discipline == "External" %}
+            <th>{{discipline}}</th>
+            <th>_X1?</th>
+        {% elif discipline == "Physical" %}
+            <th>{{discipline}}</th>
+            <th>_1?</th>
+        {% elif discipline == "Drug" %}
+            <th>{{discipline}}</th>
+            <th>_1?</th>
+        {% endif %}
+    {% endfor %}
+    <th class="cancel-col"></th>
+
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+{% set icon_shown = false %}
+    <td>
+        <b>
+            {% if item.priority == 'High' %} 
+            <span style="color: red;"> <strong>P</strong> </span>
+            {% endif %}
+            <a href="{{url_for(table_name~'.view', item_id=item.id, view_only='true')}}">
+                {{item.case_number}}
+            </a>
+        </b>
+    </td>
+    <td>{{item.type.code}}</td>
+    <td>{{item.last_name}}</td>
+    <td>{{item.first_name}}</td>
+
+    {% for discipline in kwargs['disciplines'] %}
+        {% if item.locked %}
+            <td></td>
+            <td></td>
+        {% else %}
+            {% if item | getattr(discipline.lower() + '_status') == 'Ready for Drafting' %}
+            {% if item.type.code == 'B' %}
+                <td>
+                    <a 
+                    href="#"
+                    class="new-report-check"
+                    data-item-id="{{item.id}}"
+                    data-discipline="{{discipline}}"
+                    data-add-url="{{url_for('reports.add', item_id=item.id, discipline=discipline)}}"
+                    >
+                    New Report</a>
+                </td>
+            {% else %}
+                <td>  
+                    <a
+                    href="{{ url_for('reports.add', item_id=item.id, discipline=discipline) }}"
+                    data-toggle="tooltip"            
+                    title="{{discipline}} status: {{ item | getattr(discipline.lower() + '_status') }}"
+                    data-item-id="{{ item.id }}"
+                    data-discipline="{{ discipline }}">
+                    New Report</a>
+                </td>
+            {% endif %}
+                <td>
+                    {% set discipline_reports = kwargs['reports'][discipline] %}
+                    {% set report_found = discipline_reports | selectattr("case_id", "equalto", item.id) | list | length > 0 %}
+
+                    {% if report_found %}
+                        <span>No</span>
+                    {% else %}
+                        <span>Yes</span>
+                    {% endif %}
+                </td>
+            {% else %}
+                <td></td>
+                <td></td>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+{% set rfd_disciplines = [] %}
+{% for d in kwargs['disciplines'] %}
+  {% set _attr = d.lower() + '_status' %}
+  {% if item | getattr(_attr) == 'Ready for Drafting' %}
+    {% set _ = rfd_disciplines.append(d) %}
+  {% endif %}
+{% endfor %}
+
+<td class="cancel-col">
+  {% if rfd_disciplines|length >= 1 %}
+    <a href="#"
+       class="cancel-any"
+       data-toggle="modal"
+       data-target="#no_report_needed_modal_any"
+       data-item-id="{{ item.id }}"
+       data-rfd-disciplines='{{ rfd_disciplines|tojson }}'>
+      <i class="fa fa-ban" aria-hidden="true" style="color: red;"></i>
+    </a>
+  {% endif %}
+</td>
+
+
+
+
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+<div class="modal fade" id="no_report_needed_modal" tabindex="-1" role="dialog" aria-labelledby="noReportModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirm Action</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="modal-confirm-message"></p>
+      </div>
+      <div class="modal-footer">
+        <a id="confirm-no-report-link" href="#" class="btn btn-primary">Continue</a>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- B Case Modal -->
+
+<div class="modal fade" id="existing-t1-modal" tabindex="-1" role="dialog" aria-labelledby="t1ModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">T1 Already Exists</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                This <span style="color: #1E88E5;"><strong>B</strong></span> case already has a T1. Do you want to continue anyway?
+                Pressing <span style="color:  #E53935;"><strong>No</strong></span> will set the status to "Ready for Dissemination"
+            </div>
+            <div class="modal-footer">
+                <a href="#" id="proceed-to-drafting" class="btn btn-primary">Yes</a>
+                <a href="#" id="cancel-and-set-status" class="btn btn-danger">No</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="no_report_needed_modal_any" tabindex="-1" role="dialog" aria-labelledby="noReportAnyLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cancel Drafting</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="mb-2">
+          This will set status to <em>No report needed</em> or <em>Ready for Dissemination</em> (if a finalized report exists).
+        </p>
+
+        <div class="form-group">
+          <label for="discipline-multiselect"><strong>Select disciplines:</strong></label>
+          <!-- WTForms-like multi-select enhanced by bootstrap-select -->
+          <select id="discipline-multiselect"
+                  class="form-control selectpicker"
+                  title="Choose disciplines"
+                  multiple
+                  data-live-search="true"
+                  data-actions-box="true"
+                  data-width="100%">
+          </select>
+          <small class="form-text text-muted">
+            Only disciplines currently “Ready for Drafting” are listed. All are selected by default.
+          </small>
+        </div>
+
+        <div id="any-summary" class="text-muted"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="confirm-any-selected" class="btn btn-primary" disabled>Apply Selected</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+<script>
+  $('#no_report_needed_modal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var itemId = button.data('item-id');
+    var discipline = button.data('discipline');
+
+    // Set confirmation message
+    var modal = $(this);
+    modal.find('#modal-confirm-message').html(
+      'This will set ' + discipline + ' status to "No report needed" or "Ready for Dissemination" if there is a finalized report.<br>Are you sure you want to continue?'
+    );
+
+    // Set the href for the confirm button
+    var link = '/cases/set_no_report_needed/' + itemId + '/' + discipline;
+    modal.find('#confirm-no-report-link').attr('href', link);
+  });
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const table = document.getElementById('cases');
+    if (!table) return;
+
+    for (const row of table.rows) {
+        const cancelCell = row.querySelector('.cancel-col');
+        if (cancelCell) {
+            row.insertBefore(cancelCell, row.cells[0]);
+        }
+    }
+});
+</script>
+
+<script>
+    document.querySelectorAll('.new-report-check').forEach(el => {
+    el.addEventListener('click', function (e) {
+        e.preventDefault();
+        const caseId = this.dataset.itemId;
+        const discipline = this.dataset.discipline;
+        const addUrl = this.dataset.addUrl;
+
+        fetch(`/cases/check_t1_exists/${caseId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.exists) {
+            const modal = new bootstrap.Modal(document.getElementById('existing-t1-modal'));
+            document.getElementById('proceed-to-drafting').href = addUrl;
+            document.getElementById('cancel-and-set-status').href = `/cases/mark_ready_for_dissemination/${caseId}`;
+            modal.show();
+            } else {
+            window.location.href = addUrl;
+            }
+        });
+    });
+    });
+
+</script>
+
+<script>
+  $('#no_report_needed_modal_any').on('show.bs.modal', function (event) {
+    const btn = $(event.relatedTarget);
+    // jQuery data() will give you the array if the attribute is valid JSON
+    let rfdDisciplines = btn.data('rfd-disciplines') || [];
+
+    // 1) Sanitize: remove blanks/nulls/whitespace-only
+    rfdDisciplines = rfdDisciplines
+      .map(d => (typeof d === 'string' ? d.trim() : d))
+      .filter(d => d && typeof d === 'string');
+
+    const modal = $(this);
+    const $multi  = modal.find('#discipline-multiselect');
+    const $summary = modal.find('#any-summary');
+    const $apply  = modal.find('#confirm-any-selected');
+
+    // 2) HARD reset the selectpicker before rebuilding
+    try { $multi.selectpicker('destroy'); } catch(e) {}  // safe if not initialized yet
+    $multi.empty();
+
+    // 3) Build fresh options (all preselected)
+    for (const d of rfdDisciplines) {
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.text  = d;
+      $multi.append(opt);
+    }
+
+    // 4) Re-init with good UX defaults
+    $multi.attr({
+      'data-actions-box': 'true',
+      'data-live-search': 'true',
+      'data-width': '100%',
+      'data-selected-text-format': 'count > 2',     // "3 selected" instead of long comma list
+      'data-none-selected-text': 'Select disciplines'
+    });
+    $multi.selectpicker();           // initialize
+    $multi.selectpicker('refresh');  // render
+
+    // Summary + button state
+    $summary.html(
+      rfdDisciplines.length
+        ? `<small>Found <strong>${rfdDisciplines.length}</strong> discipline(s) Ready for Drafting.</small>`
+        : `<small>No disciplines found.</small>`
+    );
+
+    const updateApplyState = () => {
+      const vals = $multi.val() || [];
+      $apply.prop('disabled', vals.length === 0);
+    };
+    updateApplyState();
+    $multi.off('changed.bs.select').on('changed.bs.select', updateApplyState);
+
+    // Submit
+    $apply.off('click').on('click', function (e) {
+      e.preventDefault();
+      const selected = $multi.val() || [];
+      if (!selected.length) return;
+      const qs = encodeURIComponent(selected.join(','));
+      window.location.href = `/cases/set_no_report_needed_bulk/${btn.data('item-id')}?disciplines=${qs}`;
+    });
+  });
+</script>
+
+{% endblock %}

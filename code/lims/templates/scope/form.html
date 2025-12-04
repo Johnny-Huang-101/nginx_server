@@ -1,0 +1,75 @@
+{% extends "form_template.html" %}
+
+<!-- ALERTS -->
+{% block alerts %}
+{% endblock %}
+
+<!-- HEADER -->
+{% block header %}
+{% endblock %}
+
+{% block form %}
+    <div class="alert alert-secondary alert-dismissable">
+        Each component selected will be added to each assay selected. Any values entered in the fields
+        below will apply to each component selected.
+    </div>
+    <div class="row form-group mb-4">
+        <div class="col">
+            {{form.component_id.label}}
+            {{form.component_id}}
+        </div>
+        <div class="col">
+            {{form.assay_id.label}}
+            {{form.assay_id}}
+        </div>
+
+    </div>
+    <hr>
+    <div class="row form-group mb-4">
+        <div class="col">
+            {{form.unit_id.label}}
+            <a href="#" data-toggle="tooltip" title="
+                <p>mcg = µg. Seek supervisory input for additional guidance.</p>">
+                <i class="fa-solid fa-circle-question" style="font-size:16px"></i>
+            </a>
+            {{form.unit_id}}
+        </div>
+        <div class="col">
+            {{form.limit_of_detection.label}}
+            {{form.limit_of_detection}}
+        </div>
+        <div class="col">
+            {{form.internal_standard.label}}
+            {{form.internal_standard}}
+        </div>
+        <div class="col">
+            {{form.internal_standard_conc.label}}
+            {{form.internal_standard_conc}}
+        </div>
+        <div class="col">
+            {{form.validated.label}}
+            {{form.validated}}
+        </div>
+    </div>
+    <div class="row form-group mb-4">
+        <div class="col">
+            {{form.report_notes.label}}
+            <a href="#!" data-toggle="tooltip"
+               title="E.g. In postmortem casework, GHB is reported when results are greater
+               than 50,000 ng/mL; Qualitative only">
+                <i class="fa-solid fa-circle-question"></i>
+            </a>
+            {{form.report_notes}}
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+
+{% block scripts %}
+<script src="/static/js/scope.js"></script>
+{% endblock %}
+

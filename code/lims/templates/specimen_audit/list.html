@@ -1,0 +1,66 @@
+
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Case</th>
+    <th>Specimen</th>
+    <th>Custody</th>
+    <th>Custody Time</th>
+    <th>Reason</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        {% if item.specimen %}
+            {{item.specimen.case.case_number}}
+        {% endif %}
+    </td>
+    <td>
+        <a href="{{url_for('specimens.view', item_id=item.specimen_id)}}">
+            {{item.specimen.accession_number}}
+        </a>
+    </td>
+    <td>{{item.destination}}</td>
+    {% if item.o_time == None %}
+    <td></td>
+    {% else %}
+    <td>{{item.o_time.strftime('%m/%d/%Y %H:%M')}}</td>
+    {% endif %}
+    <td>{{item.reason}}</td>
+{% endblock %}
+
+
+<!-- ALERT BLOCK -->
+
+{% block alerts %}
+{% endblock %}
+
+<!-- ########## -->
+
+
+<!-- MODAL BLOCK -->
+
+{% block modals %}
+{% endblock %}
+
+<!-- ########## -->
+
+<!-- SCRIPT BLOCK -->
+
+{% block scripts %}
+{% endblock %}
+
+<!-- ########## -->
+

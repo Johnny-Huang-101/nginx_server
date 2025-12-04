@@ -1,0 +1,43 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Batch Template</th>
+    <th>Sample Name</th>
+    <th>Sample Type</th>
+    <th>Acquisition Method</th>
+    <th>Vial Position</th>
+    <th>Dilution</th>
+    <th>Data File</th>
+    <th>Comments</th>
+
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        <a href="{{url_for('sequence_header_mappings.view', item_id=item.id)}}">
+            {{item.batch_template.name}} for {{item.batch_template.instrument.instrument_id}}
+            ({% if item.batch_template.sample_format_id %}{{item.batch_template.format.name}}; {% endif %}{{item.batch_template.max_samples}})
+        </a>
+    </td>
+    <td>{{item.sample_name}}</td>
+    <td>{{item.sample_type}}</td>
+    <td>{{item.acq_method}}</td>
+    <td>{{item.vial_position}}</td>
+    <td>{{item.dilution}}</td>
+    <td>{{item.data_file}}</td>
+    <td>{{item.comments}}</td>
+
+{% endblock %}
+

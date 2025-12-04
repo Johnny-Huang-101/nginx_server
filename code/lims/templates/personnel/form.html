@@ -1,0 +1,82 @@
+{% extends "form_template.html" %}
+{% block form %}
+
+<div class="row form-group mb-4">
+    <div class="col-md-4">
+        {{form.first_name.label}}
+        {{form.first_name}}
+    </div>
+    <div class="col">
+        {{form.middle_name.label}}
+        {{form.middle_name}}
+    </div>
+    <div class="col">
+        {{form.last_name.label}}
+        {{form.last_name}}
+    </div>
+    <div class="col">
+        {{form.titles.label}}
+        {{form.titles}}
+    </div>
+</div>
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.agency_id.label}}
+        {{form.agency_id}}
+    </div>
+    <div class="col">
+        {{form.division_id.label}}
+        {{form.division_id}}
+    </div>
+    <div class="col">
+        {{form.job_title.label}}
+        {{form.job_title}}
+    </div>
+    <div class="col">
+        {{form.id_number.label}}
+        {{form.id_number}}
+    </div>
+</div>
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.email.label}}
+        {{form.email}}
+    </div>
+    <div class="col">
+        {{form.phone.label}}
+        <a class="text-decoration-none" data-html="true" data-toggle="tooltip" href="#!" tabindex="-1" title= "This is a duplicate field in Users.">
+        <i class="fa-solid fa-circle-question" style="font-size:16px"></i></a>
+        {{form.phone(placeholder="e.g. 555-123-4567")}}
+    </div>
+    <div class="col">
+        {{form.cell.label}}
+        <a class="text-decoration-none" data-html="true" data-toggle="tooltip" href="#!" tabindex="-1" title= "This is a duplicate field in Users.">
+        <i class="fa-solid fa-circle-question" style="font-size:16px"></i></a>
+        {{form.cell(placeholder="e.g. 555-123-4567")}}
+    </div>
+</div>
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.submitter.label}}
+        {{form.submitter}}
+    </div>
+    <div class="col">
+        {{form.receives_report.label}}
+        {{form.receives_report}}
+    </div>
+    <div class="col">
+        {{form.status_id.label}}
+        {{form.status_id}}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="/static/js/personnel.js"></script>
+
+{% endblock %}
+

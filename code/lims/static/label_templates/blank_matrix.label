@@ -1,0 +1,367 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DieCutLabel Version="8.0" Units="twips">
+	<PaperOrientation>Landscape</PaperOrientation>
+	<Id>Small30336</Id>
+	<IsOutlined>false</IsOutlined>
+	<PaperName>30336 1 in x 2-1/8 in</PaperName>
+	<DrawCommands>
+		<RoundRectangle X="0" Y="0" Width="1440" Height="3060" Rx="180" Ry="180" />
+	</DrawCommands>
+	<ObjectInfo>
+		<TextObject>
+			<Name>TEXT_1</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Top</VerticalAlignment>
+			<TextFitMode>None</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String xml:space="preserve">CASE: </String>
+					<Attributes>
+						<Font Family="Segoe UI" Size="7" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="915.552654444139" Y="228.555265444414" Width="398.38330825826" Height="153.575191269226" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>TEXT__1</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Top</VerticalAlignment>
+			<TextFitMode>None</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String xml:space="preserve">NAME:</String>
+					<Attributes>
+						<Font Family="Segoe UI" Size="7" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="841.71109886525" Y="456.531308678273" Width="476.938573702674" Height="174.247629544072" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>TEXT___1</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Top</VerticalAlignment>
+			<TextFitMode>None</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String xml:space="preserve">ACC#:</String>
+					<Attributes>
+						<Font Family="Segoe UI" Size="7" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="867.09724700562" Y="649.364206844895" Width="435.593697152982" Height="168.045898061618" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>TEXT____1</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Top</VerticalAlignment>
+			<TextFitMode>None</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String xml:space="preserve">PREP. DATE:</String>
+					<Attributes>
+						<Font Family="Segoe UI" Size="7" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="888.348907491022" Y="840.129861184031" Width="813.899317582659" Height="172.180385716587" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>TEXT____2</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Top</VerticalAlignment>
+			<TextFitMode>None</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String xml:space="preserve">EXP. DATE:</String>
+					<Attributes>
+						<Font Family="Segoe UI" Size="7" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="898.685126628444" Y="1015.84558652022" Width="739.478539793215" Height="176.314873371556" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>CASE_NUM</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Top</VerticalAlignment>
+			<TextFitMode>None</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String xml:space="preserve">B-00336</String>
+					<Attributes>
+						<Font Family="Segoe UI" Size="14" Bold="True" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="1490.82566069541" Y="69.4034629649074" Width="1268.69295962927" Height="347.896111052776" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>MATRIX</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Top</VerticalAlignment>
+			<TextFitMode>None</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String xml:space="preserve">BLOOD</String>
+					<Attributes>
+						<Font Family="Segoe UI" Size="7" Bold="True" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="1516.21180883578" Y="457.110530888829" Width="536.888644699726" Height="205.25628695634" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>ACC_NUM</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Top</VerticalAlignment>
+			<TextFitMode>None</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String xml:space="preserve">240426-04</String>
+					<Attributes>
+						<Font Family="Segoe UI" Size="7" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="1500.25308042646" Y="647.876185227965" Width="784.957903997875" Height="211.458018438794" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>PREP_DATE</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Top</VerticalAlignment>
+			<TextFitMode>None</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String xml:space="preserve">04/26/2024</String>
+					<Attributes>
+						<Font Family="Segoe UI" Size="7" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="1768.99477799945" Y="831.860885874092" Width="766.352709550514" Height="176.314873371556" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>EXP_DATE</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Top</VerticalAlignment>
+			<TextFitMode>None</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String xml:space="preserve">04/26/2025</String>
+					<Attributes>
+						<Font Family="Segoe UI" Size="7" Bold="True" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="1765.43951255504" Y="1008.15583342084" Width="809.764829927691" Height="168.045898061618" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>COUNTER</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Top</VerticalAlignment>
+			<TextFitMode>None</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String xml:space="preserve">00X/00X</String>
+					<Attributes>
+						<Font Family="Segoe UI" Size="5" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="2581.75117939671" Y="1235.43346614304" Width="394.24882060329" Height="122.566533856957" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<ImageObject>
+			<Name>QR</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<Image>iVBORw0KGgoAAAANSUhEUgAAAZAAAAE6AQAAAAAQQznpAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAH18AAB9fAaxy5XcAAAUWSURBVGje7dpNlqQoEADg4LFwMQuPwFE4GhzNo3gEly582uVvAvFD2GbWdM9UbOql5GcRQJKACQsZM3xFoMtoEmELoydwhZYAiIa41qXEasgAWbR1MkERvkpiSUyNjIDCVQgQIZOBIq1IKFFmA7VMcDY5iaD4NxmZgAnPko4jliMzsBEYMvCkZUjkiaHJCEJ4knQSaUgCYlBklIkjSCcTi8kMlQiIjDXiEOlqxCIC1SjJWCeuIH2dNAWpi2ucHWRSkHOcHWTQkDYjUUNsSmZQRUpGHdmbGbRNvMbezKBP5WxmuJHKMZpB3cRrbMmAahSfsSUDytGyx5YMaEfLHuEgg564g/R60hwk6onZyQw3ImxkvEPcRvo7pNlIvEPMSm6lsiYD91JZJwAgU/H8tONI8vpeIIZSS5ElDUSaL9JJAn8wCIIWx12NoGVhaWxJ8OKzzGclMXtNxSQRZpWffgZNTpqFiY4lnEjH4Urg4wQek6Aj8zeQoCPTv0Cmu8RnxP9JZLxLnI6MfwdJpwKnIe1/mkzZxDzszZi+qUFkLIlDJP0Sa3eSzLP9b5H2E2T4ALEUsRlpEOlE0mlIT5GeJc13EpMRWyVdRuJbiPkdEmvEaAjcIHZ/U344YZZ8ffXHEKiS9W94QOZPEEOSUC5iKZJHKPcrBSG2Jr5CJgVJw3IHqjxpSNJK2zVH7mRbaVMYyPs1wtazHIBH2IXfq5+jUnenLVqecJt1v7BH0NyRwMLkGdhkLEc8m0zLVcCzyawlZJ857l7bhMcfp1MFjUzYrXTP3oyq8vbJJRvGLnRbNuccjMMwd3M1MtD1Yjp5IWvWLMvCfi4CWTNfJ0WbHd/bzIA91s97oia/KD/mGFNyfjsy5Fw5puRcuQ8y2e64k2sBxsxXV/naaCatFkuS0/eDXBe4ieRF5o2kJxyKpzy94R4MmYU9buCOg3w2FHgy57V/ZRYUZOuoKX9JkqmoiYJc4+Xou6ubXJ244nXLkqFId66T/tUpe8S8ogKx7AVEurIeQ5XEsoGmsqYsyZc9Isk7kr5CP0k0OLtQIfnGSiQT7rizyTxDxrLByEsk8fgfc2TAFZ9xXUmypOWoRTLSE/0WZXJ0QjagiGsEyUZ6L5OIUz3zY57wLkTrXA0vE6cnMzE4rr4MIsmmxlkkk0Top9VEtRcqQUyKXyZEiQwSaSVSnMJ3EulJ0qNRhL9bG5LYG2SQCDUqqUZ5RnCnrYE7+BEhBzI18gCVMcTrySyQEdUgI+49ZJBJK5ClCCjH0esd/dsJ8euO62uxJLFKDEMMQeJ9AjKBG6RjyVwjgSVWT6Ya8e8gY424+6RFZPgAaRDpv4V0NWLfQWKNmPsEEIFPkFCQ+SPEF2T6CCl/2TV+C7k2e+wM8zqOqJLIkb5OmufktVFniVUT4EisE/OcXAXoWTqUN6uS+REJGUkK/GMycWTSEM8RZqGIyKghjiOtkgwswSVvIfQ2ISkBVGAfk44j2U+EOGKVJHIkPUrMCaCbESQ8JNkJc0bSAnJbLROnIjNLshPmvcoEoQ4iKoQ67kizBFxj6lClQoyK5MfoKYm4YSiSnZ/pSNKX+eOFvS0BN2XaMZOSJB0zKglxPJgWAFFimTYWiGHaWCDFA24V8XSDSaSlG0wi3JMSgRg6e4m8Vp564sjsRXIkM9wghkxFJOVjDg1p+KscAaK9asRSF2VCRoWY+wR+yBvIPlv9kB/yQ37I/5Z0fzn55+uty/ILW/dn46EoYQsAAAAASUVORK5CYII=</Image>
+			<ScaleMode>Uniform</ScaleMode>
+			<BorderWidth>0</BorderWidth>
+			<BorderColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<HorizontalAlignment>Center</HorizontalAlignment>
+			<VerticalAlignment>Center</VerticalAlignment>
+		</ImageObject>
+		<Bounds X="130" Y="150" Width="662.4" Height="648" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>ASSY</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<HorizontalAlignment>Left</HorizontalAlignment>
+			<VerticalAlignment>Top</VerticalAlignment>
+			<TextFitMode>None</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String xml:space="preserve">LCQD, LCFS,
+QTON</String>
+					<Attributes>
+						<Font Family="Segoe UI" Size="6" Bold="True" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="130" Y="875.852228461828" Width="681.595712623647" Height="482.147771538172" />
+	</ObjectInfo>
+</DieCutLabel>

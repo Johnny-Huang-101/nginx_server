@@ -1,0 +1,33 @@
+{% extends "form_template.html" %}
+
+{% block form %}
+
+    <div class="form-group">
+        <b>{{form.file.label}}</b><span style="color:red">*</span>
+        {{form.file}}
+    </div>
+{% endblock %}
+
+{% block text %}
+
+<div class="mt-5">
+    <hr style="border-width:10px">
+    <h5>Exporting case data from FA</h5>
+    <h4><br>WARNING: This has been reconfigured to accept SQL exports from FA (i.e., changed column headers). Management Reports from FA will NOT succeed.<br><br></h4>
+    <ul>
+        <li>Open <b>Forensic Advantage</b>.</li>
+        <li>Click on <b>Management Reports</b> in the left-hand sidebar.</li>
+        <img src="../static/filesystem/fa_instructions/fa_sidebar.png">
+        <li>Double-click <b>SFME Case Analysis Report.</b></li>
+        <img src="../static/filesystem/fa_instructions/management_report.png">
+        <li>Set the <b>Start Date</b> and <b>End Date</b>. <span style="color:red">NOTE: Try to use a range of 6 months or less otherwise it will error out.</span></li>
+        <img src="../static/filesystem/fa_instructions/datepicker.png">
+        <li>Click OK. Once it is done, it will open up a separate window and display a PDF.</li>
+        <li>In the top toolbar, click <b>Export To</b> and select <b>CSV File</b>.</li>
+        <img src="../static/filesystem/fa_instructions/export_to_csv.png">
+        <li>Click 'OK' in the pop-up <b>CSV Export Options</b>.</li>
+        <li>Save the file to a local location.</li>
+        <li>Select that file for import using the form above.</li>
+    </ul>
+</div>
+{% endblock %}

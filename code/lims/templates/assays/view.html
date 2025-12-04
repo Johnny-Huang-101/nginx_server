@@ -1,0 +1,281 @@
+{% extends "view_template.html" %}
+
+{% block alerts %}
+{% endblock %}
+
+{% block buttons %}
+{% endblock %}
+
+{% block view %}
+{% endblock %}
+
+{% block accordion %}
+<div class="card">
+    <div class="card-header view-card-header" id="details">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#details-coll" aria-expanded="false" aria-controls="details">
+            <span><i class="fa-solid fa-chevron-down mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Assay Details
+        </button>
+    </div>
+    <div id="details-coll" class="collapse show" aria-labelledby="details">
+        <div class="card-body">
+            <div class="row">
+                <div class="col">
+                    <table class="table table-hover table-striped details-table" style="width:100%">
+                        <tr>
+                            <th>Name</th>
+                            <td>{{item.assay_name}}</td>
+                        </tr>
+                        <tr>
+                            <th>Discipline</th>
+                            <td>{{item.discipline}}</td>
+                        </tr>
+                        <tr>
+                            <th>SOP</th>
+                            <td>{{item.sop_ref}}</td>
+                        </tr>
+                        <tr>
+                            <th>Sample Volume</th>
+                            <td>{{item.sample_volume}} mL</td>
+                        </tr>
+                        <tr>
+                            <th>Number of Tests</th>
+                            <td>{{item.num_tests}}</td>
+                        </tr>
+                        <tr>
+                            <th>Default Instrument</th>
+                            <td>
+                                {% if item.instrument %}
+                                <a href="{{url_for('instruments.view', item_id=item.instrument.id)}}">
+                                    {{item.instrument.instrument_id}}
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Default Batch Template</th>
+                            <td>
+                                {% if item.batch_template %}
+                                <a href="{{url_for('batch_templates.view', item_id=item.batch_template.id)}}">
+                                    {{item.batch_template.name}}
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col">
+                    <table class="table table-hover table-striped details-table" style="width:100%">
+                        <tr>
+                            <th>Scope Components</th>
+                            <td>{{item.n_components}}</td>
+                        </tr>
+                        <tr>
+                            <th>Scope Compounds</th>
+                            <td>{{item.n_compounds}}</td>
+                        </tr>
+                        <tr>
+                            <th>Batches</th>
+                            <td>{{item.batch_count}}</td>
+                        </tr>
+                        <tr>
+                            <th>Batches to Date ({{kwargs['year']}})</th>
+                            <td>{{kwargs['batches_to_date']}}</td>
+                        </tr>
+                        <tr>
+                            <th>Tests</th>
+                            <td>{{item.test_count}}</td>
+                        </tr>
+                        <tr>
+                            <th>Tests to Date ({{kwargs['year']}})</th>
+                            <td>{{kwargs['tests_to_date']}}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header view-card-header" id="constituents-card">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#constituents-card-collapse" aria-expanded="false" aria-controls="constituents-card">
+            <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Constituents
+        </button>
+    </div>
+    <div id="constituents-card-collapse" class="collapse" aria-labelledby="constituents-card-heading">
+        <div class="card-body">
+            <a class="btn btn-secondary mb-3 export" href="#" name="constituents">Export</a>
+            <div class="table display">
+                <div class="table-responsive">
+                    <table class="display table-striped table-hover nowrap small view-table" style="width:100%;" id="constituents-table">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for item in kwargs['constituents'] %}
+                        <tr>
+                            <td>
+                                <a href="{{url_for('assay_constituents.view', item_id=item.id)}}">
+                                    {{item.name}}
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header view-card-header" id="scope-card">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#scope-card-collapse" aria-expanded="false" aria-controls="scope-card">
+            <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Scope
+        </button>
+    </div>
+    <div id="scope-card-collapse" class="collapse" aria-labelledby="scope-card-heading">
+        <div class="card-body">
+            <a class="btn btn-secondary mb-3 export" href="#" name="scope">Export</a>
+            <div class="table display">
+                <div class="table-responsive">
+                    <table class="display table-striped table-hover nowrap small view-table" style="width:100%;" id="scope-table">
+                        <thead>
+                        <tr>
+                            <th>Component</th>
+                            <th>Limit of Detection</th>
+                            <th>Unit</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for item in kwargs['scope'] %}
+                        <tr>
+                            <td>
+                                <a href="{{url_for('scope.update', item_id=item.id)}}">
+                                    {{item.component.name}}
+                                </a>
+                            </td>
+                            <td>{{item.limit_of_detection}}</td>
+                            <td>{{item.unit.name}}</td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header view-card-header" id="batches-card">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#batches-card-collapse" aria-expanded="false" aria-controls="batches-card">
+            <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Batches
+        </button>
+    </div>
+    <div id="batches-card-collapse" class="collapse" aria-labelledby="batches-card-heading">
+        <div class="card-body">
+            <a class="btn btn-secondary mb-3 export" href="#" name="batches">Export</a>
+            <div class="table display">
+                <div class="table-responsive">
+                    <table class="display table-striped table-hover nowrap small view-table" style="width:100%;" id="batches-table">
+                        <thead>
+                        <tr>
+                          <th>Batch ID</th>
+                          <th>Instrument</th>
+                          <th>Tests</th>
+                          <th>Batch Status</th>
+                          <th>Extracting Analyst</th>
+                          <th>Extraction Date</th>
+                          <th>Sequence File</th>
+                          <th>Date Created</th>
+                          <th>Created By</th>
+                          <th>Date Modified</th>
+                          <th>Modified By</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for item in kwargs['batches'] %}
+                        <tr>
+                            <td>
+                                <a href="{{url_for('batches.view', item_id=item.id)}}">
+                                    {{item.batch_id}}
+                                </a>
+                            </td>
+                            <td>{{item.instrument.instrument_id}}</td>
+                            <td>{{item.test_count}}</td>
+                            <td>{{item.batch_status}}</td>
+                            <td>{{item.extracted_by_id.initials}}</td>
+                            <td>
+                                {% if item.extraction_date  %}
+                                    {{item.extraction_date.strftime('%m/%d/%Y')}}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.batch_id in kwargs['sequences'] %}
+                                    <a href="../static/batch_sequences/{{item.batch_id}}.csv" target="_blank">View Sequence</a>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.create_date %}
+                                    {{item.create_date.strftime('%m/%d/%Y')}}
+                                {% endif %}
+                            </td>
+                            <td>{{item.created_by}}</td>
+                            <td>
+                                {% if item.modify_date %}
+                                    {{item.modify_date.strftime('%m/%d/%Y')}}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.modified_by %}
+                                    {{item.modified_by}}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+
+
+<script>
+   $(document).ready( function () {
+        $('#scope-table').DataTable({
+            pageLength: -1,
+            scrollX: true,
+            scrollY: '50vh',
+            scrollCollapse: true,
+            lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+            order: [],
+        });
+    });
+</script>
+<script>
+   $(document).ready( function () {
+        $('#batches-table').DataTable({
+            pageLength: -1,
+            scrollX: true,
+            scrollY: '50vh',
+            scrollCollapse: true,
+            lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+            order: [],
+        });
+    });
+</script>
+{% endblock %}

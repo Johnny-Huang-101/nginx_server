@@ -1,0 +1,25 @@
+{% extends "form_template.html" %}
+{% block form %}
+    <div class="form-group">
+        {{form.name.label}}
+        {{form.name}}
+    </div>
+    <div class="form-group">
+        {{form.suffix.label}}
+        {{form.suffix}}
+    </div>
+    <div class="form-group">
+        {{form.division_id.label}}
+        {{form.division_id}}
+    </div>
+    <div class="form-group">
+        {{form.notes.label}}
+        {{form.notes}}
+    </div>
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

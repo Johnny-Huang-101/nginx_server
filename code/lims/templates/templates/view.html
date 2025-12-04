@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if item.locked %}
+    <div class="alert alert-warning" role="alert" style="margin-top: 12px">
+     <i class="fa-solid fa-lock"></i> This case and its contents have been locked by <b>{{item.locked_by}}</b> on <b>{{item.lock_date.strftime('%m/%d/%Y')}}</b> at <b>{{item.lock_date.strftime('%H:%M')}}</b>.
+    </div>
+{% endif %}
+    <div style="margin-top:6px">
+        <a href="{{url_for('dashboard.get_dashboard')}}"><i class="fa-solid fa-house"></i></a>
+        > <a href="{{url_for(table_name'.view_list')}}">{{item_name}}</a>
+        > {{alias}}
+     </div>
+
+<div id="header">
+    <hr style="border-width:5px; margin-top: 6px">
+    <h1>{{alias}}</h1>
+    <hr style="border-width:5px">
+    {% if current_user.permissions in ['Admin', 'Owner'] %}
+     <a class="btn btn-primary" href="{{ url_for(table_name~'.update', item_id = item.id)}}" role="button">Update</a>
+     <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del_modal">Delete</button>
+    {% endif %}
+
+</div>
+
+
+  <div class="modal" tabindex="-1" role="dialog" id="del_modal">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Delete {{alias}}?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete <b>{{alias}}</b>?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+
+          <form action="{{ url_for(table_name~'.delete', item_id= item.id) }}" method="POST">
+            <input class="btn btn-danger" type="submit" value="Delete">
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+{% endblock %}

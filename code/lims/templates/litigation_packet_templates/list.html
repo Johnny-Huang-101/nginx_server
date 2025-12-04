@@ -1,0 +1,28 @@
+{% extends "list_template.html" %}
+
+{% block icon %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+<th>Name</th>
+<th>Path</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+<td>{{item.name}}</td>
+<td>{{item.path}}</td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}

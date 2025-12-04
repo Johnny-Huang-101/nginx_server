@@ -1,0 +1,45 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+<i class="fa-solid fa-scale-balanced"></i>
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+{% endblock %}
+
+<!--Custom Buttons-->
+{% block buttons %}
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Button Name</th>
+    <th>Specimen Types</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+            {{item.button}}
+        </a>
+    </td>
+    <td>
+        {% for type in item.specimen_types.split(', ') %}
+            [{{kwargs['specimen_table'].query.get(type).code}}],
+        {% endfor %}
+    </td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+<script src="/static/js/hide_lock.js"></script>
+{% endblock %}
+
+

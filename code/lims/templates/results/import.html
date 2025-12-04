@@ -1,0 +1,14 @@
+{% extends "form_template.html" %}
+{% block form %}
+
+        <div class="form-group">
+            {{form.batch_id.label}}
+            {{form.batch_id(class='form-control selectpicker', data_live_search="true")}}
+        </div>
+        <div class="form-group">
+            {{form.file.label}}
+            {{form.file(class="form-control")}}
+        </div>
+
+{% endblock %}
+

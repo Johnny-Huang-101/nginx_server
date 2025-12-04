@@ -1,0 +1,27 @@
+{% extends "form_template.html" %}
+{% block content %}
+
+    <div class="form-group">
+        {{form.assay_id.label}}
+        {{form.assay_id}}
+    </div>
+    <div class="form-group">
+        {{form.constituent_name.label}}
+        {{form.constituent_name}}
+    </div>
+    <div class="form-group">
+        {{form.constituent_lot.label}}
+        {{form.constituent_lot}}
+    </div>
+    <div class="form-group">
+        {{form.constituent_status.label}}
+        {{form.constituent_status}}
+    </div>
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

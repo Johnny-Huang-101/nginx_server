@@ -1,0 +1,256 @@
+{% extends "view_template.html" %}
+
+{% block alerts %}
+{% endblock %}
+
+{% block buttons %}
+{% if current_user.permissions not in ['ADM-Management'] %}
+        <a href="" data-target="#update_status" data-toggle="modal" class="btn btn-primary">Update Results</a>
+        <a href="{{ url_for('tests.add', case_id=item.case_id) }}" class="btn btn-primary">Add Tests</a>
+        {% if current_user.permissions in ['Admin', 'Owner'] %}
+        <a href="{{ url_for('tests.review_pending_results', test_id=item.id) }}" class="btn btn-success">
+            Review Pending Results
+        </a>
+      {% endif %}
+{% endif %}
+
+{% endblock %}
+
+{% block view %}
+
+<table class="table">
+  <thead>
+    <tr>
+        <th>Case</th>
+        <th>Specimen</th>
+        <th>Batch</th>
+      <th>Dilution</th>
+      <th>Directives</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="{{url_for('cases.view', item_id=item.case.id, view_only='True')}}">{{item.case.case_number}}</a></td>
+      <td><a href="{{url_for('specimens.view', item_id=item.specimen.id, view_only='True')}}">{{item.specimen.accession_number}}</a></td>
+        {% if item.batch %}
+        <td><a href="{{url_for('batches.view', item_id=item.batch.id)}}">{{item.batch.batch_id}}</a></td>
+        {% else %}
+        <td></td>
+        {% endif %}
+        <td>{{item.dilution}}</td>
+      <td>{{item.directives}}</td>
+    </tr>
+  </tbody>
+</table>
+{% endblock %}
+
+{% block accordion %}
+        <div class="card">
+            <div class="card-header view-card-header" id="results_heading">
+                <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#results" aria-expanded="false" aria-controls="results">
+                    <span><i class="fa-solid fa-chevron-down mr-2 chevron" style="border: '#FF0000'"></i></span>
+                    Results
+                </button>
+            </div>
+            <div class="collapse show" id="results" aria-labelledby="results_heading">
+                <div class="card-body">
+                    <div class="alert alert-secondary" id="confirmed-only-alert">Showing only <b>confirmed</b> and <b>saturated</b> results. Click the <b>Clear</b> button to show all results.</div>
+                    {% if current_user.permissions != 'ADM-Management' %}
+                    <a class="btn btn-primary mb-2" id="clear-filter">Clear</a>
+                    <a class="btn btn-primary mb-2" id="filter-confirmed">Confirmed</a>
+                    {% endif %}
+                    <div class="table display">
+                        <div class="table-responsive">
+                            <table class="display table-hover table-striped small nowrap datatable" style="width:100%" id="results_table">
+                                <thead>
+                                <tr>
+                                    <th class="click-show"></th>                                    
+                                    <th>#</th>
+                                    <th>Assay</th>
+                                    <th>Discipline</th>
+                                    <th>Batch</th>
+                                    <th>Batch Date and Time</th>
+                                    <th>Accession Number</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                    <th>Result Status</th>
+                                    <th>Result Type</th>
+                                    <th>Drug Class</th>
+                                    <th>Component Name</th>
+                                    <th>Result</th>
+                                    <th>Supplementary Result</th>
+                                    <th>Qualitative</th>
+                                    <th>Report Reason</th>
+                                    <th>Comments</th>
+                                    <th>Test</th>
+                                    <th>Notes</th>
+                                    <th>Reported</th>
+                                    <th>Primary</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for item in kwargs['results'] %}
+                                {% if item.db_status != 'Removed' %}
+                                {% if item.unit %}
+                                {% set unit = item.unit.name %}
+                                {% endif %}
+                                <tr>
+                                    <td><a href="{{url_for('results.view', item_id=item.id)}}"><i class="fas fa-edit"></i></a></td>
+                                    <td>{{loop.index}}</td>
+
+                                    <td>{{item.test.assay.assay_name}}</td>
+                                    <td>{{ item.test.assay.discipline }}</td>
+                                    <td>
+                                        {% if item.test.batch %}
+                                            <a href="{{url_for('batches.view', item_id=item.test.batch.id)}}">
+                                                {{item.test.batch.batch_id}}
+                                            </a>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if item.test.batch %}
+                                            {{item.test.batch.extraction_date.strftime('%m/%d/%Y %H:%M')}}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{item.test.specimen.accession_number}}</td>
+                                    <td>[{{item.test.specimen.type.code}}]</td>
+                                    <td>{{item.test.specimen.type.name}}</td>
+                                    <td id="result-status">{{item.result_status}}
+                                        {% if item.result_status_updated == 'Y' %}
+                                        <span style="color: #007bff;" data-toggle="tooltip" title="{{ item.result_status_update_reason }}">
+                                            (Updated)
+                                        </span>
+                                    {% endif %}
+                                    </td>
+                                    <td>{{item.result_type}}
+                                        {% if item.result_type_updated == 'Y' %}
+                                            <span style="color: #007bff;" data-toggle="tooltip" title="{{ item.result_type_update_reason }}">
+                                                (Updated)
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if item.component.drug_class %}
+                                            {{item.component.drug_class.name}}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if item.component %}
+                                        <a href="{{url_for('components.view', item_id=item.component_id) }}">
+                                            {{item.component.name}}
+                                        </a>
+                                        {% else %}
+                                            {{item.component_name}}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{item.result}}
+                                        {% if item.result_type != 'Not Detected' %}
+                                        {{unit}}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if item.supplementary_result %}
+                                        {{item.supplementary_result}}
+                                        {% if item.supplementary_result %}
+                                        {{unit}}
+                                        {% endif %}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{item.qualitative_reason}}</td>
+                                    <td>{{item.report_reason}}</td>
+                                    <td>
+                                        {% if item.id in kwargs['result_comment_dict'].keys() %}
+                                        <a href="#!" class="t-tip" data-toggle="tooltip" title="{{kwargs['result_comment_dict'][item.id]}}">View comments</a>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{item.test.test_name}}</td>
+                                    <td>{{item.notes}}</td>
+                                    <td>{{item.reported}}</td>
+                                    <td>{{item.primary}}</td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+{% endblock %}
+
+{% block modals %}
+<div class="modal" id="update_status" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update All Test Results</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form enctype="multipart/form-data" id="status_form" method="POST">
+                    {{ kwargs.status_form.hidden_tag() }}
+
+                    <div class="form-group">
+                        {{ kwargs.status_form.result_status.label(style='margin-right: 10%') }}
+                        {{ kwargs.status_form.result_status(class='form-control', id='result_status') }}
+                    </div>
+                    <div class="form-group">
+                        {{ kwargs.status_form.result_status_update_reason.label(style='margin-right: 10%') }}
+                        {{ kwargs.status_form.result_status_update_reason(class='form-control', id='result_status_update_reason') }}
+                    </div>
+                    <div class="modal-footer" style="justify-content: center">
+                        {{ kwargs.status_form.status_submit(class='btn btn-primary') }}
+                        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#update_status">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+    let tableName = "{{table_name}}"
+    let currentUser = "{{current_user.permissions}}"
+</script>
+<script src="/static/js/remove-update.js"></script>
+
+<script>
+   $(document).ready( function () {
+        $('#results_table').DataTable({
+            pageLength: -1,
+            scrollX: true,
+            scrollY: '50vh',
+            scrollCollapse: true,
+            lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+            order: [],
+        });
+    });
+</script>
+<script>
+    $('#clear-filter').on('click', function() {
+         var table = $('#results_table').DataTable()
+         table.columns().search("").draw()
+         $('#confirmed-only-alert').attr('hidden', true)
+    })
+</script>
+<script>
+
+    function ShowConfirmed() {
+        var table = $('#results_table').DataTable()
+        var colIdx = table.column($('#result-status')).index()
+        table.column(colIdx).search('^(?:Confirmed|Saturated)$', true, false).draw()
+        $('#confirmed-only-alert').attr('hidden', false)
+    }
+
+    $(document).ready(ShowConfirmed)
+    $('#filter-confirmed').on('click', ShowConfirmed)
+
+</script>
+
+{% endblock %}

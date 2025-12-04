@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div>
+   <hr style="border-width:5px">
+   {% if item_dict is not none %}
+    <h1>{{function}} {{item_dict['name']}}</h1>
+  {% else %}
+    <h1>Add {{item_type}}</h1>
+  {% endif %}
+  <hr style="border-width:5px">
+</div>
+<div>
+    <form method="POST" id="form" novalidate="novalidate">
+        {{form.hidden_tag()}}
+            <div>
+                <div class="form-group">
+                    {{form.string_field.label}}
+                    {{form.string_field}}
+                </div>
+                <div class="form-group">
+                    {{form.text_field.label}}
+                    {{form.text_field}}
+                </div>
+                <div class="form-group">
+                    {{form.int_select_field.label}}
+                    {{form.int_select_field}}
+                </div>
+                <div class="form-group">
+                    {{form.str_select_field.label}}
+                    {{form.str_select_field}}
+                </div>
+                <div class="form-group">
+                    {{form.select_multiple_field.label}}
+                    {{form.select_multiple_field}}
+                </div>
+                <div class="form-group">
+                    {{form.date_field.label}}
+                    {{form.date_field}}
+                </div>
+                <div class="form-group">
+                    {{form.file_field.label}}
+                    {{form.file_field}}
+                </div>
+            </div>
+            <div class = "form-group">
+                {{form.submit(class='btn btn-primary')}}
+                <button type="button" class="btn btn-secondary" onclick="history.back()">Back</button>
+             </div>
+    </form>
+</div>
+
+
+{% endblock %}

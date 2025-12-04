@@ -1,0 +1,109 @@
+{# templates/<table_name>/last_case_used.html #}
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+
+  {# ===== Header ===== #}
+  <div class="mb-3">
+    <h2 class="mb-1">Highest case number as of <span class="date-pill">{{ as_of_date.strftime('%m/%d/%Y') if as_of_date else '' }}</span></h2>
+    <p class="text-muted mb-0">PM uses fa_case_entry_date; others use create_date. PM ignores "NC-".</p>
+  </div>
+
+  {# ===== Toolbar ===== #}
+  <form method="post" class="toolbar mb-4">
+    <div class="form-row align-items-center">
+      <div class="col-auto">
+        <label for="as_of" class="sr-only">As of date</label>
+        <input type="date"
+               id="as_of"
+               name="as_of"
+               class="form-control"
+               value="{{ as_of_date.strftime('%Y-%m-%d') if as_of_date else '' }}"
+               required>
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Update</button>
+      </div>
+    </div>
+  </form>
+
+  {# ===== Tile Grid ===== #}
+  <div class="tile-grid">
+    {% for r in rows %}
+      {# Make the whole tile clickable if we have a URL #}
+      {% if r.case_url %}
+        <a class="tile-link" href="{{ r.case_url }}" target="_blank" rel="noopener">
+          <div class="tile">
+            <div class="tile-body">
+              <div class="tile-num">{{ r.highest_case_number or '—' }}</div>
+              <div class="tile-meta">
+                <span class="type-chip" title="{{ r.case_type_name or '' }}">
+                  {{ r.case_type_name or 'Unknown type' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </a>
+      {% else %}
+        <div class="tile">
+          <div class="tile-body">
+            <div class="tile-num">{{ r.highest_case_number or '—' }}</div>
+            <div class="tile-meta">
+              <span class="type-chip" title="{{ r.case_type_name or '' }}">
+                {{ r.case_type_name or 'Unknown type' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+</div>
+
+{# ===== Styles (scoped) ===== #}
+<style>
+  :root {
+    --tile-bg: #ffffff;
+    --tile-border: #e9ecef;
+    --tile-hover: #f8f9fa;
+    --tile-accent: #0d6efd;
+    --num-font: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  }
+
+  .date-pill {
+    display: inline-block; padding:.15rem .5rem; border:1px solid var(--tile-border);
+    border-radius:999px; background:#fff; font-size:.9rem;
+  }
+
+  .toolbar .form-control { min-width:220px; }
+
+  .tile-grid {
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px;
+  }
+
+  .tile-link { display:block; text-decoration:none; color:inherit; }
+  .tile {
+    background:var(--tile-bg); border:1px solid var(--tile-border); border-radius:14px;
+    box-shadow:0 1px 2px rgba(16,24,40,.04);
+    transition:border-color .15s ease, transform .05s ease, box-shadow .15s ease, background .15s ease;
+    cursor:pointer;
+  }
+
+  /* keep existing hover look, but also trigger when hovering the link wrapper */
+  .tile:hover, .tile-link:hover .tile, .tile-link:focus .tile {
+    border-color:var(--tile-accent); background:var(--tile-hover);
+    box-shadow:0 6px 18px rgba(13,110,253,.08); transform:translateY(-1px);
+  }
+
+  .tile-body { padding:16px 14px; display:flex; flex-direction:column; gap:8px; }
+  .tile-num { font-family:var(--num-font); font-size:1.6rem; line-height:1.1; letter-spacing:.2px; color:#111827; word-break:break-word; }
+  .tile-meta { display:flex; align-items:center; justify-content:space-between; }
+  .type-chip {
+    display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    font-size:.8rem; color:#6b7280; background:#f3f4f6; border:1px solid #e5e7eb; padding:.15rem .5rem; border-radius:999px;
+  }
+  @media (max-width:420px){ .tile-num{ font-size:1.4rem; } }
+</style>
+{% endblock %}

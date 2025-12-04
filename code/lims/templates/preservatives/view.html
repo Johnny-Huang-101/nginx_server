@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    .btn-link {
+        font-size: 24px
+        }
+
+    #hide {
+        display: none;
+    }
+
+    #header {
+        position: static;
+
+        width: 100%;
+    }
+
+    #body{
+        width: 100%;
+        height: 900px;
+        overflow: auto;
+    }
+
+</style>
+
+<div id = "header">
+    <hr style="border-width:5px">
+    <h1 align="center">
+        {{item.batch_id ~ ' ' ~ item.constituent}}
+    </h1>
+    <hr style="border-width:5px">
+</div>
+<div class = "container-fluid">
+{% if current_user.permissions in ['Admin', 'Owner'] %}
+<a class="btn btn-primary" href="{{ url_for(table_name~'.update', item_id = item.id)}}" role="button">Update</a>
+ <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del_modal">Delete</button>
+{% endif %}
+<button type="button" class="btn btn-secondary" onclick="history.back()">Back</button>
+<a class="btn btn-secondary" href="{{ url_for(table_name~'.attach', item_id=item.id) }}"><i class="fa-solid fa-paperclip"></i> Attach</a>
+</div>
+<br>
+<div class="card">
+     <div class="card-header">
+        <h5>Attachments</h5>
+    </div>
+    <div class="card-body">
+        <div class="table display">
+            <div class="table-responsive">
+                 <table class="display table-hover table-striped small display nowrap" style="width:100%" id="attachments_table">
+                     <thead>
+                        <tr>
+                            <th>Delete</th>
+                            <th>File Name</th>
+                            <th>Path</th>
+                            <th>Created By</th>
+                            <th>Create Date</th>
+                            <th>Modified By</th>
+                            <th>Modify Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for attachment in attachments%}
+                            <tr>
+                                <td><a href="{{url_for('attachments.delete', item_id=attachment.id)}}" class="btn btn-danger"><i class="fa fa-trash-o" style="font-size:10px"></i></a></td>
+                                <td>
+                                    {% if attachment.name.split('.')[1] in ['pdf', 'jpg', 'png'] %}
+                                        <a href="../static/{{attachment.name}}" target="_blank">{{attachment.name}}</a>
+                                    {% else %}
+                                     <a href="../static/{{attachment.name}}" download>{{attachment.name}}</a>
+                                    {% endif %}
+                                </td>
+                                <td>{{attachment.path}}</td>
+                                <td>{{attachment.created_by}}</td>
+                                {% if attachment.create_date == None %}
+                                    <td></td>
+                                {% else %}
+                                    <td>{{attachment.create_date.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                                {% endif %}
+
+                                <td>{{attachment.modified_by}}</td>
+
+                                {% if attachment.modify_date == None %}
+                                    <td></td>
+                                {% else %}
+                                    <td>{{attachment.modify_date.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+  <!-- Modal for Pop Up-->
+  {# https://getbootstrap.com/docs/4.1/components/modal/ #}
+  {# Notice how the link with the id to the button above! #}
+  <div class="modal" tabindex="-1" role="dialog" id="del_modal">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Delete {{item.name}}?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete <b>{{item.name}}</b>?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+
+          <form action="{{ url_for(table_name~'.delete', item_id= item.id) }}" method="POST">
+            <input class="btn btn-danger" type="submit" value="Delete">
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}

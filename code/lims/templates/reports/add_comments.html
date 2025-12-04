@@ -1,0 +1,523 @@
+{% extends "view_template.html" %}
+
+{% block style %}
+<style>
+.table {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+.table th, .table td {
+    padding: 0.4rem;
+    vertical-align: middle;
+}
+.table thead th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+.table-bordered {
+    border: 1px solid #dee2e6;
+}
+.table-bordered th, .table-bordered td {
+    border: 1px solid #dee2e6;
+}
+.hover-comment {
+    transition: background-color 0.2s ease-in-out;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.hover-comment:hover {
+    background-color: #f1f1f1;
+}
+.hover-comment.selected {
+    background-color: #d4edda;
+}
+.table td[rowspan] {
+    vertical-align: middle;
+}
+</style>
+{% endblock %}
+
+{% block view %}
+
+<h1>{{item.report_name}} Comments - {{discipline}}</h1>
+
+<!-- Case Comments Table -->
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Case Comments</th>
+        </tr>
+    </thead>
+    {% if case_comments %}
+    <tbody>
+        {% if case_comments and case_comments|length > 0 %}
+            {% for comment in case_comments %}
+            <tr>
+                <td class="hover-comment" data-id="{{ comment.id }}">{{ comment.comment_text }}</td>
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td>No comments</td>
+            </tr>
+        {% endif %}
+    </tbody>
+    {% else %}
+    <tbody>
+    <td>No  comments</td>
+    </tbody>
+    {% endif %}
+</table>
+
+
+
+<!-- Containers Comments Table -->
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th style="width: 10vw;">Container</th>
+            <th>Comments</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if containers_with_comments and containers_with_comments|length > 0 %}
+            {% for container_data in containers_with_comments %}
+                <tr>
+                    <td rowspan="{{ container_data.comments | length if container_data.comments else 1 }}">
+                        {{ container_data.container.accession_number }}
+                    </td>
+                    {% if container_data.comments %}
+                        <td class="hover-comment" data-id="{{ container_data.comments[0].id }}">
+                            {{ container_data.comments[0].comment_text }}
+                        </td>
+                    {% else %}
+                        <td>No comments</td>
+                    {% endif %}
+                </tr>
+                {% if container_data.comments %}
+                    {% for comment in container_data.comments[1:] %}
+                        <tr>
+                            <td class="hover-comment" data-id="{{ comment.id }}">{{ comment.comment_text }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="2">No comments</td>
+            </tr>
+        {% endif %}
+    </tbody>
+</table>
+
+
+<!-- Specimens Comments Table -->
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th style="width: 10vw;">Specimen</th>
+            <th>Comments</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if specimens_with_comments and specimens_with_comments|length > 0 %}
+            {% for specimen_data in specimens_with_comments %}
+                <tr>
+                    <td rowspan="{{ specimen_data.comments | length if specimen_data.comments else 1 }}">
+                        {{ specimen_data.specimen.accession_number }} [{{ specimen_data.specimen.type.code }}]
+                    </td>
+                    {% if specimen_data.comments and specimen_data.comments|length > 0 %}
+                        <td class="hover-comment" data-id="{{ specimen_data.comments[0].id }}">
+                            {{ specimen_data.comments[0].comment_text }}
+                        </td>
+                    {% else %}
+                        <td>No comments</td>
+                    {% endif %}
+                </tr>
+                {% if specimen_data.comments and specimen_data.comments|length > 1 %}
+                    {% for comment in specimen_data.comments[1:] %}
+                        <tr>
+                            <td class="hover-comment" data-id="{{ comment.id }}">{{ comment.comment_text }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="2">No comments</td>
+            </tr>
+        {% endif %}
+    </tbody>
+</table>
+
+{% set has_comments = false %}
+    {% for test_data in tests_with_comments %}
+        {% if test_data.comments | length > 0 %}
+            {% set has_comments = true %}
+        {% endif %}
+    {% endfor %}
+
+<table class="table table-bordered table-striped table-selectable">
+    <thead>
+        <tr>
+            <th style="width: 20vw;">Test</th>
+            <th>Comments</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for test_data in tests_with_comments %}
+        {% if test_data.comments | length > 0 %}
+        <tr>
+            <td rowspan="{{ test_data.comments | length }}">{{ test_data.test.test_name }} {{test_data.test.batch.batch_id}}</td>
+            {% if test_data.comments[0].comment %}
+            <td class="hover-comment" data-id="{{ test_data.comments[0].id }}">{{ test_data.comments[0].comment.comment }}</td>
+            {% else %}
+            <td class="hover-comment" data-id="{{ test_data.comments[0].id }}">{{ test_data.comments[0].comment_text }}</td>
+            {% endif %}
+        </tr>
+        {% for comment in test_data.comments[1:] %}
+        {% if comment.comment %}
+            <tr>
+                <td class="hover-comment" data-id="{{comment.id}}">{{comment.comment.comment}}</td>
+            </tr>
+        {% else %}
+        <tr>
+            <td class="hover-comment" data-id="{{ comment.id }}">{{ comment.comment_text }}</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
+
+<table class="table table-bordered table-striped table-hover table-selectable">
+    <thead>
+        <tr>
+            <th style="width: 10vw;">Batch</th>
+            <th>Comments</th>
+        </tr>
+    </thead>
+    {% if batches_with_comments %}
+    <tbody>
+     {% if batches_with_comments and batches_with_comments|length > 0 %}
+            {% for batch_data in batches_with_comments %}
+                <tr>
+                    <td rowspan="{{ batch_data.comments | length if batch_data.comments else 1 }}">
+                        {{ batch_data.batch.batch_id }}
+                    </td>
+                    {% if batch_data.comments %}
+                        <td class="hover-comment" data-id="{{ batch_data.comments[0].id }}">
+                            {{ batch_data.comments[0].comment_text }}
+                        </td>
+                    {% else %}
+                        <td>No comments</td>
+                    {% endif %}
+                </tr>
+                {% for comment in batch_data.comments[1:] %}
+                <tr>
+                    <td class="hover-comment" data-id="{{ comment.id }}">{{ comment.comment_text }}</td>
+                </tr>
+                {% endfor %}
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="2">No batch comments</td>
+            </tr>
+        {% endif %}
+    </tbody>
+    {% else %}
+    <tbody>
+    <td>No comments</td>
+    </tbody>
+    {% endif %}
+</table>
+
+<table class="table table-bordered table-striped table-hover table-selectable">
+    <thead>
+        <tr>
+            <th style="width: 15vw;">Assay</th>
+            <th>Comments</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for assay_data in assay_comments %}
+            <tr>
+                <td rowspan="{{ assay_data.comments|length if assay_data.comments else 1 }}">
+                    {{ assay_data.assay.assay_name }}
+                </td>
+                {% if assay_data.comments %}
+                    <td class="hover-comment" data-id="{{ assay_data.comments[0].id }}">
+                        {{ assay_data.comments[0].comment_text }}
+                    </td>
+                {% else %}
+                    <td class="hover-comment" data-id="0">No comments available</td>
+                {% endif %}
+            </tr>
+            {% for comment in assay_data.comments[1:] %}
+            <tr>
+                <td class="hover-comment" data-id="{{ comment.id }}">{{ comment.comment_text }}</td>
+            </tr>
+            {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Report-level one-off comment -->
+<div class="form-group mt-3">
+  <label for="free_comment"><strong>Manual Comment:</strong></label>
+<textarea id="free_comment" name="free_comment" class="form-control" rows="3" form="report-form"></textarea>
+
+  <small class="form-text text-muted">
+
+  </small>
+</div>
+
+
+<form id="report-form" method="POST" action="{{ url_for('reports.create_report') }}">
+    <input type="hidden" name="selected_comments" id="selected-ids">
+    <input type="hidden" name="report_id" value="{{ item.id }}">
+    <button type="button" id="generate-report" class="btn btn-primary mt-3">Continue</button>
+</form>
+
+
+{% endblock %}
+
+<!--Alerts-->
+{% block alerts %}
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Initialize the selectpicker for case_id
+        $('#case_id').selectpicker('refresh');
+    
+        // Variables to hold selected requesting agency and division
+        let requestingAgencyId = null;
+        let requestingDivisionId = null;
+    
+        // Update the variables and populate the requesting division dropdown
+        $('#requesting_agency').on('change', function() {
+            requestingAgencyId = $(this).val();
+            var divisionSelect = $('#requesting_division');
+    
+            // Populate the requesting division dropdown based on the selected requesting agency
+            $.getJSON('/requests/get_divisions/', { agency: requestingAgencyId }, function(data) {
+                var optionHTML = '<option value="">Select Division</option>';
+                data.divisions.forEach(function(division) {
+                    optionHTML += `<option value="${division.id}">${division.name}</option>`;
+                });
+                divisionSelect.html(optionHTML).selectpicker('refresh');
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                console.error('Error fetching divisions:', textStatus, errorThrown);
+            });
+        });
+    
+        // Update the variable and populate the requesting personnel dropdown
+        $('#requesting_division').on('change', function() {
+            requestingDivisionId = $(this).val();
+            var personnelSelect = $('#requesting_personnel');
+    
+            // Populate the requesting personnel dropdown based on the selected requesting division
+            $.getJSON('/get_all_personnel/', { division: requestingDivisionId, agency: requestingAgencyId }, function(data) {
+                var optionHTML = '<option value="">Select Personnel</option>';
+                data.personnel.forEach(function(person) {
+                    optionHTML += `<option value="${person.id}">${person.name}</option>`;
+                });
+                personnelSelect.html(optionHTML).selectpicker('refresh');
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                console.error('Error fetching personnel:', textStatus, errorThrown);
+            });
+        });
+    
+        // Open the Add Personnel modal
+        $('#new_personnel').on('shown.bs.modal', function() {
+            // Debug to confirm values
+            console.log("Requesting Agency ID:", requestingAgencyId);
+            console.log("Requesting Division ID:", requestingDivisionId);
+    
+            // Populate and disable the fields in the modal with Requesting Agency and Division
+            $('#agency_id').val(requestingAgencyId).prop('disabled', false).trigger('change');
+            $('#division_id').val(requestingDivisionId).prop('disabled', false).trigger('change');
+        });
+    
+        // Ensure agency_id and division_id are set correctly before submitting the personnel form
+        $('#personnel_add_form').on('submit', function(event) {
+            $('#agency_id').val(requestingAgencyId);
+            $('#division_id').val(requestingDivisionId);
+        });
+    
+        // Toggle case_id selection based on no_case checkbox
+        $('#no_case').on('click', function() {
+            var checked = $(this).prop('checked');
+            if (checked) {
+                $('#case_id').attr('disabled', true).val([]); // Clear selection when disabled
+            } else {
+                $('#case_id').attr('disabled', false);
+            }
+            $('#case_id').selectpicker('refresh');
+        });
+    
+        // Toggle behavior for legacy_case checkbox
+        $('#legacy_case_check').on('click', function() {
+            const checked = $(this).prop('checked');
+            if (checked) {
+                $('#case_id').attr('disabled', true).val([]); // Clear selection when disabled
+                $('#legacy_case_string_field').show(); // Show the legacy case number field
+            } else {
+                $('#case_id').attr('disabled', false);
+                $('#legacy_case_string_field').hide(); // Hide the legacy case number field
+            }
+            $('#case_id').selectpicker('refresh');
+        });
+    
+        // Ensure the legacy case field is hidden initially
+        $('#legacy_case_string_field').hide();
+    
+        // Handle request type changes
+        $('#request_type').on('change', function () {
+            let requestType = $(this).val();
+            if (requestType != 1) {
+                $('#destination_agency').attr('disabled', true).val("");
+                $('#destination_division').attr('disabled', true).val("");
+            } else {
+                $('#destination_agency').attr('disabled', false).show();
+                $('#destination_division').attr('disabled', false).show();
+            }
+            $('#destination_agency').selectpicker('refresh');
+            $('#destination_division').selectpicker('refresh');
+        });
+    
+        // Populate the destination division dropdown based on the destination agency
+        $('#destination_agency').on('change', function() {
+            var destinationAgencyId = $(this).val();
+            var destinationDivisionSelect = $('#destination_division');
+    
+            $.getJSON('/requests/get_divisions/', { agency: destinationAgencyId }, function(data) {
+                var optionHTML = '<option value="">Select Division</option>';
+                data.divisions.forEach(function(division) {
+                    optionHTML += `<option value="${division.id}">${division.name}</option>`;
+                });
+                destinationDivisionSelect.html(optionHTML).selectpicker('refresh');
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                console.error('Error fetching divisions:', textStatus, errorThrown);
+            });
+        });
+    
+        // Populate the destination personnel dropdown based on the destination division
+        $('#destination_division').on('change', function() {
+            var destinationDivisionId = $(this).val();
+            var destinationAgencyId = $('#destination_agency').val();
+            var personnelSelect = $('#destination_personnel');
+    
+            $.getJSON('/get_all_personnel/', { division: destinationDivisionId, agency: destinationAgencyId }, function(data) {
+                var optionHTML = '<option value="">Select Personnel</option>';
+                data.personnel.forEach(function(person) {
+                    optionHTML += `<option value="${person.id}">${person.name}</option>`;
+                });
+                personnelSelect.html(optionHTML).selectpicker('refresh');
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                console.error('Error fetching personnel:', textStatus, errorThrown);
+            });
+        });
+    });
+    
+
+
+</script>
+
+<script>
+    $(document).ready(function () {
+        // Initialize the selectpicker for case_id
+        $('#case_id').selectpicker('refresh');
+    
+        // Toggle behavior for legacy_case checkbox
+        $('#legacy_case_check').on('click', function () {
+            const checked = $(this).prop('checked');
+            if (checked) {
+                $('#case_id').attr('disabled', true).val([]); // Clear selection when disabled
+                $('#legacy_case_string_field').show(); // Show the legacy case number field
+            } else {
+                $('#case_id').attr('disabled', false);
+                $('#legacy_case_string_field').hide(); // Hide the legacy case number field
+            }
+            $('#case_id').selectpicker('refresh');
+        });
+    
+        // Ensure the legacy case field is hidden initially
+        $('#legacy_case_string_field').hide();
+    });
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Select the multi-select field and the "Other" input field container
+    const requestedItemsMulti = document.querySelector('[name="requested_items_multi"]');
+    const otherFieldContainer = document.getElementById('requested_items_other_container'); // Wrap the Other field with a container and add this ID
+    const otherFieldInput = document.querySelector('[name="requested_items_other"]');
+
+    // Ensure the "Other" container starts hidden
+    if (otherFieldContainer) {
+        otherFieldContainer.style.display = 'none';
+    }
+
+    // Add event listener for changes in the multi-select field
+    requestedItemsMulti.addEventListener('change', function () {
+        // Check if "Other" is selected
+        const isOtherSelected = Array.from(requestedItemsMulti.selectedOptions).some(option => option.value === "Other");
+
+        if (isOtherSelected) {
+            // Show the "Other" input field
+            if (otherFieldContainer) {
+                otherFieldContainer.style.display = 'block';
+            }
+        } else {
+            // Hide and clear the "Other" input field
+            if (otherFieldContainer) {
+                otherFieldContainer.style.display = 'none';
+            }
+            if (otherFieldInput) {
+                otherFieldInput.value = '';
+            }
+        }
+    });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Attach click event listener to <td> elements with "hover-comment"
+    document.querySelectorAll('.hover-comment[data-id]').forEach(td => {
+        td.addEventListener('click', function () {
+            // Toggle the "selected" class
+            this.classList.toggle('selected');
+        });
+    });
+
+    // Handle the "Generate Report" button click
+    document.getElementById('generate-report').addEventListener('click', function () {
+        const selectedComments = [];
+
+        // Collect selected <td> data-id values
+        document.querySelectorAll('.hover-comment.selected').forEach(td => {
+            selectedComments.push(td.dataset.id);
+        });
+
+
+        // Store the selected IDs in the hidden input field
+        document.getElementById('selected-ids').value = JSON.stringify(selectedComments);
+
+        // Submit the form
+        document.getElementById('report-form').submit();
+    });
+});
+</script>
+
+{% endblock %}

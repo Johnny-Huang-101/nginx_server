@@ -1,0 +1,82 @@
+{% extends "form_template.html" %}
+
+{% block alerts %}
+{% endblock %}
+
+{% block form %}
+    <div class="row form-group mb-4">
+        <div class="col">
+            {{form.name.label}}
+            {{form.name}}
+        </div>
+        <div class="col">
+            {{form.code.label}}
+            {{form.code}}
+        </div>
+        <div class="col">
+            {{form.accession_level.label}}
+            {{form.accession_level}}
+            <div style="font-size:0.9rem">
+                {{kwargs['accession_levels']}}
+            </div>
+        </div>
+
+        <div class="col">
+            {{form.batch_level.label}}
+            {{form.batch_level}}
+            <div style="font-size:0.9rem">
+                {{kwargs['batch_levels']}}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        {{form.default_assays.label}}
+        {{form.default_assays(class='form-control')}}
+    </div>
+    <hr style="border-width:3px">
+    <div class="row form-group mb-4">
+        <div class="col">
+            {{form.case_number_type.label}}
+            {{form.case_number_type}}
+        </div>
+        <div class="col">
+            {{form.case_number_start.label}}
+            {{form.case_number_start}}
+        </div>
+        <div class="col">
+            {{form.retention_policy.label}}
+            {{form.retention_policy}}
+        </div>
+    </div>
+    <div class="row form-group mb-4">
+        <div class="col">
+            {{form.toxicology_report_template_id.label}}
+            {{form.toxicology_report_template_id}}
+        </div>
+        <div class="col">
+            {{form.biochemistry_report_template_id.label}}
+            {{form.biochemistry_report_template_id}}
+        </div>
+        <div class="col">
+            {{form.histology_report_template_id.label}}
+            {{form.histology_report_template_id}}
+        </div>
+        <div class="col">
+            {{form.external_report_template_id.label}}
+            {{form.external_report_template_id}}
+        </div>
+        <div class="col">
+            {{form.litigation_packet_template_id.label}}
+            {{form.litigation_packet_template_id}}
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="/static/js/case_types.js"></script>
+{% endblock %}
+

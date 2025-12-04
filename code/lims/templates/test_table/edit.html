@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class = "container">
+    <h1>Edit {{item_type}}</h1>
+    <form class="needs-validation" id="form" method="POST">
+        {{form.hidden_tag()}}
+
+        {% for field in form %}
+            {% if field.type != "SubmitField" %}
+                {% if field.widget.input_type != 'hidden' %}
+                    {% if field.errors %}
+                        {% set status = 'is-invalid' %}
+                    {% else %}
+                        {% set status = '' %}
+                    {% endif %}
+
+                    {% if field.name is in approved_fields %}
+                        {% set readonly = True %}
+                        {% set disabled = 'disabled' %}
+                    {% else %}
+                        {% set readonly = False %}
+                        {% set disabled = "" %}
+                    {% endif %}
+
+                    <div class = "form-group">
+                        {{field.label(class='form-group')}}
+                        {% if field.flags.required %}<span style="color:red">*</span>{% endif %}
+
+                            {% if field.type == 'DateField' %}
+                                <input type="date" class="form-control {{status}}" name="{{field.name}}" value="{{field.data}}">
+                            {% elif field.type == 'SelectField' %}
+                                <select class="form-control {{status}}" name="{{field.name}}" data-live-search="true" id="{{field.name}}" value="{{field.data}}" {{disabled}}>
+                                           {% for option in field %}
+                                                {{ option }}
+                                            {% endfor %}
+                                </select>
+
+                            {% else %}
+                                {{field(class='form-control '~status, readonly=readonly)}}
+                            {% endif %}
+
+                            {% if field.type == 'SelectMultipleField' %}
+                                    <div style="font-size:0.9rem">
+                                        <a class='clear' name="{{field.name}}" href="#!">Clear</a>
+                                    </div>
+                            {% endif %}
+
+                            {% if field.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in field.errors %}
+                                            {{error}}
+                                        {% endfor %}
+                                    </div>
+                           {% endif %}
+                     </div>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+        <div class = "form-group">
+
+            {{form.submit(class='btn btn-primary')}}
+           <button type="button" class="btn btn-secondary" onclick="history.back()">Back</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    $('#form').on('submit', function() {
+        $.each($(".form-control"),function(){
+           if ($(this).prop('disabled')) {
+              $(this).prop('disabled', false);
+           }
+        });
+    });
+</script>
+<script>
+    $('.clear').on('click', function() {
+        $('#select_multiple_field').val("");
+    });
+</script>
+{% endblock %}
+

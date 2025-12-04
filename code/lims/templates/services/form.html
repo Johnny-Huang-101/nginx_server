@@ -1,0 +1,122 @@
+{% extends "form_template.html" %}
+{% block form %}
+
+<div class="row form-group mb-4">
+    <div class="col-md-2">
+        {{form.equipment_type.label}}
+        {{form.equipment_type}}
+    </div>
+    <div class="col-md-2">
+        {{form.equipment_id.label}}
+        {{form.equipment_id}}
+    </div>
+</div>
+<div class="row form-group mb-4">
+    <div class="col-md-3">
+        {{form.service_types.label}}
+        {{form.service_types}}
+    </div>
+</div>
+<div class="row form-group mb-4">
+    <div class="col-md-3">
+        {{form.vendor_division.label}}
+        {{form.vendor_division}}
+    </div>
+</div>
+<div class="row form-group mb-4">
+    <div class="col-md-3">
+        {{form.vendor_id.label}}
+        {{form.vendor_id}}
+    </div>
+</div>
+<div class="row form-group mb-4">
+    <div class="col-md-3">
+        {{form.service_date.label}}
+        {{form.service_date}}
+    </div>
+</div>
+<div class="row form-group mb-4">
+    <div class="col-md-4">
+        {{form.issue.label}} (e.g., issue, retrieval reason) <br>For routine PM, "N/A".
+        {{form.issue}}
+    </div>
+</div>
+<div class="row form-group mb-4">
+    <div class="col-md-4">
+        {{form.resolution.label}} <br>If as described in Reason, "Success". <br>For FLD Box Reviewer, "FLD provider confirmation".
+        {{form.resolution}}
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+    $('#equipment_type').on('change', function () {
+        var equipment_type = $('#equipment_type').val();
+        console.log(equipment_type);
+
+    $.getJSON('/{{table_name}}/get_equipment_ids/', {
+      equipment_type: equipment_type,
+    }, function(data) {
+       var optionHTML = '';
+       for (var choice of data.choices) {
+        optionHTML += '<option value="' + choice.id + '">' + choice.name + '</option>';
+    }
+        $('#equipment_id').html(optionHTML);
+        $('#equipment_id').selectpicker('refresh');
+        $('#equipment_id').selectpicker('render');
+
+        $.each($('select'), function () {
+          $(this).selectpicker('refresh');
+          $(this).selectpicker('render');
+        });
+    });
+    return false;
+  });
+
+</script>
+<script>
+    $('#vendor_agency').on('change', function () {
+        var agency_id = $('#vendor_agency').val();
+
+    $.getJSON('/{{table_name}}/get_divisions/', {
+      agency_id: agency_id,
+    }, function(data) {
+       var optionHTML = '';
+       for (var choice of data.choices) {
+        optionHTML += '<option value="' + choice.id + '">' + choice.name + '</option>';
+    }
+        $('#vendor_division').html(optionHTML);
+        $('#vendor_division').selectpicker('refresh');
+        $('#vendor_division').selectpicker('render');
+    });
+    return false;
+  });
+</script>
+
+<script>
+    $('#vendor_division').on('change', function () {
+        var division_id = $('#vendor_division').val();
+
+    $.getJSON('/{{table_name}}/get_personnel/', {
+      division_id: division_id,
+    }, function(data) {
+       var optionHTML = '';
+       for (var choice of data.choices) {
+        optionHTML += '<option value="' + choice.id + '">' + choice.name + '</option>';
+    }
+        $('#vendor_id').html(optionHTML);
+        $('#vendor_id').selectpicker('refresh');
+        $('#vendor_id').selectpicker('render');
+    });
+    return false;
+  });
+</script>
+{% endblock %}
+

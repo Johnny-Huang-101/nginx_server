@@ -1,0 +1,27 @@
+{% extends "form_template.html" %}
+{% block form %}
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.lit_packet_admin_id.label}}
+        {{form.lit_packet_admin_id}}
+    </div>
+    <div class="col">
+        {{form.file_name.label}}
+        <a href="" data-toggle="tooltip" title="This is a lookup name (e.g., file name of 'QL' will pull file with 'QLA1' in the title)">
+            <i class="fa-solid fa-circle-question"></i>
+        </a>
+        {{form.file_name}}
+    </div>
+    <div class="col">
+        {{form.redact_type.label}}
+        {{form.redact_type}}
+    </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}

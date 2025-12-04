@@ -1,0 +1,26 @@
+{% extends "form_template.html" %}
+
+<!-- ALERTS -->
+{% block alerts %}
+{% endblock %}
+
+<!-- HEADER -->
+{% block header %}
+{% endblock %}
+
+{% block form %}
+    <div class="form-group">
+        {{form.name.label}}
+        {{form.name}}
+        <a href="#" id="degree" style="font-size: 0.8rem">Degree (°) symbol</a>
+    </div>
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+<script src="../static/js/storage_temperatures.js"></script>
+{% endblock %}
+
+

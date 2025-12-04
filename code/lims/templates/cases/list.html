@@ -1,0 +1,493 @@
+{% extends "list_template.html" %}
+
+    <head>
+        <style>
+        .col {
+            margin: 0 auto;
+            width: 100%;
+            }
+          .contain {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            overflow: auto;
+
+        }
+      .contain {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow: auto;
+    }
+
+    .btn-size {
+    font-size: 0.72rem;
+    padding: 4px 8px;
+    height: 27px;
+    width: 27px;
+
+   }
+
+    .btn-icon {
+        font-size: 10px;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    @media screen and (max-width: 768px) {
+        #{{table_name}} thead th {
+            white-space: nowrap;
+        }
+    }
+
+    @media screen and (max-width: 576px) {
+        h1 {
+            font-size: 24px;
+        }
+    }
+
+    @media screen and (max-width: 992px) {
+        .contain {
+            margin-left: 0;
+        }
+    }
+
+
+    .expanded-table {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+</head>
+<!-- Icon to use next to heading -->
+{% block icon %}
+    <i class="fa-solid fa-briefcase"></i>
+{% endblock %}
+
+{% block alerts %}
+<!--Any custom alerts can be inserted here-->
+    {% if kwargs['need_test_addition'] or kwargs['need_accessioning'] or kwargs['priority_cases'] %}
+        <div class="alert alert-info" role="alert">
+            There are currently:
+            <ul class="alert-list">
+                {% if kwargs['priority_cases'] %}
+                    <li>
+                        <a href="{{url_for(table_name~'.view_list', query='priority') }}"><strong>{{kwargs['priority_cases']}} cases</strong></a> with high priority.
+                    </li>
+                {% endif %}
+                {% if kwargs['need_accessioning'] %}
+                    <li>
+                        <a href="{{url_for(table_name~'.view_list', query='need_accessioning') }}"><strong>{{kwargs['need_accessioning']}} cases</strong></a> that need accessioning.
+                    </li>
+                {% endif %}
+                {% if kwargs['need_test_addition'] %}
+                    <li>
+                        <a href="{{url_for(table_name~'.view_list', query='need_tests') }}"><strong>{{kwargs['need_test_addition']}} cases</strong></a> that need test additions.
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    {% endif %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+    {% if current_user.permissions in ['Admin', 'Owner', 'Developer'] %}
+<!--        <a class="btn btn-secondary" href="{{url_for(table_name~'.import_fa_cases')}}">Import FA Cases</a>-->
+        <a class="btn btn-secondary" href="{{url_for(table_name~'.export_fa_cases')}}">Configure FA Sync</a>
+        <a class="btn btn-secondary" href="{{url_for(table_name~'.export_filtered')}}">Export Mannered Cases</a>
+    {% elif current_user.permissions in ['ADM-Management'] %}
+        <a class="btn btn-secondary" href="{{url_for(table_name~'.export_filtered')}}">Export Mannered Cases</a>
+    {% endif %}
+        <a class="btn btn-secondary" href="{{url_for(table_name~'.last_case_used')}}">Last Case Used</a>
+    <div class="dropdown" style="display: inline-block;">
+        {% if current_user.permissions not in ['ADM-Management', 'ADM', 'INV', 'MED', 'MED-Autopsy'] %}
+        <button class="btn btn-secondary dropdown-toggle" type="button" id="batches-filter" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Filter
+        </button>
+        {% endif %}
+        <div class="dropdown-menu" aria-labelledby="batches-filter">
+            <div class="dropdown-submenu dropright">
+                <a class="dropdown-item dropdown-toggle" href="#">Case Type</a>
+                <ul class="dropdown-menu" style="height:30vh; overflow: scroll">
+                    {% for case_type in kwargs['filters']['case_types'] %}
+                        <li><a class="dropdown-item" href="{{url_for(table_name~'.view_list', query_type='case_type', query=case_type.id)}}">{{case_type.code}} - {{case_type.name}}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="dropdown-submenu dropright">
+                <a class="dropdown-item dropdown-toggle" href="#">Case Status</a>
+                <ul class="dropdown-menu">
+                    {% for status in kwargs['filters']['case_status']  %}
+                        <li><a class="dropdown-item" href="{{url_for(table_name~'.view_list', query_type='case_status', query=status)}}">{{status}}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Locked</th>
+    <th>View only</th>
+    <th>Case No.</th>
+    <th>Case<br>Type</th>
+    <th>Case Status</th>
+    <th>Last Name</th>
+    <th>First Name</th>
+    <th>Middle Name</th>
+    <th>Pending<br>Submitter</th>
+    <th>Autopsy Type</th>
+    <th>Primary Pathologist</th>
+    <th>Date of<br>Incident/Death</th>
+    <th>Time of<br>Incident/Death</th>
+    <th>Submitter Reference<br>Number</th>
+    <th>Toxicology<br>Requested</th>
+    <th>Biochemistry<br>Requested</th>
+    <th>Histology<br>Requested</th>
+    <th>External<br>Requested</th>
+    <th>Case Entry Date</th>
+    <th>Case Close Date</th>
+    <th>Review<br>Discipline</th>
+    <th>FA Case Comments</th>
+    <th>Exam Status</th>
+    <th>Method of Death</th>
+    <th>Manner of Death</th>
+    <th>COD Finalized Date</th>
+    <th>COD A</th>
+    <th>COD B</th>
+    <th>COD C</th>
+    <th>Other Conditions</th>
+    <th>Submitting Client</th>
+    <th>Case Type</th>
+    <th>Gender</th>
+    <th>Birth Sex</th>
+    <th>Race</th>
+    <th>Height<br>(Inches)</th>
+    <th>Weight<br>(Pounds)</th>
+    <th>Hispanic Ethnicity</th>
+    <th>Date of Birth</th>
+    <th>Age</th>
+    <th>Age<br>(Years)</th>
+    <th>Age<br>(Months)</th>
+    <th>Age<br>(Days)</th>
+    <th>Age<br>Status</th>
+    <th>Home<br>Status</th>
+    <th>Home Address</th>
+    <th>Home City</th>
+    <th>Home County</th>
+    <th>Home ZIP</th>
+    <th>Death Address</th>
+    <th>Death ZIP</th>
+    <th>Death Premise</th>
+    <th>Latitude</th>
+    <th>Longitude</th>
+    <th>FA Case Stage</th>
+    <th>Case Entry Date</th>
+    <th>Autopsy Start Date</th>
+    <th>Autopsy End Date</th>
+    <th>Certificate Status</th>
+    <th>Primary Investigator</th>
+    <th>Secondary Investigator</th>
+    <th>SSN</th>
+    <th>NOK Relationship</th>
+    <th>Alternate Reference<br>Number 1</th>
+    <th>Alternate Reference<br>Number 2</th>
+    <th># Evidence<br>Containers</th>
+    <th>Testing Notes</th>
+    <th>Priority</th>
+    <th>Sensitivity</th>
+    <th>Retention Policy</th>
+    <th>Discard Date</th>
+    <th>Eligible<br>For Discard</th>
+    <th>Aliases</th>
+    <th>Autopsy Performed</th>
+    <th>Scene Arrival</th>
+    <th>Scene Departure</th>
+    <th>Body Received</th>
+    <th>Body Released</th>
+    <th>Funeral Home</th>
+    <th>Public Administrator</th>
+    <th>Investigation Start</th>
+    <th>Investigation End</th>
+    <th>ID Completed</th>
+
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td class="locked">
+         {% if item.locked %}
+             <i class="fa-solid fa-lock"></i>
+             {{item.locked_by}}
+         {% endif %}
+    </td>
+      <td tex-align ="center">
+        {% if item.pending_submitter %}
+            <a href="{{url_for(table_name~'.view', item_id=item.id, view_only=True)}}" class="btn btn-info btn-size"><i class="fa-solid fa-eye btn-icon"></i></a>
+        {% endif %}
+    </td>
+    <td>
+        {% if item.priority == 'High' %} 
+            <span style="color: red;"> <strong>P</strong> </span>
+        {% endif %}
+        <b>
+            {% if item.pending_submitter == current_user.initials and not item.locked and current_user.permissions not in ['MED-Autopsy', 'MED', 'INV', 'Developer', 'ADM-Management'] %}
+           
+            <a class="case-number" href="#" data-toggle="modal" name="{{item.case_number}}" value="{{item.id}}" data-target="#locking">
+                {{item.case_number}}
+                </a>
+            {% elif item.pending_submitter and item.pending_submitter != current_user.initials and not item.locked and current_user.permissions not in ['MED-Autopsy', 'MED', 'INV', 'Developer', 'ADM-Management'] %}
+                <a class="case-number" href="#" data-toggle="modal" name="{{item.case_number}}" value="{{item.id}}" data-target="#view_review">
+                    {{item.case_number}}
+                </a>
+            {% else %}
+                <a href="{{url_for(table_name~'.view',item_id=item.id)}}">
+                    {{item.case_number}}
+                </a>
+            {% endif %}
+        </b>
+    </td>
+    <td>{{item.type.code}}</td>
+    <td class="case-status">{{item.case_status}}</td>
+    <td>{{item.last_name}}</td>
+    <td>{{item.first_name}}</td>
+    <td>{{item.middle_name}}</td>
+    <td class="pending-submitter">{{item.pending_submitter}}</td>
+    <td>{{item.autopsy_type}}</td>
+    <td>{{item.pathologist.full_name}}</td>
+    <td {% if item.date_of_incident %}data-order="{{ item.date_of_incident.isoformat() }}"{% endif %}>
+        {% if item.date_of_incident %}{{ item.date_of_incident.strftime('%m/%d/%Y') }}{% endif %}
+    </td>
+    <td>{{item.time_of_incident}}</td>
+    <td>{{item.submitter_case_reference_number}}</td>
+    <td>{{item.toxicology_requested}}</td>
+    <td>{{item.biochemistry_requested}}</td>
+    <td>{{item.external_requested}}</td>
+    <td>{{item.histology_requested}}</td>
+    <td>
+        {% if item.case_type == 7 and item.fa_case_entry_date %}
+        {{ item.fa_case_entry_date.strftime('%m/%d/%Y') }} {{item.fa_case_entry_date.strftime('%H:%M')}}
+        {% elif item.create_date %}
+        {{ item.create_date.strftime('%m/%d/%Y') }} {{item.create_date.strftime('%H:%M')}}
+        {% else %}
+        N/A
+        {% endif %}
+    </td>
+    <td>
+        {{ item.case_close_date.strftime('%m/%d/%Y') if item.case_type == 7 and item.case_close_date else 'N/A' }}
+    </td>
+    <td>{{item.review_discipline}}</td>
+    <td>{{item.fa_case_comments}}</td>
+    <td>{{item.exam_status}}</td>
+    <td>{{item.method_of_death}}</td>
+    <td>{{item.manner_of_death}}</td>
+    <td {% if item.certificate_report_date %}data-order="{{ item.certificate_report_date.isoformat() }}"{% endif %}>
+    {% if item.certificate_report_date %}{{ item.certificate_report_date.strftime('%m/%d/%Y') }}{% endif %}
+    </td>
+    <td>{{item.cod_a}}</td>
+    <td>{{item.cod_b}}</td>
+    <td>{{item.cod_c}}</td>
+    <td>{{item.other_conditions}}</td>
+    <td>
+        {% if item.submitting_agency %}
+            {{item.agency.name}} - {{item.division.name}}
+        {% endif %}
+    </td>
+    <td>{{item.type.name}}</td>
+    <td>{{item.gender.name}}</td>
+    <td>{{item.birth_sex}}</td>
+    <td>{{item.race.name}}</td>
+    <td>{{item.height_inches}}</td>
+    <td>{{item.weight_pounds}}</td>
+    <td>{{item.hispanic_ethnicity}}</td>
+    <td {% if item.date_of_birth %}data-order="{{ item.date_of_birth.isoformat() }}"{% endif %}>
+        {% if item.date_of_birth %}{{ item.date_of_birth.strftime('%m/%d/%Y') }}{% endif %}
+    </td>
+    <td>{{item.age}}</td>
+    <td>{{item.age_years}}</td>
+    <td>{{item.age_months}}</td>
+    <td>{{item.age_days}}</td>
+    <td>{{item.age_status}}</td>
+    <td>{{item.home_status}}</td>
+    <td>
+        <a href="https://google.com/maps/?q={{item.home_address}} {{item.home_zip}}" target="_blank">
+            {{item.home_address}}
+        </a>
+    </td>
+    <td>{{item.home_city}}</td>
+    <td>{{item.home_county}}</td>
+    <td>{{item.home_zip}}</td>
+    <td>
+        <a href="https://google.com/maps/?q={{item.death_address}} {{item.death_zip}}" target="_blank">
+            {{item.death_address}}
+        </a>
+    </td>
+    <td>{{item.death_zip}}</td>
+    <td>{{item.death_premises}}</td>
+    <td>{{item.latitude}}</td>
+    <td>{{item.longitude}}</td>
+    <td>{{item.fa_case_stage}}</td>
+    <td {% if item.case_type==7 %} {% if item.fa_case_entry_date %}data-order="{{ item.fa_case_entry_date.isoformat() }}" {%
+        endif %} {% else %} {% if item.create_date %}data-order="{{ item.create_date.isoformat() }}" {% endif %} {% endif
+        %}> {% if item.case_type == 7 and item.fa_case_entry_date %}
+        {{ item.fa_case_entry_date.strftime('%m/%d/%Y') }}
+        {% elif item.create_date %}
+        {{ item.create_date.strftime('%m/%d/%Y') }}
+        {% endif %}
+    </td>
+    <td {% if item.autopsy_start_date %}data-order="{{ item.autopsy_start_date.isoformat() }}"{% endif %}>
+        {% if item.autopsy_start_date %}{{ item.autopsy_start_date.strftime('%m/%d/%Y') }}{% endif %}
+    </td>
+    <td {% if item.autopsy_end_date %}data-order="{{ item.autopsy_end_date.isoformat() }}"{% endif %}>
+        {% if item.autopsy_end_date %}{{item.autopsy_end_date.strftime('%m/%d/%Y')}}{% endif %}
+    </td>
+    <td>{{item.cert_status}}</td>
+    <td>{{item.investigator.full_name}}</td>
+    <td>{{item.investigator_second.full_name}}</td>
+    <td>{% if item.ssn %}Yes{% endif %}</td>
+    <td>{{item.next_of_kin_relationship}}</td>
+    <td>{{item.alternate_case_reference_number_1}}</td>
+    <td>{{item.alternate_case_reference_number_2}}</td>
+    <td>{{item.n_containers}}</td>
+    <td>{{item.submitter_requests}}</td>
+    <td>{{item.priority}}</td>
+    <td>{{item.sensitivity}}</td>
+    <td>{{item.retention.name}}</td>
+    <td {% if item.discard_date %}data-order="{{ item.discard_date.isoformat() }}"{% endif %}>
+        {% if item.discard_date %}{{ item.discard_date.strftime('%m/%d/%Y') }}{% endif %}
+    </td>
+    <td>{{item.discard_eligible}}</td>
+    <td>{{item.alias_names}}</td>
+    <td>{{item.autopsy_performed}}</td>
+    <td>
+        {% if item.fa_scene_dept_datetime %}
+        {{ item.fa_scene_arrival_datetime.strftime('%m/%d/%Y') }} {{item.fa_scene_arrival_datetime.strftime('%H:%M')}}
+        {% endif %}
+    </td>
+    <td>
+        {% if item.fa_scene_dept_datetime %}
+        {{ item.fa_scene_dept_datetime.strftime('%m/%d/%Y') }} {{item.fa_scene_dept_datetime.strftime('%H:%M')}}
+        {% endif %}
+    </td>
+    <td>
+        {% if item.fa_cooler_datetime %}
+        {{ item.fa_cooler_datetime.strftime('%m/%d/%Y') }} {{item.fa_cooler_datetime.strftime('%H:%M')}}
+        {% endif %}
+    </td>
+    <td>
+        {% if item.autopsy_finalized_date %} <!-- known misnomer in models -->
+        {{item.autopsy_finalized_date.strftime('%m/%d/%Y')}} 
+        {% endif %}
+        {% if item.body_released_time %}
+        {{ item.body_released_time[:2] }}:{{ item.body_released_time[2:] }}
+        {% endif %}
+    </td>                                                                                
+    <td>{% if item.autopsy_type != 'INDIGENT' %}{{item.mortuary}}{% endif %}</td>
+    <td>
+        {% if item.referred_to_pub_adm %}{{ item.referred_to_pub_adm }}{% endif %}
+        <!-- associated public administrator fields not displayed in list.html -->
+    </td>
+    <td>
+        {% if item.fa_inv_start_datetime %}
+        {{ item.fa_inv_start_datetime.strftime('%m/%d/%Y') }} {{item.fa_inv_start_datetime.strftime('%H:%M')}}
+        {% endif %}
+    </td>
+    <td>
+        {% if item.fa_inv_end_datetime %}
+        {{ item.fa_inv_end_datetime.strftime('%m/%d/%Y') }} {{item.fa_inv_end_datetime.strftime('%H:%M')}}
+        {% endif %}
+    </td>        
+    <td>
+        {% if item.fa_ident_datetime %}
+        {{ item.fa_ident_datetime.strftime('%m/%d/%Y') }} {{item.fa_ident_datetime.strftime('%H:%M')}}
+        {% endif %}
+    </td>    
+    {% endblock %}
+
+
+
+{% block modals %}
+<!--    <div class="modal" tabindex="-1" id="view_review" data-backdrop="static">-->
+<!--        <div class="modal-dialog modal-lg modal-dialog-centered">-->
+<!--            <div class="modal-content">-->
+<!--                <div class="modal-header">-->
+<!--                    <h5 class="modal-title"><b><span class="modal-case-number"></span></b> currently has pending components.</h5>-->
+<!--                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
+<!--                        <span aria-hidden="true">&times;</span>-->
+<!--                    </button>-->
+<!--                </div>-->
+<!--                <div class="modal-body">-->
+<!--                    <p>-->
+<!--                        By clicking on <b><span class="func_text"></span></b>, you will lock the case and any containers-->
+<!--                        and specimens for the selected discipline. Any pending specimens for that discipline-->
+<!--                        will be taken into your custody.-->
+<!--                    </p>-->
+<!--                    <p>-->
+<!--                        If you would only like to add attachments to the case, please click the <b>View Only</b> button.-->
+<!--                    </p>-->
+<!--                    <div class="form-group">-->
+<!--                        <label style="font-weight:bold">Discipline (Containers/Specimens):</label>-->
+<!--                        <select class="form-control" id="discipline-select">-->
+<!--                        </select>-->
+<!--                    </div>-->
+<!--                    <p style="text-align:center;">-->
+<!--                        What would you like to do?-->
+<!--                    </p>-->
+<!--                </div>-->
+<!--                &lt;!&ndash;buttons go below&ndash;&gt;-->
+<!--                <div class="modal-footer" style="justify-content:center;">-->
+<!--                    <a class="btn btn-primary mr-3" style="width: 10rem" href="#" id="edit-review"><span class="func_text"></span></a>-->
+<!--                    <a class="btn btn-secondary ml-3" style="width: 10rem" href="#" id="view-only">View Only</a>-->
+<!--                    <a class="btn btn-secondary ml-3" style="width: 10rem" data-dismiss="modal">Cancel</a>-->
+
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+
+
+
+<!--    <div class="modal" tabindex="-1" id="locking" data-backdrop="static">-->
+<!--        <div class="modal-dialog modal-lg modal-dialog-centered">-->
+<!--            <div class="modal-content">-->
+<!--                <div class="modal-header">-->
+<!--                    <h5 class="modal-title">Pending Case</h5>-->
+<!--                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
+<!--                        <span aria-hidden="true">&times;</span>-->
+<!--                    </button>-->
+<!--                </div>-->
+<!--                <div class="modal-body">-->
+
+<!--                    <p style="text-align:center;">-->
+<!--                        <b><span class="modal-case-number"></span></b> currently has pending components.-->
+<!--                    </p>-->
+<!--                    <p style="text-align:center;">-->
+<!--                        By going to edit the case, you will lock the case and its containers and specimens.-->
+<!--                    </p>-->
+<!--                </div>-->
+<!--                &lt;!&ndash;buttons go below&ndash;&gt;-->
+<!--                <div class="modal-footer" style="justify-content:center;">-->
+<!--                    <a class="btn btn-primary mr-3" style="width: 12rem" href="#" id="proceed">Edit Case</a>-->
+<!--                    <a class="btn btn-secondary ml-3 view-only" style="width: 10rem" href="#">View Only</a>-->
+<!--                    <a class="btn btn-secondary ml-3" style="width: 12rem" data-dismiss="modal">Cancel</a>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+
+{% endblock %}
+
+{% block scripts %}
+<!--Block for custom scripts-->
+<script src="/static/js/cases.js"></script>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "list_template.html" %}
+
+<!-- ICON -->
+{% block icon %}
+<i class="fa-solid fa-sitemap"></i>
+{% endblock %}
+
+<!-- ALERTS -->
+{% block alerts %}
+{% endblock %}
+
+<!-- BUTTONS -->
+{% block buttons %}
+{% endblock %}
+
+
+{% block header %}
+    <th>Name</th>
+    <th>Abbreviation</th>
+    <th>Agency</th>
+    <th>Address</th>
+    <th>Unit/Suite No.</th>
+    <th>Floor</th>
+    <th>Email</th>
+    <th>Client?</th>
+    <th>Stakeholder?</th>
+    <th>Reference Material Provider?</th>
+    <th>Service Provider?</th>
+
+{% endblock %}
+
+{% block body scoped %}
+
+    <td>
+        <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+            {{item.name}}
+        </a>
+    </td>
+
+    <td>{{item.abbreviation}}</td>
+    <td>
+        {% if item.agency %}
+        <a href="{{url_for('agencies.view', item_id = item.agency.id)}}">
+                {{item.agency.name}}
+        </a>
+        {% endif %}
+    </td>
+    <td>
+        {% if item.full_address %}
+            <a href="https://google.com/maps/?q={{item.full_address}}" target="_blank">
+                {{item.full_address}}
+            </a>
+        {% endif %}
+    </td>
+    <td>{{item.unit_number}}</td>
+    <td>{{item.floor}}</td>
+    <td>
+        {% if item.email %}
+            <a href="mailto:{{item.email}}">{{item.email}}</a>
+        {% endif %}
+    </td>
+    <td>{{item.client}}</td>
+    <td>{{item.stakeholder}}</td>
+    <td>{{item.reference_material_provider}}</td>
+    <td>{{item.service_provider}}</td>
+
+
+{% endblock %}
+
+<!--MODALS-->
+{% block modals %}
+{% endblock %}
+
+<!--SCRIPTS-->
+{% block scripts %}
+{% endblock %}

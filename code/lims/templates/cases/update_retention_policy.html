@@ -1,0 +1,59 @@
+{% extends "form_template.html" %}
+{% block form %}
+
+    <div class="form-group">
+        {{form.retention_policy.label}}
+        {{form.retention_policy}}
+    </div>
+    <div class="form-group">
+        {{form.discard_date.label}}
+        {{form.discard_date(type="date")}}
+    </div>
+    <div class="form-group">
+        {{form.type_id.label}}
+        {{form.type_id}}
+    </div>
+    <div class="form-group">
+        {{form.files.label}}
+        {{form.files}}
+    </div>
+    <div class="form-group">
+        {{form.description.label}}
+        {{form.description}}
+    </div>
+    <div class="form-group" hidden>
+        {{form.mode.label}}
+        {{form.mode}}
+    </div>
+
+
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+    $('#retention_policy').on('change', function () {
+        let policy_id = $(this).val()
+        console.log(policy_id);
+         $.getJSON('/cases/get_policy_date_selection/', {
+            policy_id: policy_id,
+         }, function(data) {
+
+              if (data.date_selection == 'Automatic') {
+                $('#discard_date').prop('readonly', true)
+                $('#discard_date').val("")
+              } else {
+                $('#discard_date').prop('readonly', false)
+              }
+         });
+         return false;
+    });
+</script>
+{% endblock %}
+
+
+

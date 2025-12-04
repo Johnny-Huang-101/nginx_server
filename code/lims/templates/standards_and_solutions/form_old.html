@@ -1,0 +1,533 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <head>
+        <title>{{item_name}}</title>
+    </head>
+<div>
+    <div style="margin-top:6px">
+        <a href="{{url_for('dashboard.get_dashboard')}}"><i class="fa-solid fa-house"></i></a>
+        > <a href="{{url_for(table_name~'.view_list')}}">{{item_name}}</a>
+        {% if function == 'Add' %}
+        > Add
+        {% else %}
+        > <a href="{{url_for(table_name~'.view', item_id=item.id)}}">{{name}}</a>
+        > {{function}}
+        {% endif %}
+     </div>
+     <hr style="border-width:5px; margin-top:6px">
+     {% if item_dict is not none %}
+      <h1>{{function}} {{item_dict['full_name']}}</h1>
+    {% else %}
+      <h1>Add {{item_type}}</h1>
+    {% endif %}
+    <hr style="border-width:5px">
+    <form method="POST" id="form" novalidate="novalidate" enctype="multipart/form-data">
+
+        {{form.hidden_tag()}}
+        <div class="form-group">
+            {{form.solution_type_id.label}}
+            {{form.solution_type_id(onchange='sTypeSelected()', value='{{form.solution_type_id.data}}')}}
+        </div>
+
+        <div class="form-group name-group" id="name2">
+            {{form.name.label}}
+            {{form.name(id='name', onchange='sTypeSelected()')}}
+        </div>
+
+        <div class="form-group" id="desc">
+            {{form.description.label}} &nbsp&nbsp<i>For pre-defined:</i>&nbsp&nbsp<a href="javascript:void(0);" onclick="insertText('n-Propanol (0.60 mL) + NaCl (40 mg) in dH2O (4 L, QS)')">GCET ISTD</a>
+            &nbsp|&nbsp&nbsp<a href="javascript:void(0);" onclick="insertText('Ammonium Formate (1.576 g) + Formic Acid (pH 4.5 ±0.3) in dH2O (5 L, QS)')">MPA</a>
+            &nbsp|&nbsp&nbsp<a href="javascript:void(0);" onclick="insertText('Formic Acid (5 mL) in Acetonitrile (5 L)')">MPB</a>
+            &nbsp|&nbsp&nbsp<a href="javascript:void(0);" onclick="insertText('LCQ Mobile Phase A (200 mL) + Methanol (50 mL)')">LCQ Recon</a>
+            &nbsp|&nbsp&nbsp<a href="javascript:void(0);" onclick="insertText('Ammonium Formate (3.152 g) + Formic Acid (pH 4.5 ±0.3) in dH2O (5 L, WS)')">QTON MPA</a>
+            &nbsp|&nbsp&nbsp<a href="javascript:void(0);" onclick="insertText('Formic Acid (2 mL) in Methanol (2 L)')">QTON MPB</a>
+            &nbsp|&nbsp&nbsp<a href="javascript:void(0);" onclick="insertText('QTON Mobile Phase A (90 mL) + QTON Mobile Phase B (10 mL)')">QTON Recon</a>
+            &nbsp|&nbsp&nbsp<a href="javascript:void(0);" onclick="insertText('Acetonitrile (1 L) + Isopropyl Alcohol (3 L) + Methanol (1 L)')">Needle Wash</a>
+            {{form.description(id='description')}}
+        </div>
+
+        <div class="form-group lot-group" id="lot">
+            {{form.lot.label}}
+            {{form.lot}}
+        </div>
+
+        <div class="form-group lot-group">
+            {{form.assay.label}}
+            <br>
+            {{form.assay(class='selectpicker')}}
+        </div>
+
+        <div class="form-group prepared-by-group" id="prepared_by">
+            {{form.prepared_by.label}}
+            {{form.prepared_by}}
+        </div>
+
+        <div class="form-group prepared-date-group" id="prepared_date">
+            {{form.prepared_date.label}}
+            {{form.prepared_date}}
+        </div>
+
+        <div class="form-group retest-date-group" id="retest_date">
+            {{form.retest_date.label}}&nbsp&nbsp<i>For pre-defined:</i>&nbsp&nbsp
+             &nbsp|&nbsp&nbsp<a href="javascript:void(0);" onclick="insertDate('1y_1m_date')">GCET ISTD</a>
+             &nbsp|&nbsp&nbsp<a href="javascript:void(0);" onclick="insertDate('2m_date')">LCQ MP/Recon</a>
+             &nbsp|&nbsp&nbsp<a href="javascript:void(0);" onclick="insertDate('1w_date')">QTON MP/Recon</a>
+             &nbsp|&nbsp&nbsp<a href="javascript:void(0);" onclick="insertDate('1y_date')">Needle Wash</a>
+               
+            {{ form.retest_date(id='retest_date_input') }}
+        </div>
+
+        <div class="form-group part-a-group" id="part_a">
+            {{form.part_a.label}}
+            {{form.part_a}}
+        </div>
+
+        <div class="form-group part-a-lot-group" id="part_a_lot">
+            {{form.part_a_lot.label}}
+            {{form.part_a_lot}}
+        </div>
+
+        <div class="form-group part-a-exp-group" id="part_a_exp">
+            {{form.part_a_exp.label}}
+            {{form.part_a_exp}}
+        </div>
+
+        <div class="form-group part-b-group" id="part_b">
+            {{form.part_b.label}}
+            {{form.part_b}}
+        </div>
+
+        <div class="form-group part-b-lot-group" id="part_b_lot">
+            {{form.part_b_lot.label}}
+            {{form.part_b_lot}}
+        </div>
+
+        <div class="form-group part-b-exp-group" id="part_b_exp">
+            {{form.part_b_exp.label(class='form-group')}}
+            {{form.part_b_exp}}
+        </div>
+
+        <div class="form-group part-c-group" id="part_c">
+            {{form.part_c.label}}
+            {{form.part_c}}
+        </div>
+
+        <div class="form-group part-c-lot-group" id="part_c_lot">
+            {{form.part_c_lot.label}}
+            {{form.part_c_lot}}
+        </div>
+
+        <div class="form-group" id="part_c_exp">
+            {{form.part_c_exp.label(class='form-group')}}
+            {{form.part_c_exp}}
+        </div>
+
+        <div class="form-group concentrator-multiplier-group" id="concentrator_multiplier">
+            {{form.concentrator_multiplier.label}}
+            {{form.concentrator_multiplier}}
+        </div>
+
+        <div class="form-group parent-standard-lot-group" id="parent_standard_lot">
+            {{form.parent_standard_lot.label}}
+            {{form.parent_standard_lot}}
+        </div>
+
+        <div class="form-group verified-by-group" id="verified_by">
+            {{form.verified_by.label}}
+            {{form.verified_by}}
+        </div>
+
+        <div class="form-group equipment-used-group" id="equipment_used">
+            {{form.equipment_used.label}}
+            {{form.equipment_used}}
+            <div style="font-size:0.9rem">
+                <a class='clear' name="{{form.equipment_used.name}}" href="#!">Clear</a>
+            </div>
+        </div>
+
+        <div class="form-group volume-prepared-group" id="volume_prepared">
+            {{form.volume_prepared.label}}
+            {{form.volume_prepared}}
+        </div>
+
+        <div class="form-group solvent-used-group" id="solvent_used">
+            {{form.solvent_used.label}}
+            {{form.solvent_used}}
+        </div>
+
+        <div class="form-group aliquot-volume-group" id="aliquot_volume">
+            {{form.aliquot_volume.label}}
+            {{form.aliquot_volume}}
+        </div>
+
+        <div class="form-group total-aliquots-group" id="total_aliquots">
+            {{form.total_aliquots.label}}
+            {{form.total_aliquots}}
+        </div>
+
+        <div class="form-group pipette-check-group" id="pipette_check">
+            <a href="#" class="text-decoration-none t-tip form-item" data-html="true" data-toggle="tooltip" data-placement="bottom" id="pipette_check_label" title="Document using FRM-0223">{{form.pipette_check.label}}</a>
+            {{form.pipette_check(class='booleanfield2')}}
+        </div>
+
+        <div class="form-group verification-batches-group" id="verification_batches">
+            {{form.verification_batches.label}}
+            {{form.verification_batches}}
+            <div style="font-size:0.9rem">
+                <a class='clear' name="{{form.verification_batches.name}}" href="#!">Clear</a>
+            </div>
+        </div>
+
+        <div class="form-group previous-lot-group" id="verification_comments">
+            {{form.verification_comments.label}}
+            {{form.verification_comments(class='form-control '~status)}}
+        </div>
+
+        <div class="form-group previous-lot-group" id="two_analyst" style="display: none">
+            {{form.two_analyst.label}}
+            {{form.two_analyst(class='form-control '~status)}}
+        </div>
+
+        <div class="form-group previous-lot-group" id="previous_lot">
+            {{form.previous_lot.label}}
+            {{form.previous_lot}}
+        </div>
+
+        <div class="form-group previous-lot-comments-group" id="previous_lot_comments">
+            {{form.previous_lot_comments.label}}
+            {{form.previous_lot_comments}}
+        </div>
+
+        <div class="form-group qualitative-attachments-group" id="qualitative_attachments">
+            {{form.qualitative_attachments.label}}
+            {{form.qualitative_attachments}}
+        </div>
+
+        <div class="form-group qualitative-comments-group" id="qualitative_comments">
+            {{form.qualitative_comments.label}}
+            {{form.qualitative_comments}}
+        </div>
+
+        <div class="form-group calibration-attachments-group" id="calibration_attachments">
+            {{form.calibration_attachments.label}}
+            {{form.calibration_attachments}}
+        </div>
+
+        <div class="form-group calibration-comments-group" id="calibration_comments">
+            {{form.calibration_comments.label}}
+            {{form.calibration_comments}}
+        </div>
+
+        <div class="form-group quantitative-attachments-group" id="quantitative_attachments">
+            {{form.quantitative_attachments.label}}
+            {{form.quantitative_attachments}}
+        </div>
+
+        <div class="form-group quantitative-comments-group" id="quantitative_comments">
+            {{form.quantitative_comments.label}}
+            {{form.quantitative_comments}}
+        </div>
+
+        <div class="form-group additional-comments-group" id="additional_comments">
+            {{form.additional_comments.label}}
+            {{form.additional_comments}}
+        </div>
+
+        <div class="form-group additional-comments-group" id="preservatives">
+            {{form.preservatives.label}}
+            {{form.preservatives}}
+        </div>
+
+        <div class="row form-group mb-4">
+            <div class="col">
+                {{form.location_table.label}}
+                {{form.location_table}}
+            </div>
+            <div class="col">
+                {{form.location_id.label}}
+                {{form.location_id}}
+            </div>
+        </div>
+
+        <div class="form-group form-actions-group">
+            {{form.submit(class='btn btn-primary')}}
+            <button type="button" class="btn btn-secondary" onclick="history.back()">Back</button>
+        </div>
+    </form>
+</div>
+
+
+<!--following code for hiding fields depending on s_type chosen. Need to set up Form instead of iterating to implement -->
+<!-- onclick="sTypeSelected()" belongs in class of tag that contains id of fields being controlled by s_type-->
+<script>
+
+    const standards = ['4', '5', '6', '7', '8', '9', '10', '11', '13', '14', '20', '21']
+    const qualStand = ['9', '4', '5', '6', '13']
+    const samq = ['10', '11']
+    const quantStand = ['7', '8']
+    const blanks = ['12']
+    const parts = ['part_a', 'part_b', 'part_c']
+    const standardsColumns = ['concentrator_multiplier', 'parent_standard_lot', 'verified_by', 'equipment_used',
+                              'volume_prepared', 'solvent_used', 'aliquot_volume', 'total_aliquots', 'pipette_check',
+                              'additional_comments', 'previous_lot', 'previous_lot_comments', 'extension_memo',
+                              'verification_comments']
+
+    const qualColumns = ['qualitative_comments', 'qualitative_attachments']
+    const quantColumns = ['quantitative_comments', 'quantitative_attachments', 'two_analysts']
+    const calColumns = ['calibration_comments', 'calibration_attachments']
+    const blankColumns = ['verified_by', 'volume_prepared', 'aliquot_volume', 'total_aliquots', 'location',
+                          'preservatives']
+
+    window.addEventListener('load', sTypeSelected);
+
+    function sTypeSelected(){
+
+        var sType = document.getElementById('solution_type_id').selectedOptions[0].value;
+        console.log(sType);
+        var cType = document.getElementById('name').selectedOptions[0].value;
+        console.log(cType);
+
+        if (standards.includes(sType)) {
+// ALL STANDARDS HAVE FOLLOWING COLUMNS INACTIVE
+            parts.forEach(function(part) {
+                $('#' + part).css('display', 'none');
+                $('#' + part + '_lot').css('display', 'none');
+                $('#' + part + '_exp').css('display', 'none');
+            });
+            $('#preservatives').css('display', 'none');
+            $('#storage_location').css('display', 'none');
+
+
+// ALL STANDARDS HAVE FOLLOWING COLUMNS ACTIVE
+            standardsColumns.forEach(function(column) {
+                $('#' + column).css('display', 'block');
+            });
+
+// QUALITATIVE STANDARDS SEE VERIFICATION FRM
+            if (qualStand.includes(sType)) {
+
+                qualColumns.forEach(function(column) {
+                    $('#' + column).css('display', 'block');
+                });
+
+                quantColumns.forEach(function(column) {
+                    $('#' + column).css('display', 'none');
+                });
+
+                calColumns.forEach(function(column) {
+                    $('#' + column).css('display', 'none');
+                });
+                $('#two_analyst').css('display', 'none');
+
+            } else if (quantStand.includes(sType)) {
+
+                qualColumns.forEach(function(column) {
+                    $('#' + column).css('display', 'none');
+                });
+
+                quantColumns.forEach(function(column) {
+                    $('#' + column).css('display', 'block');
+                });
+
+                $('#verification_batches').css('display', 'block');
+
+                if (sType == '10') {
+
+                    calColumns.forEach(function(column) {
+                        $('#' + column).css('display', 'block');
+                    });
+
+                    $('#previous_lot').css('display', 'block');
+                    $('#previous_lot_comments').css('display', 'block');
+                    $('#two_analyst').css('display', 'none');
+
+                } else if (sType == '8') {
+                    $('#previous_lot').css('display', 'none');
+                    $('#previous_lot_comments').css('display', 'none');
+                    $('#two_analyst').css('display', 'block');
+
+                    calColumns.forEach(function(column) {
+                        $('#' + column).css('display', 'none');
+                    });
+
+                } else {
+
+                    calColumns.forEach(function(column) {
+                        $('#' + column).css('display', 'none');
+                    });
+                    $('#two_analyst').css('display', 'none');
+                }
+
+            } else if (samq.includes(sType)) {
+
+                $('#verification_batches').css('display', 'block');
+                $('#two_analyst').css('display', 'none');
+
+                quantColumns.forEach(function(column) {
+                    $('#' + column).css('display', 'none');
+                });
+
+                quantColumns.forEach(function(column) {
+                    $('#' + column).css('display', 'none');
+                });
+
+            } else {
+
+                qualColumns.forEach(function(column) {
+                    $('#' + column).css('display', 'none');
+                });
+
+                quantColumns.forEach(function(column) {
+                    $('#' + column).css('display', 'block');
+                });
+
+                blankColumns.forEach(function(blank) {
+                    $('#' + blank).css('display', 'none')
+                });
+            }
+
+        } else if (blanks.includes(sType)) {
+
+        	parts.forEach(function(part) {
+                $('#' + part).css('display', 'none');
+                $('#' + part + '_lot').css('display', 'none');
+                $('#' + part + '_exp').css('display', 'none');
+                $('#concentrator_multiplier').css('display', 'none');
+            });
+
+            standardsColumns.forEach(function(column) {
+                $('#' + column).css('display', 'none');
+            });
+
+            qualColumns.forEach(function(qual) {
+                $('#' + qual).css('display', 'none');
+            });
+
+            quantColumns.forEach(function(qual) {
+                $('#' + qual).css('display', 'none');
+            });
+
+            calColumns.forEach(function(qual) {
+                $('#' + qual).css('display', 'none');
+            });
+
+            blankColumns.forEach(function(blank) {
+            		$('#' + blank).css('display', 'block')
+            });
+
+            $('#verification_batches').css('display', 'none');
+            $('#previous_lot').css('display', 'none');
+            $('#previous_lot_comments').css('display', 'none');
+            $('#preservatives').css('display', 'block');
+            $('#storage_location').css('display', 'block');
+
+
+        } else {
+
+            parts.forEach(function(part) {
+                $('#' + part).css('display', 'block');
+                $('#' + part + '_lot').css('display', 'block');
+                $('#' + part + '_exp').css('display', 'block');
+                $('#concentrator_multiplier').css('display', 'none');
+            });
+
+            standardsColumns.forEach(function(column) {
+                $('#' + column).css('display', 'none');
+            });
+
+            qualColumns.forEach(function(qual) {
+                $('#' + qual).css('display', 'none');
+            });
+
+            quantColumns.forEach(function(qual) {
+                $('#' + qual).css('display', 'none');
+            });
+
+            calColumns.forEach(function(qual) {
+                $('#' + qual).css('display', 'none');
+            });
+
+            blankColumns.forEach(function(blank) {
+              	$('#' + blank).css('display', 'none')
+            });
+
+            $('#verification_batches').css('display', 'none');
+            $('#previous_lot').css('display', 'none');
+            $('#previous_lot_comments').css('display', 'none');
+            $('#preservatives').css('display', 'none');
+            $('#storage_location').css('display', 'none');
+
+
+        }
+        if (sType == '14') {
+            $('#total_aliquots').css('display', 'block');
+            $('#parent_standard_lot').css('display', 'none');
+        } else if (sType == '5' && cType == '27') {
+            parts.forEach(function(part) {
+                $('#' + part).css('display', 'block');
+                $('#' + part + '_lot').css('display', 'block');
+                $('#' + part + '_exp').css('display', 'block');
+                $('#concentrator_multiplier').css('display', 'none');
+            });
+        }
+    }
+</script>
+
+<script>
+    function insertText(text) {
+        let field = document.getElementById("description");
+        field.value = text;
+    }
+</script>
+
+<script>
+function insertDate(dateType) {
+    const today = new Date();
+    let newDate;
+
+    switch (dateType) {
+        case '1y_date':
+            newDate = new Date(today);
+            newDate.setFullYear(today.getFullYear() + 1);
+            break;
+
+        case '1y_1m_date':
+            newDate = new Date(today);
+            newDate.setMonth(today.getMonth() + 1);
+            break;
+
+        case '2m_date':
+            newDate = new Date(today);
+            newDate.setMonth(today.getMonth() + 2);
+            break;
+
+        case '1w_date':
+            newDate = new Date(today);
+            newDate.setDate(today.getDate() + 7);
+            break;
+
+        default:
+            console.warn('Unrecognized date type:', dateType);
+            return;
+    }
+
+    // Format date to YYYY-MM-DD
+    const formattedDate = newDate.toISOString().split('T')[0];
+
+    // Set the date in the input field
+    const dateInput = document.querySelector('#retest_date input, #retest_date input[type="date"]');
+    if (dateInput) {
+        dateInput.value = formattedDate;
+    } else {
+        console.warn('Retest date input field not found.');
+    }
+}
+</script>
+
+<script src="/static/js/locations.js"></script>
+<script src="/static/js/standards_and_solutions.js"></script>
+
+
+{% endblock %}
+

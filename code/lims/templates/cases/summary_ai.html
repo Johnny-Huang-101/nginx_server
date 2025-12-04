@@ -1,0 +1,83 @@
+{% for item in narratives if item.narrative_type == "Summary (AI)" %}
+    <tr id="static-narrative-row">
+    <td></td>
+    <td>
+        {% if "FLD" in current_user.permissions or current_user.permissions in ['Owner', 'Admin'] %}
+        <a href="{{url_for('narratives.view', item_id=item.id)}}">
+            {{item.narrative_type}}<a href="#!" data-html="true" data-toggle="tooltip"
+                                                    title="<b>AI Decedent Case Comment & Narrative Summary</b><br>
+                                                    An OCME-developed AI model that generates a concise summary and case comment based on the Investigator Narrative. The model is configured to be deterministic—producing consistent results for the same input.<br><br>
+                                                    <strong>WARNING:</strong> Despite safeguards, AI may hallucinate (i.e., introduce inaccurate details), particularly in history (Hx) and prescription (Rx) sections. Always review and verify AI-generated content before using it in your final summary.">
+                                                    <i class="fa-solid fa-circle-question" style="font-size:16px; vertical-align: middle;"></i>
+                                                </a>
+        </a>
+        {% else %}
+            {{item.narrative_type}}<a href="#!" data-html="true" data-toggle="tooltip"
+                                                    title="<b>AI Decedent Case Comment & Narrative Summary</b><br>
+                                                    An OCME-developed AI model that generates a concise summary and case comment based on the Investigator Narrative. The model is configured to be deterministic—producing consistent results for the same input.<br><br>
+                                                    <strong>WARNING:</strong> Despite safeguards, AI may hallucinate (i.e., introduce inaccurate details), particularly in history (Hx) and prescription (Rx) sections. Always review and verify AI-generated content before using it in your final summary.">
+                                                    <i class="fa-solid fa-circle-question" style="font-size:16px; vertical-align: middle;"></i>
+                                                </a>
+        {% endif %}
+    </td>
+
+    {% set unique_id = "narrative-" ~ item.id %}
+    {% set button_id = "copy-btn-" ~ item.id %}
+    {% set summary_id = "summary-text-" ~ item.id %}
+    <td
+    {% if "FLD" in current_user.permissions or current_user.permissions in ['Owner', 'Admin'] %}
+        {% set narrative = item.narrative %}
+    {% else %}
+        {% set narrative = item.narrative | replace("<mark>", "") | replace("</mark>", "") %}
+    {% endif %}
+    data-narrative="{{ narrative | e }}"
+    >
+        {% if narrative | length < 500 %}
+            {{narrative | safe}}
+        {% else %}
+            <div id="show-more">
+                {{narrative[:300]| safe}}<a href="#" class="show-more">...Show More</a>
+            </div>
+            <div hidden>
+                {{narrative| safe}}<br><a href="#" class="show-less">Show Less</a>
+            </div>
+        {% endif %}
+        <!-- <div id="copy-summary-button-container" class="mt-2"></div> -->
+    </td>
+
+
+
+
+
+    {% if "FLD" in current_user.permissions or current_user.permissions in ['Owner', 'Admin'] %}
+        <td align="center">
+            {% if not item.locked or item.locked_by == current_user.initials %}
+                <a href="{{url_for('narratives.update', item_id=item.id)}}">
+                    <i class="fa-solid fa-highlighter"></i>
+                </a>
+            {% endif %}
+            {% if item.locked %}
+                {% if item.locked_by == current_user.initials %}
+                    | <a id="lock" href="{{url_for('narratives.unlock', item_id=item.id)}}"><i class="fa-solid fa-unlock"></i></a>
+                {% else %}
+                    <i class="fa-solid fa-lock"></i>
+                {% endif %}
+                {{item.locked_by}}
+            {% endif %}
+        </td>
+        <td align="center">
+            {% if item.checked == 'Y' %}
+                <i class="fa-solid fa-check" style="color: green; font-size: 24px;"></i>
+            {% endif %}
+        </td>
+    {% endif %}
+    <td>
+        {{item.create_date.strftime('%m/%d/%Y %H:%M')}}
+    </td>
+    <td>
+        {% if item.updated_date %}
+            {{item.updated_date.strftime('%m/%d/%Y %H:%M')}}
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}

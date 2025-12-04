@@ -1,0 +1,51 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!-- ALERTS -->
+{% block alerts %}
+{% endblock %}
+
+<!-- BUTTONS -->
+{% block buttons %}
+{% endblock %}
+
+
+<!-- Header -->
+{% block header %}
+    <th>Name</th>
+    <th>PM Rank</th>
+    <th>M/D Rank</th>
+    <th>X Rank</th>
+    <th>Q Rank</th>
+    <th>Scope Rank</th>
+    <th>Compound Counts</th>
+    <th>Component Counts</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+            {{item.name}}
+        </a>
+    </td>
+    <td>{{item.pm_rank}}</td>
+    <td>{{item.m_d_rank}}</td>
+    <td>{{item.x_rank}}</td>
+    <td>{{item.q_rank}}</td>
+    <td>{{item.scope_rank}}</td>
+    <td>{{item.compound_counts}}</td>
+    <td>{{item.component_counts}}</td>
+
+{% endblock %}
+
+<!--MODALS-->
+{% block modals %}
+{% endblock %}
+
+<!--SCRIPTS-->
+{% block scripts %}
+{% endblock %}

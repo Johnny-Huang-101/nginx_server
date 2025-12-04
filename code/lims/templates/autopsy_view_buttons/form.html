@@ -1,0 +1,30 @@
+{% extends "form_template.html" %}
+{% block form %}
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.button.label}}
+        {{form.button(class='form-control')}}
+    </div>
+    <div class="col">
+        {{form.discipline.label}}
+        {{form.discipline(class='form-control')}}
+    </div>
+    <div class="col">
+        {{form.specimen_types.label}}
+        {{form.specimen_types(class='form-control')}}
+    </div>
+</div>
+{% endblock %}
+
+<!--Alerts-->
+{% block alerts %}
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+<script src="/static/js/autopsy_view_buttons.js"></script>
+{% endblock %}

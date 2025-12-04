@@ -1,0 +1,99 @@
+{% extends "form_template.html" %}
+
+<!-- ALERTS -->
+{% block alerts %}
+{% endblock %}
+
+<!-- HEADER -->
+{% block header %}
+{% endblock %}
+
+<!-- FORM -->
+{% block form %}
+
+    <div class="row form-group mb-4">
+        <div class="col">
+            {{form.assay_name.label}}
+            {{form.assay_name}}
+        </div>
+        <div class="col">
+            {{form.discipline.label}}
+            {{form.discipline}}
+        </div>
+        <div class="col">
+            {{form.sop_ref.label}}
+            <a href="#" data-toggle="tooltip"
+               title="e.g. SOP-0301" style="display:inline-block">
+                <i class="fa-solid fa-circle-question"></i>
+            </a>
+            {{form.sop_ref}}
+        </div>
+        <div class="col">
+            {{form.sample_volume.label}}
+            {{form.sample_volume}}
+        </div>
+    </div>
+    <hr style="border-width:3px">
+    <div class="row form-group mb-4">
+        <div class="col">
+            {{form.specimen_type_in_test_name.label}}
+            <a href="#" data-toggle="tooltip"
+               title="Whether to include the specimen type i.e. [AMBL]
+               when generating the test name, e.g. 2025-0001 A00001 [AMBL]"
+                style="display:inline-block">
+                <i class="fa-solid fa-circle-question"></i>
+            </a>
+            {{form.specimen_type_in_test_name}}
+        </div>
+        <div class="col">
+            {{form.num_tests.label}}
+            <a href="#" data-toggle="tooltip"
+               title="Recommended number of tests per batch"
+                style="display:inline-block">
+                <i class="fa-solid fa-circle-question"></i>
+            </a>
+            {{form.num_tests}}
+        </div>
+        <div class="col">
+            {{form.instrument_id.label}}
+            {{form.instrument_id}}
+        </div>
+        <div class="col">
+            {{form.batch_template_id.label}}
+            {{form.batch_template_id}}
+        </div>
+        <div class="col">
+            {{form.order.label}}
+            <a href="#" data-toggle="tooltip"
+               title="Used to sort assays. Order need not be unique."
+                style="display:inline-block">
+                <i class="fa-solid fa-circle-question"></i>
+            </a>
+            {{form.order}}
+            <div style="font-size:0.9rem">
+                {{kwargs['orders']}}
+            </div>
+        </div>
+    </div>
+    <div class="row form-group mb-4">
+        <div class="col">
+            {{form.status_id.label}}
+            <a href="#" data-toggle="tooltip"
+               title="When changing from Inactive to Active, ensure suitability and other relevant LIMS fields for readiness.<br> For REF(NMS), add scope to Comment Instances." style="display:inline-block">
+                <i class="fa-solid fa-circle-question"></i>
+            </a>
+            {{form.status_id}}
+        </div>
+    </div>
+
+{% endblock %}
+
+
+<!--MODALS-->
+{% block modals %}
+{% endblock %}
+
+<!--SCRIPTS-->
+{% block scripts %}
+<script src="/static/js/assays.js"></script>
+{% endblock %}

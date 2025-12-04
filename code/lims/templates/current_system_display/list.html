@@ -1,0 +1,53 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+    <i class="fa-solid fa-display"></i>
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+{% block header %}
+    <th>Name</th>
+    <th>Accession Letter</th>
+    <th>Accession Number</th>
+    <th>Icon</th>
+    <th>Logo</th>
+    <th>Background Image</th>
+    <th>Overlay Image</th>
+    <th>Database Name</th>
+    <th>Welcome Message</th>
+{% endblock %}
+
+{% block body scoped %}
+    <td scope="row">
+        <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+            Current
+        </a>
+    </td>
+    <td>{{item.accession_letter}}</td>
+    <td>{{item.accession_counter}}</td>
+    <td>{{item.icon.name}}</td>
+    <td>{{item.logo.name}}</td>
+    <td>{{item.background.name}}</td>
+    <td>{{item.overlay.name}}</td>
+    <td>{{item.db_names.message}}</td>
+    <td>{{item.welcome_messages.message}}</td>
+{% endblock %}
+
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}

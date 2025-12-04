@@ -1,0 +1,88 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Name</th>
+    <th>Lot</th>
+    <th>Assay(s)</th>
+    <th>Date Prepared</th>
+    <th>Prepared By</th>
+    <th>Expires</th>
+    <th>In Use</th>
+    <th>Authorized for Use</th>
+    <th>Location</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>{{item.constituent.name}}</td>
+    <td>
+        <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+        {{item.lot}}
+        </a>
+    </td>
+    <td>
+        {% if item.assay %}
+            {% for a in item.assay.split(',') %}
+                {% set k = a|trim %}
+                    {{ kwargs['assays'].get(k|int, kwargs['assays'].get(k, '')) }}
+                {% if not loop.last %}, {% endif %}
+            {% endfor %}
+        {% endif %}
+    </td>
+    <td {% if item.prepared_date %}data-order="{{ item.prepared_date.isoformat() }}"{% endif %}>
+        {% if item.prepared_date %}{{ item.prepared_date.strftime('%m/%d/%Y') }}{% endif %}
+    </td>
+    
+    <td>
+        {% if item.prepared_by is not none %}
+            {{item.prep_by.initials}}
+        {% endif %}
+    </td>
+    <td {% if item.retest_date %}data-order="{{ item.retest_date.isoformat() }}"{% endif %}>
+        {% if item.retest_date %}{{ item.retest_date.strftime('%m/%d/%Y') }}{% endif %}
+    </td>
+    
+    <td>{% if item.in_use %}X{% endif %}</td>
+    <td {% if item.authorized_date %}data-order="{{ item.authorized_date.isoformat() }}"{% endif %}>
+        {% if item.authorized_date %}{{ item.authorized_date.strftime('%m/%d/%Y') }}{% endif %}
+        {% if item.approved_by %}{{ item.approved.initials }}{% endif %}
+    </td>
+    
+    <td>
+        {% for x in kwargs['locations'] %}
+            {% if x.item_table == table_name %}
+                {% if x.item_id == item.id %}
+                    {% for cls in kwargs['models'] %}
+                        {% if x.location_table is none %}
+                        {% else %}
+                            {% if cls == kwargs['location_dict'][x.location_table]['table'] %}
+                                {% set alias = kwargs['location_dict'][x.location_table]['alias'] %}
+                                {% if alias is string %}
+                                    {{ cls.query.get(x.location_id) | getattr(alias) }}
+                                {% elif alias is iterable %}
+                                    {% for field in alias %}
+                                        {{ cls.query.get(x.location_id) | getattr(field) }}{% if not loop.last %} - {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    </td>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

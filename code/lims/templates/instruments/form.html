@@ -1,0 +1,179 @@
+{% extends "form_template.html" %}
+{% block form %}
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.instrument_id.label}}
+        {{form.instrument_id}}
+    </div>
+    <div class="col">
+        {{form.instrument_type_id.label}}
+        {{form.instrument_type_id}}
+    </div>
+    <div class="col">
+        {{form.acquired_date.label}}
+        {{form.acquired_date(type='date')}}
+    </div>
+</div>
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.status_id.label}}
+        {{form.status_id}}
+    </div>
+    <div class="col">
+        {{form.last_service_date.label}}
+        {{form.last_service_date(type='date')}}
+    </div>
+    <div class="col">
+        {{form.due_service_date.label}}
+        {{form.due_service_date(type='date')}}
+    </div>
+    <div class="col">
+        {{form.vendor_id.label}}
+        {{form.vendor_id}}
+    </div>
+</div>
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.manufacturer_id.label}}
+        {{form.manufacturer_id}}
+    </div>
+</div>
+<hr style="border-width:3px">
+ <div class="row form-group mb-4">
+    <div class="col">
+        {{form.module_model_1.label}}
+        {{form.module_model_1}}
+    </div>
+    <div class="col" style="border-right:1px solid rgba(0,0,0,0.1)">
+        {{form.module_serial_1.label}}
+        {{form.module_serial_1}}
+    </div>
+    <div class="col">
+        {{form.module_model_2.label}}
+        {{form.module_model_2}}
+    </div>
+    <div class="col">
+        {{form.module_serial_2.label}}
+        {{form.module_serial_2}}
+    </div>
+ </div>
+ <div class="row form-group mb-4">
+        <div class="col">
+            {{form.module_model_3.label}}
+            {{form.module_model_3}}
+        </div>
+        <div class="col" style="border-right:1px solid rgba(0,0,0,0.1)">
+            {{form.module_serial_3.label}}
+            {{form.module_serial_3}}
+        </div>
+        <div class="col">
+            {{form.module_model_4.label}}
+            {{form.module_model_4}}
+        </div>
+        <div class="col">
+            {{form.module_serial_4.label}}
+            {{form.module_serial_4}}
+        </div>
+ </div>
+ <div class="row form-group mb-4">
+        <div class="col">
+            {{form.module_model_5.label}}
+            {{form.module_model_5}}
+        </div>
+        <div class="col" style="border-right:1px solid rgba(0,0,0,0.1)">
+            {{form.module_serial_5.label}}
+            {{form.module_serial_5}}
+        </div>
+        <div class="col">
+            {{form.module_model_6.label}}
+            {{form.module_model_6}}
+        </div>
+        <div class="col">
+            {{form.module_serial_6.label}}
+            {{form.module_serial_6}}
+        </div>
+ </div>
+ <div class="row form-group mb-4">
+        <div class="col">
+            {{form.module_model_7.label}}
+            {{form.module_model_7}}
+        </div>
+        <div class="col" style="border-right:1px solid rgba(0,0,0,0.1)">
+            {{form.module_serial_7.label}}
+            {{form.module_serial_7}}
+        </div>
+        <div class="col">
+            {{form.module_model_8.label}}
+            {{form.module_model_8}}
+        </div>
+        <div class="col">
+            {{form.module_serial_8.label}}
+            {{form.module_serial_8}}
+        </div>
+ </div>
+ <div class="row form-group mb-4">
+        <div class="col">
+            {{form.module_model_9.label}}
+            {{form.module_model_9}}
+        </div>
+        <div class="col" style="border-right:1px solid rgba(0,0,0,0.1)">
+            {{form.module_serial_9.label}}
+            {{form.module_serial_9}}
+        </div>
+        <div class="col">
+            {{form.module_model_10.label}}
+            {{form.module_model_10}}
+        </div>
+        <div class="col">
+            {{form.module_serial_10.label}}
+            {{form.module_serial_10}}
+        </div>
+ </div>
+ <hr style="border-width:3px">
+ <div class="row form-group mb-4">
+        <div class="col">
+            {{form.pc_os.label}}
+            {{form.pc_os}}
+        </div>
+        <div class="col">
+            {{form.pc_model.label}}
+            {{form.pc_model}}
+        </div>
+        <div class="col">
+            {{form.software.label}}
+            {{form.software}}
+        </div>
+        <div class="col">
+            {{form.software_version.label}}
+            {{form.software_version}}
+        </div>
+ </div>
+ <div class="row form-group mb-4">
+    <div class="col">
+        {{form.hostname.label}}
+        {{form.hostname}}
+    </div>
+    <div class="col">
+        {{form.ip_address.label}}
+        {{form.ip_address}}
+    </div>
+ </div>
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.location_table.label}}
+        {{form.location_table}}
+    </div>
+    <div class="col">
+        {{form.location_id.label}}
+        {{form.location_id}}
+    </div>
+</div>
+ <hr style="border-width:3px">
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/locations.js"></script>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "form_template.html" %}
+
+<!-- ALERTS -->
+{% block alerts %}
+{% endblock %}
+
+<!-- HEADER -->
+{% block header %}
+{% endblock %}
+
+{% block form %}
+        <div class="alert alert-secondary">
+            <b>Start Date</b> and <b>End Date</b> are optional.
+        </div>
+        <div class="row">
+            <div class="col">
+                {{form.user.label}}
+                {{form.user(class='form-control')}}
+            </div>
+            <div class="col">
+                {{form.start_date.label}}
+                {{form.start_date}}
+            </div>
+            <div class="col">
+                {{form.end_date.label}}
+                {{form.end_date}}
+            </div>
+        </div>
+
+{% endblock %}
+
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/user_log.js"></script>
+{% endblock %}

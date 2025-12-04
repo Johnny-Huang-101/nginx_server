@@ -1,0 +1,89 @@
+{% extends "view_template.html" %}
+
+{% block view %}
+{# --- Simple access check --- #}
+{% set _perms_str = (current_user.permissions|string)|upper %}
+{% set _has_role = 'ADMIN' in _perms_str or 'OWNER' in _perms_str %}
+{% set _is_whitelisted_initials = current_user.initials in ['CSL', 'DSS'] %}
+{% set _must_block = item.case.sensitivity == 'Restricted' and (not _has_role) and (not _is_whitelisted_initials) %}
+
+{# Page content. Blur + disable clicks if blocked #}
+<div id="content-wrap" class="{% if _must_block %}blur{% endif %}">
+  <div>
+    <a href="{{ url_for('cases.view', item_id=item.case.id) }}">{{ item.case.case_number }}</a>
+  </div>
+
+  {% if kwargs['file_exists'] %}
+    <div class="my-3" align="center">
+      <embed src="../static/filesystem/records/{{ item.case.case_number }}/{{ item.record_name }}.pdf"
+             width="100%" height="1000px"/>
+    </div>
+  {% else %}
+    <h1>Record not found.</h1>
+  {% endif %}
+</div>
+
+{# Non-dismissable overlay modal (only rendered when blocked) #}
+{% if _must_block %}
+  <div class="overlay" role="dialog" aria-modal="true" aria-labelledby="restrictionTitle">
+    <div class="modal-box">
+      <h3 id="restrictionTitle" style="margin:0 0 .5rem 0;">Restricted Case</h3>
+      <p style="margin:0 0 1rem 0;">
+        See management for access to this record.
+      </p>
+      <div class="actions">
+        <a class="btn btn-secondary" href="{{ url_for('records.view_list') }}">Exit</a>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+<style>
+  /* Strong blur + block interaction behind modal */
+  #content-wrap.blur {
+    filter: blur(10px) saturate(0.6);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* Fullscreen overlay */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999; /* above everything */
+  }
+
+  /* Centered modal box */
+  .modal-box {
+    max-width: 560px;
+    width: calc(100% - 2rem);
+    background: #fff;
+    padding: 1.25rem 1.25rem 1rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  }
+
+  .actions {
+    margin-top: 0.75rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .btn-exit {
+    display: inline-block;
+    padding: .6rem 1rem;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    background: #111;
+    color: #fff;
+  }
+  .btn-exit:focus-visible { outline: 2px solid #000; outline-offset: 2px; }
+</style>
+{% endblock %}
+
+{% block scripts %}{% endblock %}

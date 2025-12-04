@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div>
+    <hr style="border-width:5px">
+     {% if item_dict is not none %}
+      <h1>{{function}} {{item_dict['full_name']}}</h1>
+    {% else %}
+      <h1>Add {{item_type}} Evaluation</h1>
+    {% endif %}
+    <hr style="border-width:5px">
+    <form method="POST" id="form" novalidate="novalidate">
+        {{form.hidden_tag()}}
+        <div class="row form-group mb-4">
+                <div class="col-md-6">
+                    {{form.case_id.label}}
+                    {{form.case_id}}
+                </div>
+         </div>
+        <div class="row form-group mb-4">
+                <div class="col-md-6">
+                    {{form.result_id.label}}
+                    {{form.result_id}}
+                </div>
+         </div>
+        <div class="row form-group mb-4">
+                <div class="col-md-4">
+                    {{form.pt_component_id.label}}
+                    {{form.pt_component_id}}
+                </div>
+                <div class="col-md-4">
+                    {{form.pt_unit_id.label}}
+                    {{form.pt_unit_id}}
+                </div>
+        </div>
+        <div class="row form-group mb-4">
+            <div class="col-md-4">
+                {{form.notes.label}}
+                {{form.notes}}
+            </div>
+        </div>
+        <div class="row form-group mb-4">
+            <div class="col-md-4">
+                {{form.eval_date.label}}
+                {{form.eval_date}}
+            </div>
+            <div class="col-md-4">
+                {{form.eval_informal.label}}
+                {{form.eval_informal}}
+            </div>
+        </div>
+        <div class="row form-group mb-4">
+                <div class="col-md-4">
+                    {{form.pt_reporting_limit.label}}
+                    {{form.pt_reporting_limit}}
+                </div>
+        </div>
+        <div class="row form-group mb-4">
+                <div class="col-md-4">
+                    {{form.pt_participants.label}}
+                    {{form.pt_participants}}
+                </div>
+        </div>
+        <div class="row form-group mb-4">
+                <div class="col-md-2">
+                    {{form.target.label}}
+                    {{form.target}}
+                </div>
+         </div>
+        <div class="row form-group mb-4">
+                <div class="col-md-2">
+                    {{form.median.label}}
+                    {{form.median}}
+                </div>
+         </div>
+         <div class="row form-group mb-4">
+                <div class="col-md-2">
+                    {{form.mean_all.label}}
+                    {{form.mean_all}}
+                </div>
+                <div class="col-md-2">
+                    {{form.sd_all.label}}
+                    {{form.sd_all}}
+                </div>
+                <div class="col-md-2">
+                    {{form.mean_sub.label}}
+                    {{form.mean_sub}}
+                </div>
+                <div class="col-md-2">
+                    {{form.sd_sub.label}}
+                    {{form.sd_sub}}
+                </div>
+         </div>
+         <div class="row form-group mb-4">
+                <div class="col-md-4">
+                    {{form.eval_A_ref.label}} (for CDPH, select 'Manual')
+                    {{form.eval_A_ref}}
+                </div>
+                <div class="col-md-4">
+                    {{form.eval_B_ref.label}}
+                    {{form.eval_B_ref}}
+                </div>
+         </div>
+         <div class="row form-group mt-4">
+                <div class="col-md-1">
+                    {{form.eval_manual_min.label}}
+                    {{form.eval_manual_min}}
+                </div>
+                <div class="col-md-1">
+                    {{form.eval_manual_max.label}}
+                    {{form.eval_manual_max}}
+                </div>
+         </div>
+        <div class="row form-group mb-4">
+            <div class="col-md-4">
+                {{form.eval_FLD_conclusion.label}}
+                {{form.eval_FLD_conclusion}}
+            </div>
+        </div>
+        <div class="form-group">
+            {{form.submit(class='btn btn-primary')}}
+           <a type="button" class="btn btn-secondary" href="{{url_for(table_name~'.view_list')}}">Exit</a>
+           <a type="button" class="btn btn-secondary" href="{{url_for('pt_cases.view_list')}}">Exit to PT Cases</a>
+        </div>
+    </form>
+</div>
+<script type=text/javascript>
+    // Populate the result_id dropdown based on the case_id selection
+
+    $(document).ready(function() {
+      $('#case_id').on('change', function() {
+        var case_id = $('#case_id').val();
+        $.getJSON('/get_results/', {
+          case_id: case_id,
+        }, function(data) {
+           var optionHTML = '';
+           for (var result of data.results) {
+            optionHTML += '<option value="' + result.id + '">' + result.name + '</option>';
+        }
+            //$('#submission_comments').val(optionHTML);
+            $('#result_id').html(optionHTML);
+            $('#result_id').selectpicker('refresh');
+            $('#result_id').selectpicker('render');
+            //$('#division_id').selectpicker('val', 0);
+            //$.each($('.selectpicker'), function () {
+            //  $(this).selectpicker('refresh');
+            //  $(this).selectpicker('render');
+            //});
+        });
+        return false;
+      });
+    });
+</script>
+
+<script>
+$(document).ready(function() {
+    // Function to disable eval_manual_min field
+    function toggleEvalManualMin(disable) {
+        $('#eval_manual_min').prop('disabled', disable);
+    }
+
+    function toggleEvalManualMax(disable) {
+        $('#eval_manual_max').prop('disabled', disable);
+    }
+
+    // Listen for change event on the SelectField
+    $('#eval_A_ref').on('change', function() {
+        // Check the value of the SelectField
+        var selectedValue = $(this).val();
+
+        // If the specific value is selected, disable eval_manual_min field
+        if (selectedValue === 'Manual') {
+            toggleEvalManualMin(false);
+            toggleEvalManualMax(false);
+        } else {
+            // Otherwise, enable eval_manual_min field
+            toggleEvalManualMin(true);
+            toggleEvalManualMax(true);
+        }
+    });
+
+    // Trigger change event on page load to initialize field state
+    $('#eval_A_ref').trigger('change');
+});
+
+</script>
+
+{% endblock %}
+

@@ -1,0 +1,215 @@
+{% extends "list_template.html" %}
+{% block content %}
+    <head>
+        <title>{{item_name}}</title>
+    </head>
+    <hr style="border-width:5px">
+    <h1><i class="fa-solid fa-briefcase"></i> PT Cases</h1>
+
+
+ <div class="d-flex justify-content-center" id="spinner-div">
+    <div class="spinner-border" role="status" style="width: 3rem; height: 3rem;">
+        <span class="sr-only">Loading...</span>
+    </div>
+</div>
+
+<div class="table display" id="table-div" style="opacity:0">
+    <form action="{{ url_for(table_name~'.view_list')}}" method="POST">
+        Show
+        <div class="form-group px-0" style="display:inline-block">
+            <select class="form-control" name="length" id="length" onchange="this.form.submit()">
+                <option value="10">10</option>
+                <option value="100">100</option>
+                <option value="1000">1000</option>
+                <option value="-1">All</option>
+            </select>
+        </div>
+        entries per page
+    </form>
+        <div class="table-responsive">
+            <table class="display table-striped table-hover small nowrap" style="width:100%" id="pt_cases">
+              <thead>
+                <tr>
+                  <th>Case Number</th>
+                  <th>Action</th>
+                  <th>Case Status</th>
+                  <th>PT Status</th>
+                </tr>
+              </thead>
+              <tbody id="body">
+              {% for item in items %}
+                {% if item.cases_pt_cases %}
+                  {% set pt_case_db_status = item.cases_pt_cases[0].db_status %}
+                {% else %}
+                  {% set pt_case_db_status = none %}
+                {% endif %}
+                {% if item.cases_pt %}
+                  {% set pt_db_status = item.cases_pt[0].db_status %}
+                {% else %}
+                  {% set pt_db_status = none %}
+                {% endif %}
+                <tr>
+                    <th scope="row">{{item.case_number}}</th>
+                  <td>
+                  {% if pt_case_db_status %}
+                      {% if item.cases_pt_cases[0].db_status %}
+                          {% if item.cases_pt_cases[0].db_status == 'Active' %}
+                            <a href="{{url_for(table_name~'.view', item_id=kwargs['PTCases'].query.filter_by(case_id=item.id).first().id)}}">View</a> | <a href="{{url_for(table_name~'.update', item_id=kwargs['PTCases'].query.filter_by(case_id=item.id).first().id)}}">Update</a>
+                          {% else %}
+                              {% if item.cases_pt_cases[0].pending_submitter %}
+                                  {% if current_user.initials == item.cases_pt_cases[0].pending_submitter %}
+                                    <a href="{{url_for(table_name~'.edit', item_id=kwargs['PTCases'].query.filter_by(case_id=item.id).first().id)}}">Edit</a>
+                                  {% else %}
+                                    <a href="{{url_for(table_name~'.approve', item_id=kwargs['PTCases'].query.filter_by(case_id=item.id).first().id)}}">Approve</a>
+                                  {% endif %}
+                              {% else %}
+                                  <a href="{{url_for(table_name~'.update', item_id=kwargs['PTCases'].query.filter_by(case_id=item.id).first().id)}}">Update</a>
+                              {% endif %}
+                          {% endif %}
+                      {% endif %}
+                  {% else %}
+                    {% if pt_db_status is none %}
+                      <a href="{{url_for('pt_results.add', case_id=item.id)}}">Need PT Results</a>
+                    {% else %}
+                        <a href="{{url_for(table_name~'.add', item_id=item.id)}}">Add</a>
+                    {% endif %}
+                  {% endif %}
+                  </td>
+                  <td>{{item.case_status}}</td>
+                  <td>
+                      {{pt_case_db_status}}
+                  </td>
+                  </tr>
+              {% endfor %}
+              </tbody>
+             </table>
+            <div>
+                Showing <span id="first">{{items.first}}</span> to
+                <span id="last">{{items.last}}</span> of
+                <span id="total">{{items.total}}</span> entries
+                <span id="filtered" hidden>(filtered from {{items.last}} entries)</span>
+            </div>
+            <div style="display: flex; justify-content: flex-end">
+                <nav aria-label="Page navigation example">
+                     <ul class="pagination">
+                         {% if items.page == 1 %}
+                         <li class="page-item disabled">
+                         {% else %}
+                         <li class="page-item">
+                          {% endif %}
+                            <a class="page-link" href="{{ url_for(table_name~'.view_list', page=items.page-1, length=length) }}" tabindex="-1">Previous</a>
+                        </li>
+
+                         {% for page_num in items.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                         {% if page_num %}
+                             {% if items.page == page_num %}
+                                <li class="page-item active">
+                                    <a class="page-link">{{ page_num }}</a></li>
+                             {% else %}
+                                <li class="page-item"><a class="page-link" href="{{ url_for(table_name~'.view_list', page=page_num, length=length) }}">{{ page_num }}</a></li>
+                             {% endif %}
+                         {% else %}
+                              <li class="page-item disabled"><a class="page-link">…</a></li>
+                         {% endif %}
+                      {% endfor %}
+
+                        {% if items.page == items.pages %}
+                        <li class="page-item disabled">
+                        {% else %}
+                         <li class="page-item">
+                          {% endif %}
+                            <a class="page-link" href="{{ url_for(table_name~'.view_list', page=items.page+1, length=length) }}" tabindex="-1">Next</a>
+                        </li>
+                     </ul>
+                </nav>
+                <div class="pl-2">
+                    <div class="form-inline">
+                          <input class="form-control mr-2" style="width: 10rem" id="page-num" placeholder="Go to page...">
+                          <a class="btn btn-primary" id="go-to-page">Go</a>
+                    </div>
+               </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+
+$(document).ready(function () {
+    // Setup - add a text input to each footer cell
+
+     var buttons = []
+
+     buttons.push({
+            extend: 'csvHtml5',
+            className: 'btn btn-secondary mb-3',
+            text: 'Export',
+            autoFilter: true,
+            title: '{{item_name}}_'+moment().format('YYYYMMDDHHmmss'),
+            sheetName: 'export'
+            })
+     buttons.push({
+            className: 'dt-button btn btn-primary mb-3',
+            text: 'View PT Results Summary',
+            action: function () {
+                    window.location.href = "{{ url_for('pt_results.view_list') }}";
+                }
+            })
+
+    $('#pt_cases thead tr')
+        .clone(true)
+        .addClass('filters')
+        .appendTo('#pt_cases thead');
+
+    let length = {{kwargs['length']}}
+    $("#length").val(length);
+    var table = $('#pt_cases').DataTable({
+            dom: 'Brft',
+            scrollX: true,
+            scrollY: "60vh",
+            scrollCollapse: true,
+            buttons: buttons,
+            orderCellsTop: true,
+            fixedHeader: true,
+            //select: true,
+            order: [],
+            columnDefs: [
+                {"targets":1, "searchable":true},
+            ],
+            pageLength: length,
+
+            initComplete: function () {
+                let api = this.api();
+                initSearchFields(api, length, 'pt_cases');
+
+                api.order([[0, 'asc']]).draw();
+            }
+    });
+
+
+     table.on( 'draw', function () {
+            var body = $( table.table().body() );
+            body.unhighlight();
+            body.highlight( table.search() );
+     });
+
+     table.order([[0, 'asc']]).draw();
+});
+
+
+</script>
+
+<script>
+   $('#testing').on('click',  function () {
+        var table = $('#cases').DataTable();
+        table
+        .columns(1)
+        .search('pending')
+        .draw();
+
+        $('.filters th').eq(1).find('input').val('Pending');
+    });
+</script>
+
+
+
+{% endblock %}

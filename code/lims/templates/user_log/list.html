@@ -1,0 +1,37 @@
+{% extends "list_template.html" %}
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+    <a class="btn btn-secondary" href="{{url_for('user_log.custom_export')}}">Custom Export</a>
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>User</th>
+    <th>Route</th>
+    <th>Endpoint</th>
+    <th>Date Accessed</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>{{item.user}}</td>
+    <td>{{item.route}}</td>
+    <td>{{item.view_function}}</td>
+    <td>{{item.date_accessed.strftime('%m/%d/%Y %H:%M')}}</td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}

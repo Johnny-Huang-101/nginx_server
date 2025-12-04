@@ -1,0 +1,89 @@
+{% extends "list_template.html" %}
+
+{% block icon %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<div class="dropdown" style="display: inline-block;">
+    <button class="btn btn-secondary dropdown-toggle" type="button" id="batches-filter" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Filter
+    </button>
+    <div class="dropdown-menu" aria-labelledby="batches-filter">
+        <div class="dropdown-submenu dropright">
+            <a class="dropdown-item dropdown-toggle" href="#">Type</a>
+            <ul class="dropdown-menu">
+                {% for option in kwargs['types'] %}
+                    <li><a class="dropdown-item" href="{{url_for(table_name~'.view_list', query_type='type', query=type)}}">{{option}}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+         <div class="dropdown-submenu dropright">
+            <a class="dropdown-item dropdown-toggle" href="#">Status</a>
+            <ul class="dropdown-menu">
+                 {% for option in kwargs['statuses'] %}
+                <li><a class="dropdown-item" href="{{url_for(table_name~'.view_list', query_type='status', query=status)}}">{{option}}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Equipment ID</th>
+    <th>Status</th>
+    <th>Next Service</th>
+    <th>Location</th>
+    <th>Type</th>
+    <th>Manufacturer</th>
+    <th>Last Service</th>
+    <th>Provider</th>
+    <th>Date Acquired</th>
+    <th>Notes</th>
+    <th>Module 1 Model No.</th>
+    <th>Module 1 Serial No.</th>
+    <th>Module 2 Model No.</th>
+    <th>Module 2 Serial No.</th>
+    <th>Module 3 Model No.</th>
+    <th>Module 3 Serial No.</th>
+    <th>Module 4 Model No.</th>
+    <th>Module 4 Serial No.</th>
+    <th>Module 5 Model No.</th>
+    <th>Module 5 Serial No.</th>
+    <th>Module 6 Model No.</th>
+    <th>Module 6 Serial No.</th>
+    <th>Module 7 Model No.</th>
+    <th>Module 7 Serial No.</th>
+    <th>Module 8 Model No.</th>
+    <th>Module 8 Serial No.</th>
+    <th>Module 9 Model No.</th>
+    <th>Module 9 Serial No.</th>
+    <th>PC OS</th>
+    <th>PC Model</th>
+    <th>Software</th>
+    <th>Software Version</th>
+    <th>Host Name</th>
+    <th>IP Address</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+            {{item.instrument_id}}
+        </a>
+    </td>
+    <td>{{item.type.name}}</td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+<script src="/static/js/hide_lock.js"></script>
+<script src="/static/js/row_color_by_status.js"></script>
+{% endblock %}

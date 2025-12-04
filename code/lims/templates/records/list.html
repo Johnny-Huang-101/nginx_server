@@ -1,0 +1,203 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+<button class="btn btn-secondary" data-toggle="modal" data-target="#records-filter-modal">Filter</button>
+{% if current_user.permissions in ['Admin', 'Owner'] %}
+  <a class="btn btn-primary" href="{{url_for(table_name~'.add_multi')}}">Add Multiple</a>
+{% endif %}
+
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>ID</th>
+    <th>Submitter</th>
+    <th>Record Name</th>
+    <th>Case Number</th>
+    <th>Record Status</th>
+    <th>Record Type</th>
+    <th>Download PDF</th>
+    <th>Dissemination Date</th>
+    <th>Disseminated By</th>
+    <th>Disseminated To</th>
+    <th>FA Filename</th>
+    <th>FA Description</th>
+    <th>FA Version</th>
+    <th>FA Import Date</th>
+    <th>FA Imported By</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>{{item.id}}</td>
+    <td>
+        {{item.case.agency.name}} - {{item.case.division.name}}
+    </td>
+    <td>
+        <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+            {{item.record_name}}
+        </a>
+    </td>
+    <td>
+        <a href="{{url_for('cases.view', item_id=item.case.id)}}">
+            {{item.case.case_number}}
+        </a>
+    </td>
+    <td>{{item.record_status}}</td>
+    <td>{{item.type.name}}</td>
+    <td>
+    {% if item.record_name %} <!--in kwargs['pdfs'] %}    Can be leveraged to hide Download button in DEV if file doesn't exist on DEV VM      --> 
+        <a href="{{ url_for('static', filename='filesystem/records/' ~ item.case.case_number ~ '/' ~ item.record_name ~ '.pdf') }}"
+           download="{{ item.record_name }}.pdf"
+           class="btn btn-sm btn-success">
+            <i class="fa fa-download"></i> Download
+        </a>
+        
+    {% endif %}
+</td>
+    <td>
+        {% if item.dissemination_date %}
+        {{item.dissemination_date.strftime('%m/%d/%Y')}}
+        {% endif %}
+    </td>
+    <td>{{item.disseminated_by}}</td>
+    <td>{{item.disseminated_to}}</td>
+    <td>{{item.fa_OR_name}}</td>
+    <td>{{item.fa_OR_description}}</td>
+    <td>{{item.fa_OR_version}}</td>
+    <td>{{item.fa_OR_importDate}}</td>
+    <td>{{item.fa_OR_importedBy}}</td>
+
+{% endblock %}
+
+{% block modals %}
+<div class="modal fade" id="records-filter-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <form method="GET" action="{{ url_for(table_name ~ '.view_list') }}">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Filter Records</h5>
+          <button type="button" class="close" data-dismiss="modal">
+            <span>&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="record_types">Record Types</label>
+            <select
+              name="record_types"
+              id="record_types"
+              class="form-control selectpicker"
+              multiple
+              data-live-search="true"
+              data-actions-box="true">
+              {% for rtype in kwargs['record_type_options'] %}
+                <option value="{{ rtype }}" {% if rtype in kwargs.get('selected_record_types', []) %}selected{% endif %}>
+                  {{ rtype }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Date range -->
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="date_from">From</label>
+              <input
+                type="date"
+                class="form-control"
+                id="date_from"
+                name="date_from"
+                value="{{ kwargs.get('date_from', '') }}">
+            </div>
+            <div class="form-group col-md-6">
+              <label for="date_to">To</label>
+              <input
+                type="date"
+                class="form-control"
+                id="date_to"
+                name="date_to"
+                value="{{ kwargs['today_date'] }}"
+                max="{{ kwargs['today_date']}}">
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Apply Filters</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+{% if kwargs.null_record_reports_count %}
+<div class="modal fade" id="nullRecordReportsModal" tabindex="-1" aria-labelledby="nullRecordReportsLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-warning-subtle">
+        <h5 class="modal-title" id="nullRecordReportsLabel">Action Required</h5>
+      </div>
+
+      <div class="modal-body">
+        <p class="mb-3 fw-semibold">Please screenshot this message and send it to the CLIO team.</p>
+
+        <p class="mb-2">
+          The following reports are finalized but <strong>not linked to a record</strong>.
+        </p>
+
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Report</th>
+                <th>Report Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in kwargs.null_record_reports %}
+              <tr>
+                <td>{{ r.id }}</td>
+                <td>{{ r.report_name }}</td>
+                <td>{{ r.report_status }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="continueBtn">Continue</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var el = document.getElementById('nullRecordReportsModal');
+  if (el && typeof bootstrap !== 'undefined') {
+    var modal = new bootstrap.Modal(el);
+    modal.show();
+
+    document.getElementById('continueBtn').addEventListener('click', function () {
+      modal.hide();
+    });
+  }
+});
+</script>
+{% endblock %}

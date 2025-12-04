@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class = "container-fluid">
+    <h1>
+        {{item.string_field}}
+    </h1>
+
+
+<br>
+
+
+<div class = "container-fluid">
+   {% if item.db_status not in ['Deletion Pending', 'Removed'] %}
+                {% if n_pending != 0 %}
+                    {% if current_user.initials in pending_submitters.values() %}
+                        <a class="btn btn-primary" href="{{ url_for(table_name~'.edit', item_id = item.id, event=event)}}" role="button">Edit</a>
+                    {% else %}
+                        <a class="btn btn-primary" href="{{ url_for(table_name~'.approve', item_id = item.id, event=event)}}" role="button">Review</a>
+                    {% endif %}
+                {% else %}
+                      <a class="btn btn-primary" href="{{ url_for(table_name~'.update', item_id = item.id)}}" role="button">Update</a>
+                {% endif %}
+    {% endif %}
+    <button type="button" class="btn btn-secondary" onclick="history.back()">Back</button>
+
+</div>
+
+  <!-- Modal for Pop Up-->
+  {# https://getbootstrap.com/docs/4.1/components/modal/ #}
+  {# Notice how the link with the id to the button above! #}
+  <div class="modal" tabindex="-1" role="dialog" id="del_modal">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Delete {{item.name}}?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete <b>{{item.name}}</b>?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+
+          <form action="{{ url_for(table_name~'.delete', item_id= item.id) }}" method="POST">
+            <input class="btn btn-danger" type="submit" value="Delete">
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+{% endblock %}

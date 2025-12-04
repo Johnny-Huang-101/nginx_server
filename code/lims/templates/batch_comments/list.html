@@ -1,0 +1,40 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Batch ID</th>
+    <th>Comment</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        {{item.batch_id}}
+    </td>
+    <td>
+        {% if item.comment is not none %}
+          <b>
+              <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+              {{item.comment.comment}}
+              </a>
+          </b>
+        {% else %}
+            <b>
+              <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+              {{item.comment_text}}
+              </a>
+          </b>
+        {% endif %}
+  </td>
+{% endblock %}
+

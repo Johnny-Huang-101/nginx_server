@@ -1,0 +1,168 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+    <i class="fa-solid fa-file-lines"></i>
+{% endblock %}
+
+{% block alerts %}
+
+{% if kwargs['ready_for_cr'] or kwargs['ready_for_dr'] %}
+<div class="alert alert-warning" role="alert">
+    There are currently:
+    <ul class="alert-list">
+        {% if kwargs['ready_for_cr'] %}
+        <li>
+           <b>
+               <a href="{{ url_for(table_name~'.view_list', query='ready_for_cr') }}">
+                {{kwargs['ready_for_cr']}} report(s)
+               </a>
+           </b>
+            requiring CR.
+        </li>
+        {% endif %}
+        {% if kwargs['ready_for_dr'] %}
+        <li>
+           <b>
+               <a href="{{ url_for(table_name~'.view_list', query='ready_for_dr') }}">
+                {{kwargs['ready_for_dr']}} report(s)
+               </a>
+           </b>
+           requiring DR.
+        </li>
+        {% endif %}
+
+    </ul>
+
+</div>
+{% endif %}
+
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<a class="btn btn-secondary" href="{{url_for(table_name~'.view_list', query='all')}}">Show finalized reports</a>
+<a class="btn btn-secondary" href="{{url_for(table_name~'.view_list', query='removed')}}">Show removed reports</a>
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+
+
+<!-- Header -->
+{% block header %}
+    <th>Report Name</th>
+    <th></th>
+    <th>Assigned CR</th>
+    <th>Assigned DR</th>
+    <th>File Name</th>
+    <th>Case Number</th>
+    <th>Discipline</th>
+    <th>Manner</th>
+    <th>Report Number</th>
+    <th>Draft Number</th>
+    <th>Report Status</th>
+    <th>CR</th>
+    <th>CR Date</th>
+    <th>Reverted By</th>
+    <th>DR</th>
+    <th>DR Date</th>
+    <th>Record</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        <a href="{{url_for(table_name~'.view', item_id=item.id, view_only='true')}}">
+            {{item.report_name}}
+        </a>
+    </td>
+    <td>
+        {% if item.report_status == 'Ready for DR' %}
+            {% if not item.locked or item.locked_by == current_user.initials %}
+                {% if current_user.id != item.case_review %}
+                    <a href="{{url_for(table_name~'.view', item_id=item.id, view_only='false')}}">Start DR</a>
+                {% endif %}
+            {% endif %}
+        {% elif item.report_status in ['Created', 'Ready for CR'] %}
+            {% if item.locked_by == current_user.initials %}
+                <a href="{{url_for(table_name~'.view', item_id=item.id, view_only='false')}}">CR</a>
+            {% elif item.locked_by is none %}
+                <a href="{{url_for(table_name~'.view', item_id=item.id, view_only='false')}}">CR</a>
+            {% endif %}
+        {% endif %}
+    </td>
+    <td>{% if item.assigned_cr %} {{item.assigned_cr_user.initials}} {% endif %}</td>
+    <td> {{item.assigned_dr_user.initials}}</td>
+    <td>{{item.file_name}}</td>
+    <td>
+        {% if item.case.priority == 'High' %} 
+            <span style="color: red;"> <strong>P</strong> </span>
+        {% endif %}
+        {% if item.case_id is not none %}
+            <a href="{{url_for('cases.view', item_id=item.case.id, view_only='true')}}">{{item.case.case_number}}</a>
+        {% else %}
+            NO CASE ID
+        {% endif %}
+    </td>
+    <td>{{item.discipline}}</td>
+    <td>{{ item.case.manner_of_death }}</td>
+    <td>{{item.report_number}}</td>
+    <td>{{item.draft_number}}</td>
+    <td class="report-status">{{item.report_status}}</td>
+    <td>{{item.case_reviewer.initials}}</td>
+    <td>
+        {% if item.case_review_date %}
+        {{item.case_review_date.strftime('%m/%d/%Y %H:%M')}}
+        {% endif %}
+    </td>
+    <td>
+        {% if item.reverted_by %}
+        {{item.reverted_by}} {{item.revert_date.strftime('%m/%d/%Y %H:%M')}}
+        {% endif %}
+    </td>
+    <td>{{item.divisional_reviewer.initials}}</td>
+    <td>
+        {% if item.divisional_review_date %}
+            {{item.divisional_review_date.strftime('%m/%d/%Y %H:%M')}}
+        {% endif %}
+    </td>
+    <td>{{item.record.record_name}}</td>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+    var kwargs = {{ kwargs | tojson }};
+</script>
+
+<script>
+$(document).ready(function() {
+    $.each($('.datatable tbody tr'), function () {
+        // For items which have a report_status of 'Ready for CR' or 'Ready for DR'
+        // highlight the rows yellow (i.e. table-warning bootstrap class)
+        // Note the addition of class='report-status' to the td tag for easy referencing
+        var status = $(this).find('td.report-status').text();
+        console.log(status);
+        if (['Ready for CR', 'Ready for DR'].includes(status)) {
+            $(this).addClass('table-warning')
+        }
+    });
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    if (kwargs.query === "all") {
+        let alertElement = document.getElementById("filtered-data-alert");
+        if (alertElement) {
+            alertElement.style.display = "none";
+        }
+    }
+});
+
+</script>
+<script>
+    document.getElementById('removed_items_div').style.display = 'none'
+    document.getElementById('filtered-data-alert').style.display = 'none'
+</script>
+{% endblock %}
+

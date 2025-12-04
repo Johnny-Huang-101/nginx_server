@@ -1,0 +1,31 @@
+{% extends "form_template.html" %}
+
+{% block form %}
+
+    <div class="form-group">
+        {{form.case_type_id.label}}
+        {{form.case_type_id}}
+    </div>
+    <div class="form-group">
+        {{form.agency_id.label}}
+        {{form.agency_id}}
+    </div>
+    <div class="form-group">
+        {{form.division_id.label}}
+        {{form.division_id}}
+    </div>
+
+{% endblock %}
+
+<!--Alerts-->
+{% block alerts %}
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+<script src="/static/js/default_clients.js"></script>
+{% endblock %}

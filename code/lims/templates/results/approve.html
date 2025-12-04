@@ -1,0 +1,439 @@
+{% extends "form_template.html" %}
+{% block form %}
+
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.case_id.label}}
+        {{form.case_id}}
+    </div>
+</div>
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.test_id.label}}
+        {{form.test_id}}
+    </div>
+</div>
+<div class="row form-group mb-4">
+    <div class="form-group col">
+        <div class="table display">
+            <div class="table-responsive">
+                
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row form-row">
+    <div class="col">
+        <a data-toggle="collapse" href="#show-results" style="text-decoration: underline">Show Results</a>
+        <div class="collapse" id="show-results">
+            <div class="card card-body">
+                <div class="table">
+                    <div class="table-responsive">
+                        <table class="display table-hover table-striped small nowrap" style="width:100%" id="test-results">
+                            <thead>
+                                <tr>
+                                    <th>Component Name</th>
+                                    <th>Result Status</th>
+                                    <th>Result Type</th>
+                                    <th>Result</th>
+                                    <th>Units</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for result in kwargs['results'] %}
+                                <tr>
+                                    <td>{{result.component.name}}</td>
+                                    <td>{{result.result_status}}</td>
+                                    <td>{{result.result_type}}</td>
+                                    <td>{{result.result}}</td>
+                                    <td>{% if result.unit %}{{result.unit.name}}{% endif %}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<hr>
+<div class="form-group" style="display:inline-block">
+    <strong>{{form.result_presets.label}}</strong>
+    <br>
+    {% for subfield in form.result_presets %}
+        <label>
+            {{ subfield() }} {{ subfield.label.text }}
+        </label>
+        <br>
+    {% endfor %}
+</div>
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.component_id.label}}
+                <a href="#" data-toggle="tooltip"
+           title="Select the appropriate Component (capitalization and spaces may differ on REF reports). <br>If chemically different, seek supervisory input to Add Component using SFOCME naming scheme."
+           style="display:inline-block" tabindex="-1">
+            <i class="fa-solid fa-circle-question"></i>
+        </a> Lookup known synonyms in <a href="{{ url_for('compounds.view_list') }}" target="_blank">Compounds</a>.
+        {{form.component_id}}
+    </div>
+</div>
+<hr>
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.result_status.label}}
+        {{form.result_status}}
+    </div>
+    <div class="col">
+        {{form.result_type.label}}
+        <a href="#" data-toggle="tooltip" tabindex="-1"
+           title="Under the following conditions results are entered as:
+                  <ul>
+                    <li>
+                        Detected:
+                        <ul>
+                            <li>Reported as < X</li>
+                            <li>OR > X</li>
+                            <li>OR ≥ X with no supplementary appx concentration</li>
+                            <li>OR 'Detected'</li>
+                        </ul>
+                    </li>
+                    <li>
+                        Quantitated:
+                        <ul>
+                            <li>Reported as X</li>
+                            <li>OR X ± Y</li>
+                        </ul>
+                    </li>
+                    <li>
+                        Approximated
+                        <ul>
+                            <li>Reported as ≥ X WITH supplementary appx concentration (similar to ≥ X | ~Y in ToxDB)</li>
+                        </ul>
+                    </li>
+                  </ul>"
+           style="display:inline-block">
+            <i class="fa-solid fa-circle-question"></i>
+        </a>
+        {{form.result_type}}
+    </div>
+    <div class="col">
+        {{form.result.label}}
+        <a href="#" data-toggle="tooltip"  tabindex="-1" title="
+            <p>Required, unless NT or ND.</p>">
+            <i class="fa-solid fa-circle-question" style="font-size:16px"></i>
+        </a>
+        {{form.result}}
+        <a href="#!" tabindex="-1" class="result-symbol" id="result-less-equal">&#8804;</a> |
+        <a href="#!" tabindex="-1" class="result-symbol" id="result-less">&#60;</a> |
+        <a href="#!" tabindex="-1" class="result-symbol" id="result-plus-minus">&#177;</a> |
+        <a href="#!" tabindex="-1" class="result-symbol" id="result-greater">&gt;</a> |
+        <a href="#!" tabindex="-1" class="result-symbol" id="result-greater-equal">&#8805;</a>
+        <span>&emsp;&emsp;Note: No space is entered after &#177;</span>
+    </div>
+    <div class="col">
+        {{form.supplementary_result.label}}
+        {{form.supplementary_result}}
+        <a href="#!" tabindex="-1" class="supp-symbol" id="supp-less-equal">&#8804;</a> |
+        <a href="#!" tabindex="-1" class="supp-symbol" id="supp-less">&#60;</a> |
+        <a href="#!" tabindex="-1" class="supp-symbol" id="supp-plus-minus">&#177;</a> |
+        <a href="#!" tabindex="-1" class="supp-symbol" id="supp-greater">&gt;</a> |
+        <a href="#!" tabindex="-1" class="supp-symbol" id="supp-greater-equal">&#8805;</a>
+    </div>
+    <div class="col">
+        {{form.unit_id.label}}
+        <a href="#" tabindex="-1" data-toggle="tooltip" title="
+            <p>Required for Quantitative or Approximated.</p><p>mcg = µg. Seek supervisory input for additional guidance.</p>">
+            <i class="fa-solid fa-circle-question" style="font-size:16px"></i>
+        </a>
+        {{form.unit_id}}
+        &emsp;&emsp;{{form.no_unit}}{{form.no_unit.label}}
+    </div>
+</div>
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.concentration.label}}
+        {{form.concentration}}
+    </div>
+    <div class="col">
+        {{form.measurement_uncertainty.label}}
+        {{form.measurement_uncertainty}}
+    </div>
+</div>
+<hr>
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.qualitative.label}}
+        {{form.qualitative}}
+    </div>
+    <div class="col">
+        {{form.qualitative_reason.label}}
+        {{form.qualitative_reason}}
+    </div>
+</div>
+
+{% endblock%}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+        $(document).ready(function () {
+            $('#tests').DataTable({
+                dom: 'frti',
+                scrollY: '30vh',
+                scrollCollapse: true,
+                pageLength: -1,
+            });
+        });
+</script>
+<script>
+        $(document).ready(function () {
+            $('#test-results').DataTable({
+                dom: 'frti',
+                scrollY: '30vh',
+                scrollCollapse: true,
+                pageLength: -1,
+            });
+
+        });
+</script>
+
+<script>
+    function toggleFields() {
+        var selectedValue = $('input[name="result_presets"]:checked').val();  // Get selected preset value
+
+        // Define field states based on result_presets values
+        var presets = {
+            "not_tested": { component: 954, result_status: "Not Tested", result_type: "None Detected", result: null, unit_id: null, comp_disabled: true, disabled: true, reason_disabled: false },
+            "none_detected": { component: 1, result_status: "Confirmed", result_type: "None Detected", result: null, unit_id: null, comp_disabled: true, disabled: true, reason_disabled: true },
+            "not_reported": { component: null, result_status: "Not Tested", result_type: "None Detected", result: null, unit_id: null, comp_disabled: false, disabled: true, reason_disabled: false },
+            "pp": { component: null, result_status: "Confirmed", result_type: "Detected", result: "Presump Pos", unit_id: null, comp_disabled: false, disabled: true, reason_disabled: true },
+            "pos": { component: null, result_status: "Confirmed", result_type: "Detected", result: "Positive", unit_id: null, comp_disabled: false, disabled: true, reason_disabled: true },
+            "det": { component: null, result_status: "Confirmed", result_type: "Detected", result: "Detected", unit_id: null, comp_disabled: false, disabled: true, reason_disabled: true },
+            "none": { component: null, result_status: "Confirmed", result_type: null, result: null, unit_id: null, comp_disabled: false, disabled: false, reason_disabled: true }
+        };
+
+        var preset = presets[selectedValue] || presets["none"];  // Default to "none" if invalid
+
+        // Clear concentration and measurement_uncertainty fields
+        $('#concentration, #measurement_uncertainty').val(null);
+
+        // Update form fields based on preset
+        $('#component_id').prop('disabled', preset.comp_disabled)
+                          .selectpicker('val', preset.component)
+                          .selectpicker('refresh');
+
+        $('#result_status').prop('disabled', preset.disabled)
+                           .selectpicker('val', preset.result_status)
+                           .selectpicker('refresh');
+
+        $('#result_type').prop('disabled', preset.disabled)
+                         .selectpicker('val', preset.result_type)
+                         .selectpicker('refresh');
+
+        $('#result').prop('disabled', preset.disabled).val(preset.result);
+        $('#supplementary_result').prop('disabled', preset.disabled).val(null);
+        $('#report_reason').prop('disabled', preset.reason_disabled).val(null);
+
+
+        $('#unit_id').prop('disabled', preset.disabled)
+                     .selectpicker('val', preset.unit_id)
+                     .selectpicker('refresh');
+
+        $('#no_unit').prop('checked', preset.disabled);
+
+        $('#qualitative, #qualitative_reason').prop('disabled', preset.disabled)
+                                              .selectpicker('refresh')
+                                              .selectpicker('val', "");
+    }
+
+    // Attach event listener to radio button changes
+    $('input[name="result_presets"]').on('change', toggleFields);
+
+    // Ensure correct initial state on page load
+    $(document).ready(toggleFields);
+</script>
+
+<script>
+        $('#result').on('keyup', function () {
+           let str = $(this).val()
+           if (str.includes('\u00B1')) {
+               conc = str.split('\u00B1')[0].trim();
+               mu = str.split('\u00B1')[1].trim();
+               $('#concentration').val(conc);
+               $('#measurement_uncertainty').val(mu);
+           } else if (!isNaN(parseFloat(str)) && isFinite(str)) {
+                $('#concentration').val(str);
+           } else {
+               $('#concentration').val("");
+           }
+        });
+</script>
+
+<script>
+        $('.result-symbol').on('click', function () {
+            let symbol = $(this).text().trim(); // Ensure we get the correct symbol
+            if ($(this).attr('id') !== 'result-plus-minus') {
+                symbol += " "; // Append space except for 'result-plus-minus'
+            }
+            let result = $('#result').val();
+            $('#result').val(result+symbol);
+            $('#result').focus();
+        });
+</script>
+
+<script>
+        $('.supp-symbol').on('click', function () {
+            let symbol = $(this).text().trim(); // Ensure we get the correct symbol
+            if ($(this).attr('id') !== 'supp-plus-minus') {
+                symbol += " "; // Append space except for 'result-plus-minus'
+            }
+            let supp_result =  $('#supplementary_result').val();
+            $('#supplementary_result').val(supp_result+symbol);
+            $('#supplementary_result').focus();
+        });
+    </script>
+
+<script type=text/javascript>
+
+        $('#tests').on('click', 'tbody tr', function (e) {
+            $(this).addClass('table-active').siblings().removeClass('table-active');
+            var test_id = Object.values($('#tests').DataTable().row(this).data())[0];
+            $('#test_id').selectpicker('val', test_id);
+        });
+
+</script>
+
+<script>
+    $(document).ready(function () {
+        test_id = $('#test_id').val();
+        $.each($("#tests tbody tr"),function(){
+             if ($(this).find('td').eq(0).text() == test_id) {
+                $(this).addClass('table-active');
+                $(this).cell().focus()
+             }
+        });
+    });
+</script>
+
+<script type=text/javascript>
+$('#case_id').on('change', function() {
+    var commentUrlBase = "{{kwargs['comment_url']}}";  // This will be the base URL for comment adding
+    $('#test_id').val("")
+    var case_id = $("#case_id").val();
+    $('#tests').DataTable().clear().draw();
+    $.getJSON('/results/get_tests/', {
+        case_id: case_id,
+        }, function(data) {
+            var choices = 1;
+            var x = 1
+            var optionHTML = ''
+            for (var test of data.tests) {
+                var bonus_ref= '';
+                var this_test_id= '';
+                if (test['items'][1].includes('REF')) {
+                    this_test_id=test['items'][0]
+                    var comment_url = commentUrlBase + '?comment_item_id=' + this_test_id + '&comment_item_type=' + 'Tests';
+                    bonus_ref = '<a href="' + comment_url + '" target="_blank">Add Test Comment</a>';
+                }
+                $('#tests').DataTable().row.add([
+                    test['items'][0],
+                    test['items'][1],
+                    test['items'][2],
+                    bonus_ref,
+                    test['items'][4],
+                    test['items'][5],
+                    test['items'][6],
+                    test['items'][7],
+                    test['items'][8],
+                 ]).draw();
+
+                 optionHTML += '<option value="' + test['items'][0] + '">' + test['items'][0] + '</option>';
+            }
+
+            $('#test_id').html(optionHTML);
+            $('#test_id').selectpicker('refresh');
+            $('#tests').DataTable().rows().nodes().to$().addClass('rows');
+            $('.dataTables_scrollBody').scrollTop(100);
+        });
+        return false;
+ });
+
+
+</script>
+
+<script type=text/javascript>
+    $(function() {
+          $('#tests').on('click', 'tbody tr', function () {
+            var test_id = $(this).find('td').eq(0).text();
+
+            // Check if the clicked element is a link
+            var clickedLink = $(event.target).closest('a');
+            if (clickedLink.length > 0) {
+                // Allow link to open in new tab if it's clicked
+                return true;
+            }
+
+            // Prevent default behavior (like navigating to a URL) for non-link clicks
+            event.preventDefault();
+
+             $.getJSON('/results/get_components_and_results_json/', {
+                test_id: test_id,
+                }, function(data) {
+                    $('#test-results').DataTable().clear().draw();
+                    for (var result of data.results) {
+                        $('#test-results').DataTable().row.add([
+                            result['component_name'],
+                            result['result_status'],
+                            result['result_type'],
+                            result['result'],
+                            result['unit_id'],
+                         ]).draw();
+                    }
+
+                    var component_choices = '<option value="0">Please select a component</option>'
+                    component_choices += '<optgroup label="'+data.assay+'">'
+                    for (var component of data.in_scope_choices) {
+                        component_choices += '<option tabindex="-1" value="'+component.id+'">'+component.name+'</option>'
+                    }
+                    component_choices += '</optgroup>'
+                    component_choices += '<optgroup label="Out-of-Scope">'
+                        for (var component of data.out_of_scope_choices) {
+                            component_choices += '<option tabindex="-1" value="'+component.id+'">'+component.name+'</option>'
+                        }
+                    component_choices += '</optgroup>'
+                    console.log(component_choices)
+                    $('#component_id').html(component_choices)
+                    $('#component_id').selectpicker('refresh');
+                    $('#component_id').selectpicker('val', 0);
+                });
+                return false;
+             });
+
+        });
+
+</script>
+
+<script>
+    $('#component_id').on('change', function() {
+        var component_id = $(this).val();
+        var test_id = $('#test_id').val();
+        if (component_id && test_id ) {
+             $.getJSON('/results/get_units/', {
+                component_id: component_id,
+                test_id: test_id,
+                }, function(data) {
+                    console.log('units')
+                    $('#unit_id').selectpicker('val', data.unit_id)
+                });
+        }
+            return false;
+         });
+</script>
+
+{% endblock %}
+

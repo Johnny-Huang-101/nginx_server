@@ -1,0 +1,203 @@
+{% extends "form_template.html" %}
+
+{% block header %}
+{% endblock %}
+
+{% block form %}
+
+    <div class="form-group">
+        {{form.batch_id.label}}
+        {{form.batch_id(class='form-control selectpicker')}}
+    </div>
+    <div class="form-group">
+        {{form.test_id.label}}
+        {{form.test_id(class='form-control selectpicker')}}
+    </div>
+    <div class="sort" style="font-size:0.875rem">
+        <a class='clear' id="clear" href="#!">Clear</a>
+        |
+        <a class='select_all' id='select_all' href="#!">Select All</a>
+    </div>
+    <div class="row form-row">
+        <div class="table display">
+            <div class="table-responsive">
+                <table class="display table-hover small nowrap" style="width:100%; border:1px solid #ced4da" name="table" id="tests">
+                    <thead>
+                    <tr>
+                        <th style="width:1.5rem">#</th>
+                        <th>Test ID</th>
+                        <th>Case No.</th>
+                        <th>Accession Number</th>
+                        <th>Specimen Type</th>
+                        <th>Test Order Date</th>
+                        <th>Dilution</th>
+                        <th>Directives</th>
+                        <th>Current Amount</th>
+                        <th>Original Amount</th>
+                        <th>Conditions</th>
+                        <th>Priority</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in kwargs['tests'] %}
+                        <tr class="rows">
+                            <td>{{loop.index}}</td>
+                            <td>{{item.id}}</td>
+                            <td>{{item.case.case_number}}</td>
+                            <td>{{item.specimen.accession_number}}</td>
+                            <td>{{item.specimen.type.code}}</td>
+                            <td>{{item.create_date.strftime('%m/%d/%Y %H:%M')}}</td>
+                            <td>{{item.dilution}}</td>
+                            <td>{{item.directives}}</td>
+                            <td>{{item.specimen.current_sample_amount}}</td>
+                            <td>{{item.specimen.submitted_sample_amount}}</td>
+                            <td>{{item.specimen.condition}}</td>
+                            <td>{{item.case.priority}}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% if form.test_id.errors %}
+            <div style="font-size: 0.875rem; color: #DC3545">
+                {% for error in form.test_id.errors %}
+                    {{error}}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function () {
+<!--      $('#test_id').selectpicker('hide');-->
+<!--      $('#test_id_order').prop('hidden', true);-->
+
+      if ('test_id' in errors) {
+        $('#tests').css('border', '1px solid #DC3545')
+      }
+});
+</script>
+
+
+<script>
+    // Initialize the tests datatable
+    $(document).ready(function () {
+        var table = $('#tests').DataTable({
+            dom: 'tr',
+            scrollX: true,
+            //scrollY : "30vh",
+            //scrollCollapse: true,
+            pageLength: -1,
+            "aaSorting": [[ 0, "asc" ]],
+            "language": {
+             "emptyTable": "Please select an assay to see available tests"
+             }
+        });
+    });
+</script>
+
+<script type=text/javascript>
+// Get pending tests for the selected assay.
+$(function() {
+      $('#batch_id').on('change', function() {
+        let batch_id = $("#batch_id").val();
+        $('#tests').DataTable().clear().draw();
+         $.getJSON('/batches/get_tests/', {
+            batch_id: batch_id,
+            }, function(data) {
+                let choices = 1;
+                let x = 1
+                let test_choices = ""
+                for (var test of data.tests) {
+                    $('#tests').DataTable().row.add([
+                        test['items'][0],
+                        test['items'][1],
+                        test['items'][3],
+                        test['items'][4],
+                        test['items'][5],
+                        test['items'][6],
+                        test['items'][7],
+                        test['items'][8],
+                        test['items'][9],
+                        test['items'][10],
+                        test['items'][11],
+                        test['items'][12],
+                     ]).draw();
+
+                     test_choices += '<option value="' + test['items'][1] + '">' + test['items'][1] + '</option>'
+                }
+
+                $('#test_id').html(test_choices);
+                $('#test_id').selectpicker('refresh');
+
+                $('#tests').DataTable().rows().nodes().to$().addClass('rows');
+
+                // Highlight rows where "Current Amount" is <= 0.
+                $('#tests').DataTable().column(9).nodes().to$().each( function (d) {
+                  if ($(this).html() <= '0') {
+                    $(this).parent().addClass('table-danger');
+                    //$(this).parent().css({'color': 'red'});
+                  }
+               });
+            });
+            return false;
+      });
+
+});
+
+</script>
+
+<script type=text/javascript>
+    // When clicking on the tests table, assign an order in the "Order" column
+    //var dataOrder = [];
+    var orderArr = []
+    $("#tests").on('click', 'tbody tr', function (e) {
+        var dataArr = [];
+        $(this).toggleClass('table-active');
+        $.each($("#tests tr.table-active"),function(){ //get each tr which has selected class
+            dataArr.push($(this).find('td').eq(1).text()); //find its first td and push the value
+        });
+        $('#test_id').selectpicker('val', dataArr);
+    });
+</script>
+
+
+<script type=text/javascript>
+    // Clear the selected/highlighted rows
+     $(function() {
+        $('#clear').on('click', function() {
+             $.each($("#tests tbody tr"),function(){
+                 $(this).removeClass('table-active');
+                 $(this).find('td').eq(2).text(""); //find its first td and push the value
+             });
+            $('#test_id').selectpicker('val', '')
+
+         });
+    });
+</script>
+
+<script>
+    // Select all rows in the tests table
+    $('#select_all').click(function() {
+        if ($('#batch_id').val() != 0) {
+             $.each($("#tests tbody tr"),function(){
+                 $(this).addClass('table-active');
+             });
+
+             let selected = []
+             $.each($("#tests tr.table-active"),function(){
+                selected.push($(this).find('td').eq(1).text());
+             });
+             $('#test_id').selectpicker('val', selected);
+
+        }
+
+    });
+</script>
+
+
+{% endblock %}

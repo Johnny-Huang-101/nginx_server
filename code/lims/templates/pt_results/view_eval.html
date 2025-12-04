@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class = "container-fluid">
+    <div class = "container-fluid">
+        <button type="button" class="btn btn-secondary" onclick="history.back()">Back</button>
+    </div>
+    <br>
+    <div>
+        <h5>
+        Case Number: <strong>{{item.case.case_number}}</strong><br>
+        Program: <strong>{{item.case.last_name}}</strong><br>
+        {{item.case.first_name}}<br><br>
+        Evaluation Date: {{item.eval_date.strftime('%m/%d/%Y')}}<br>
+        </h5>
+    </div>
+    <div>
+
+        {% for eval in evals %}
+            {% if eval.new_sample %}
+                <br>
+                <strong><u>{{eval.result.test.specimen.notes}} ({{eval.result.test.specimen.id}})</u></strong><br>
+            {% endif %}
+            {% if eval.id == eval.result_official%}
+               {% set fontweight = 'bold' %}
+                <br>
+            {% else %}
+               {% set fontweight = 'normal' %}
+            {% endif %}
+            <div>
+                <div style="font-weight:{{fontweight}}">
+                {% if eval.id == eval.result_official%}
+                    <a href="{{url_for('pt_results.view',item_id=eval.result_official)}}">{{eval.result.component_name}}</a>
+                {% else %}
+                    {{eval.result.component_name}}
+                {% endif %}
+                {{eval.result.result}}
+                </div>
+                {% if eval.id == eval.result_official%}
+                    {{eval.eval_ABFT_conclusion}}
+                    {{eval.eval_ABFT_display}}
+                    <br>
+                    {{eval.overall_conclusion}}
+                    {{eval.eval_A_ref}}
+                    {{eval.eval_B_ref}}
+                    <br><br>
+                    <i>Unofficial Result(s), if any</i> <br>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
+
+<script>
+    .my-style {
+        font-weight: bold;
+    }
+</script>

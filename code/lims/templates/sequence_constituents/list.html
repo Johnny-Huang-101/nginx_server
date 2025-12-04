@@ -1,0 +1,45 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Name in Sequence</th>
+    <th>Solution Type</th>
+    <th>Constituent Type</th>
+    <th>Include in Barcode Source Check</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+            {{item.sequence_name}}
+        </a>
+    </td>
+    <td>{{item.solution.name}}</td>
+    <td>{{item.const.name}}</td>
+    <td>
+        {% if item.extracted is not none %}
+            {{item.extracted}}
+        {% else %}
+            False
+        {% endif %}
+    </td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}

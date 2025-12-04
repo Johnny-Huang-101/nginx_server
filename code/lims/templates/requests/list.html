@@ -1,0 +1,131 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+    <i class="fa-solid fa-building-columns"></i>
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+<th>Name</th>
+<th>Request Type</th>
+<th>Case Number</th>
+<th>Status</th>
+<th>Due Date</th>
+<th>Requesting Agency</th>
+<th>Requesting Division</th>
+<th>Requesting Personnel</th>
+<th>Intake User</th>
+<th>Approved By</th>
+<th>Prepared By</th>
+<th>Checked By</th>
+<th>Released By</th>
+<th>Receiving Agency</th>
+<th>Receiving Division</th>
+<th>Receiving Personnel</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+<td>
+    <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+        {{item.name}}
+    </a>
+</td>
+<td>{{item.request_type.name}}</td>
+{% if item.case_id %}
+<td>
+    {% set case_ids = item.case_id.split(',') %}
+    {% for case_id in case_ids %}
+        {{ kwargs.case_number_map[case_id|int] }}{% if not loop.last %}, {% endif %}
+    {% endfor %}
+</td>
+{% elif item.legacy_case %}
+<td>{{ item.legacy_case }}</td>
+{% else %}
+<td>N/A</td>
+{% endif %}
+<td class="status">{{item.status}}</td>
+<td aria-valuetext="
+    {% if item.due_date and item.request_type.name == 'Hold' and item.status != 'Finalized' %}
+        {% if (item.due_date - datetime.now()).days <= 1 %}
+            RED
+        {% elif (item.due_date - datetime.now()).days <= 30 and (item.due_date - datetime.now()).days >=2  %}
+            YELLOW
+        {% else %}
+            IGNORE
+        {% endif %}
+    {% endif %}
+">
+    {% if item.due_date %}
+        {{item.due_date.strftime('%m/%d/%Y')}}
+    {% endif %}
+</td>
+<td>{{item.agency_req.name}}</td>
+<td>{{item.division_req.name}}</td>
+<td>{{item.personnel_req.full_name}}</td>
+<td>{{item.intake_user_id.initials}} {% if item.intake_date %}{{item.intake_date.strftime('%m/%d/%Y %H:%M')}}{% endif %}</td>
+<td>{{item.approver.initials}} {% if item.approve_date %} {{item.approve_date.strftime('%m/%d/%Y %H:%M')}} {% endif %}</td>
+<td>{{item.preparing_user.initials}} {% if item.prepare_date %}{{item.prepare_date.strftime('%m/%d/%Y %H:%M')}}{% endif %}</td>
+<td>{{item.checking_user.initials}} {% if item.check_date %}{{item.check_date.strftime('%m/%d/%Y %H:%M')}}{% endif %}</td>
+<td>{{item.releasing_user.initials}} {% if item.release_date %}{{item.release_date.strftime('%m/%d/%Y %H:%M')}}{% endif %}</td>
+<td>{{item.agency_rec.name}}</td>
+<td>{{item.division_rec.name}}</td>
+<td>{{item.personnel_rec.full_name}} {% if item.received_date %}{{item.received_date.strftime('%m/%d/%Y %H:%M')}}{% endif %}</td>
+
+
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+<script>
+    $(document).ready(function StyleTableRows() {
+        $('.datatable tbody tr').each(function () {
+            const $row     = $(this);
+            const $dueCell = $row.find('td[aria-valuetext]');
+            const label    = $dueCell.attr('aria-valuetext')?.trim().toUpperCase();
+
+            // 1) Due‐date flag takes absolute precedence
+            if (label === 'RED') {
+            $row.addClass('table-danger');
+            return;        // skip status styling
+            }
+            if (label === 'YELLOW') {
+            $row.addClass('table-warning');
+            return;        // skip status styling
+            }
+
+            // 2) Only if no RED/YELLOW flag do we apply status‐based styling
+            const status = $row.find('td.status').text().trim();
+            if (!status.startsWith('Finalized')) {
+            $row.addClass('table-primary');
+            }
+        });
+
+
+
+        //Remove None values, trim() is needed for hyperlinked None
+        $.each($('tbody td'), function () {
+            if ($(this).text().trim() == "None") {
+                $(this).text("")
+            }
+        });
+
+    });
+</script>
+{% endblock %}
+

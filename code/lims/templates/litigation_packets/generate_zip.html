@@ -1,0 +1,79 @@
+{% extends "form_template.html" %}
+{% block form %}
+<div>
+        <div id="customAlert" class="alert alert-info alert-dismissible fade show" role="alert" style="display: none;">
+            <span id="alertMessage"></span>
+        </div>
+</div>
+<div class="row form-group mb-4">
+    <div class="col">
+        {{ form.case_id.label }}
+        {{ form.case_id }}
+    </div>
+    <div class="col">
+        {{ form.template_id.label }}
+        {{ form.template_id }}
+        {{ form.redact.label }}
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ form.redact }}
+        {{form.remove_pages.label}}
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{form.remove_pages}}
+    </div>
+
+</div>
+
+<div class="row form-group mb-4">
+    <!-- Stack Schedule Checkbox and Time Input Vertically -->
+    <div class="col-md-4">
+        <div class="d-flex flex-column">
+            <!-- Schedule Later Checkbox -->
+            <div class="form-check mb-2">
+                {{ form.schedule_generation(class="form-check-input", id="schedule_generation") }}
+                <label class="form-check-label" for="schedule_generation">
+                    {{ form.schedule_generation.label.text }}
+                </label>
+            </div>
+
+            <!-- Scheduled Time Input -->
+            <div>
+                {{ form.scheduled_time.label }}
+                <input type="datetime-local"
+                    name="{{ form.scheduled_time.name }}"
+                    id="{{ form.scheduled_time.id }}"
+                    class="form-control"
+                    value="{{ form.scheduled_time.data.strftime('%Y-%m-%dT%H:%M') if form.scheduled_time.data else '' }}"
+                    disabled>
+                {% if form.scheduled_time.errors %}
+                    <div class="text-danger">
+                        {{ form.scheduled_time.errors[0] }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% if kwargs['scheduled_lit_docs_exist'] %}
+    <span style="color: darkred; font-weight: bold; vertical-align: middle;">
+        Warning: There are packets scheduled tonight at 7:30 PM. Do not run packet generations after 7 PM to avoid LIMS instability. You may continue to add to the schedule without issue.
+    </span>
+{% endif %}
+
+{% endblock %}
+
+
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+
+<script type="text/javascript">
+    document.querySelector('.submitting').addEventListener('click', function(event) {
+        setTimeout(function() {
+            window.history.back();
+        }, 14500);
+    });
+</script>
+{% endblock %}

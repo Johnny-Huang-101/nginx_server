@@ -1,0 +1,12 @@
+{% extends "form_template.html" %}
+
+<head>
+    <title>{{config['SYSTEM_NAME']}}/{{item_name}}/Import</title>
+</head>
+{% block form %}
+
+        <div class="form-group">
+            {{form.file.label}}
+            {{form.file}}
+        </div>
+{% endblock %}

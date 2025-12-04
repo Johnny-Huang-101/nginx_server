@@ -1,0 +1,120 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+    <i class="fa-solid"></i>
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Name</th>
+    <th>Compound</th>
+    <th>Set</th>
+    <th>Status</th>
+    <th>Location</th>
+    <th>Manufacturer</th>
+    <th>Certificate of Analysis</th>
+    <th>Product No.</th>
+    <th>Lot No.</th>
+    <th>Preparation</th>
+    <th>Salt</th>
+    <th>Correction Factor</th>
+    <th>Solvent</th>
+    <th>Amount</th>
+    <th>Units</th>
+    <th>Storage Temp.</th>
+    <th>Expire/Retest</th>
+    <th>Expire/Retest Date</th>
+    <th>Received Date</th>
+    <th>Received By</th>
+    <th>Opened Date</th>
+    <th>Opened By</th>
+    <th>Discard Date</th>
+    <th>Discard By</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+            {{item.name}}
+        </a>
+    </td>
+    <td>{{item.compound.name}}</td>
+    <td>{{item.set}}</td>
+    <td>{{item.status}}</td>
+    <td>
+        {% for x in kwargs['locations'] %}
+            {% if x.item_table == table_name %}
+                {% if x.item_id == item.id %}
+                    {% for cls in kwargs['models'] %}
+                        {% if x.location_table is none %}
+                        {% else %}
+                            {% if cls == kwargs['location_dict'][x.location_table]['table'] %}
+                                {% set alias = kwargs['location_dict'][x.location_table]['alias'] %}
+                                {% if alias is string %}
+                                    {{ cls.query.get(x.location_id) | getattr(alias) }}
+                                {% elif alias is iterable %}
+                                    {% for field in alias %}
+                                        {{ cls.query.get(x.location_id) | getattr(field) }}{% if not loop.last %} - {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    </td>
+    <td>{{item.division.division}}</td>
+    <td>
+        <a href="../static/CoA/{{item.lot_no}}.pdf#toolbar=0" target="_blank">
+            {{item.lot_no}}
+        </a>
+    </td>
+    <td>{{item.product_no}}</td>
+    <td>{{item.lot_no}}</td>
+    <td>{{item.state.name}}</td>
+    <td>
+        {% if item.salt_id != 0 %}
+            {{item.salt.name}}
+        {% endif %}
+    </td>
+    <td>{{item.correction_factor}}</td>
+    <td>{{item.solvent.name}}</td>
+    <td>{{item.amount}}</td>
+    <td>{{item.unit.unit}}</td>
+    <td>{{item.temperature.name}}</td>
+    <td>{{item.expire_retest}}</td>
+    <td>
+        {% if item.expire_retest_date %}
+        {{item.expire_retest_date.strftime('%m/%d/%Y')}}
+        {% endif %}
+    </td>
+    <td>
+       {% if item.received_date == None %}
+        {{item.received_date.strftime('%Y-%m-%d')}}
+       {% endif %}
+    </td>
+    <td>{{item.receiver.initials}}</td>
+    <td>
+        {% if item.opened_date %}
+            {{item.opened_date.strftime('%Y-%m-%d')}}
+        {% endif %}
+    </td>
+
+    <td>{{item.opened_by.initials}}</td>
+    <td>
+        {% if item.discard_date %}
+            {{item.discard_date.strftime('%Y-%m-%d')}}
+        {% endif %}
+    </td>
+    <td>{{item.discarder.initials}}</td>
+{% endblock %}
+

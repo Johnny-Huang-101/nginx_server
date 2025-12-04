@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+<style>
+
+    .bgimg-overlay {
+      opacity: 0.6;
+      position: absolute;
+      left: 0;
+      top: 15%;
+      width: 100%;
+      max-width:100%;
+      vertical-align: middle;
+    }
+
+</style>
+
+<div class="bgimg-wrap" id="login-background">
+    {% set opacity = 0.5 %}
+    {% if config['OVERLAY_IMG'] %}
+        {% set opacity = 0.1 %}
+    {% endif %}
+    <img class="bgimg" src="{{config['BACKGROUND_IMG']}}" style="opacity:{{opacity}}" alt="">
+    {% if config['OVERLAY_IMG'] %}
+        <img class="bgimg-overlay" src="{{config['OVERLAY_IMG']}}" alt="">
+    {% endif %}
+    <div class="bg-content">
+        <div class="vertical-center">
+            <div class="text-center mt-3" align="center">
+                <img src="{{config['LOGO_IMG']}}" width="300" height="300" alt="">
+            </div>
+            {% block overlay %}
+            {% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

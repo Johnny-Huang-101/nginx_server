@@ -1,0 +1,134 @@
+{% extends "list_template.html" %}
+
+{% block icon %}
+<i class="fa-solid fa-pen-to-square"></i>
+{% endblock %}
+
+
+<!-- Custom Buttons -->
+{% block buttons %}
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+
+<th>Event</th>
+<th>Status</th>
+<th>Table</th>
+<th>Record Name</th>
+<th>Revision</th>
+<th>Field</th>
+<th>Field Name</th>
+<th>Original Value</th>
+<th>Original Value (Text)</th>
+<th>New Value</th>
+<th>New Value (Text)</th>
+<th>Submitted By</th>
+<th>Submitted Date</th>
+<th>Reviewed By</th>
+<th>Reviewed Date</th>
+
+{% endblock %}
+
+{% block body scoped %}
+
+    {% set table, route, name = kwargs['modules'][item.table_name][0], kwargs['modules'][item.table_name][1], kwargs['modules'][item.table_name][2] %}
+
+    <td>{{item.event}}</td>
+    <td>
+        <span class="mr-4">
+            {% if item.status == 'Approved' %}
+                <i class="fa-solid fa-check" style="font-size:16px; color: green"></i>
+            {% elif item.status == 'Pending' %}
+                <i class="fa-solid fa-hourglass-half" style="font-size:16px;"></i>
+            {% elif item.status == 'Revised' %}
+                <i class="fa-solid fa-pencil" style="font-size:16px;"></i>
+            {% elif item.status == 'Reverted' %}
+                <i class="fa-solid fa-rotate-left" style="font-size:16px;"></i>
+            {% elif item.status == 'Rejected' %}
+                <i class="fa-solid fa-ban" style="font-size:16px;"></i>
+            {% elif item.status == 'Imported' %}
+                <i class="fa-solid fa-upload" style="font-size:16px;"></i>
+            {% endif %}
+        </span>
+        {{item.status}}
+    </td>
+    <td>{{item.table_name}}</td>
+    {% if item.record_id and item.event != 'DELETED' %}
+        <td>
+            {% if table.query.get(item.record_id) %}
+                 <a href="{{url_for(route~'.view', item_id=item.record_id)}}">
+                        {{ table.query.get(item.record_id).__dict__[name]}}
+                 </a>
+            {% else %}
+                {{ item.record_id}}
+            {% endif %}
+        </td>
+    {% else %}
+        <td>{{item.record_id}}</td>
+    {% endif %}
+    <td>{{item.revision}}</td>
+    <td>{{item.field}}</td>
+    <td>{{item.field_name}}</td>
+    <td>
+        {% if item.original_value %}
+            {{item.original_value[:100]}}
+        {% endif %}
+    </td>
+    <td>
+        {% if item.original_value_text %}
+            {{item.original_value_text[:100]}}
+        {% endif %}
+    </td>
+    <td>
+        {% if item.new_value %}
+            {{item.new_value[:100]}}
+        {% endif %}
+    </td>
+    <td>
+    {% if item.new_value_text %}
+        {% if item.field_name == 'file_name' %}
+                <a href="../static/filesystem/imports/{{item.new_value_text}}" download>
+                    {{item.new_value_text}}
+                </a>
+        {% else %}
+            {{item.new_value_text[:100]}}
+        {% endif %}
+    {% endif %}
+    </td>
+    <td>{{item.submitter.initials}}</td>
+    <td>{{item.submitted_date.strftime("%m/%d/%Y %H:%M")}}</td>
+    <td>
+        {% if item.reviewed_by %}
+            {{item.reviewer.initials}}
+        {% endif %}
+    </td>
+    <td>
+        {% if item.review_date %}
+            {{item.review_date.strftime("%m/%d/%Y %H:%M")}}
+        {% endif %}
+    </td>
+
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+<script>
+    $(document).ready(function () {
+     $.each($('.datatable tbody tr'), function () {
+        var event = $(this).find('td').eq(2).text();
+        if (event == 'DELETED') {
+            $(this).addClass('table-danger');
+        }
+    });
+
+});
+</script>
+
+{% endblock %}
+
+

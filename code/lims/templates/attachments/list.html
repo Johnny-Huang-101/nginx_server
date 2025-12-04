@@ -1,0 +1,68 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+    <i class="fa-solid fa-paperclip"></i>
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+{% block header %}
+
+    <th>Table</th>
+    <th>Record Name</th>
+    <th>Type</th>
+    <th>Source</th>
+    <th>Description</th>
+    <th>File Name</th>
+    <th>Save Name</th>
+    <th>Path</th>
+
+{% endblock %}
+
+{% block body %}
+    {% set table, route, name = kwargs['modules'][item.table_name][0], kwargs['modules'][item.table_name][1], kwargs['modules'][item.table_name][2] %}
+
+    <td>{{item.table_name}}</td>
+
+    <td>{{item.record_id}}</td>
+    <td>{{item.type.name}}</td>
+    <td>{{item.type.source}}</td>
+    <td>{{item.description}}</td>
+    <td>
+        {% if item.name.split('.')[1] in ['pdf', 'jpg', 'png'] %}
+        <a href="../static/filesystem/attachments/{{item.table_name}}/{{item.record_id}}/{{item.save_name}}" target="_blank">
+            {{item.name}}
+        </a>
+        {% else %}
+        <a href="../static/filesystem/attachments/{{item.table_name}}/{{item.record_id}}/{{item.save_name}}" download>
+            {{item.name}}
+        </a>
+        {% endif %}
+    </td>
+    <td>{{item.save_name}}</td>
+    <td>
+        <a href="{{item.path}}">
+            {{item.path}}
+        </a>
+    </td>
+
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}
+
+

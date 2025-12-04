@@ -1,0 +1,65 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+{% endblock %}
+
+<!--Custom Buttons-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% block buttons %}
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Assay Name</th>
+    <th>Discipline</th>
+    <th>SOP Reference</th>
+    <th>Status</th>
+    <th>Default Instrument</th>
+    <th>Default Batch Template</th>
+    <th>Sample Volume (mL)</th>
+    <th>Number of Tests</th>
+    <th>Scope Components</th>
+    <th>Scope Compounds</th>
+    <th>Test Count</th>
+    <th>Batch Count</th>
+    <th>Order</th>
+    <th>Specimen Type Included in Test Name</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        <a href="{{ url_for(table~'.view', item_id=item.id) }}">
+            {{item.assay_name}}
+        </a>
+    </td>
+    <td>{{item.discipline}}</td>
+    <td>{{item.sop_ref}}</td>
+    <td class="item-status">{{item.status.name}}</td>
+    <td>{{item.instrument.instrument_id}}</td>
+    <td>{{item.batch_template.name}}{% if item.batch_template %} ({% if item.batch_template.sample_format_id %}{{item.batch_template.format.name}}; {% endif %}{{item.batch_template.max_samples}}){% endif %}</td>
+    <td>{{item.sample_volume}}</td>
+    <td>{{item.num_tests}}</td>
+    <td>{{item.n_components}}</td>
+    <td>{{item.n_compounds}}</td>
+    <td>{{item.test_count}}</td>
+    <td>{{item.batch_count}}</td>
+    <td>{{item.assay_order}}</td>
+    <td>{{item.specimen_type_in_test_name}}</td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+<script src="/static/js/row_color_by_status.js"></script>
+{% endblock %}
+
+

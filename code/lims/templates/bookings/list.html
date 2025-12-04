@@ -1,0 +1,143 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+{% endblock %}
+
+<!--Custom Buttons-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% block buttons %}
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Case</th>
+    <th>Subject</th>
+    <th>Expert</th>
+    <th>Start Date</th>
+    <th>Finish Date</th>
+    <th>Purpose</th>
+    <th>Type</th>
+    <th>Jurisdiction</th>
+    <th>Agency, Met/Subpoena'd By</th>
+    <th>Person</th>
+    <th>Person, add'l</th>
+    <th>Format</th>
+    <th>Location</th>
+    <th>Change</th>
+    <th>Other OCME Present</th>
+    <th>Agency, Opposing/Other</th>
+    <th>Person</th>
+    <th>Person, add'l</th>
+    <th>Start</th>
+    <th>Finish</th>
+    <th>Drive Time</th>
+    <th>Excluded Time (e.g., lunch)</th>
+    <th>Waiting Time</th>
+    <th>Total Testifying Time</th>
+    <th>Total Work Time</th>
+    <th>Information Provider</th>
+    <th>Topics Discussed</th>
+    <th>Notes</th>
+    <th>Legacy Transferred</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        <a href="{{ url_for('bookings.view', item_id=item.id) }}">
+            {{item.case.case_number}}
+        </a>
+    </td>
+    <td>
+        {{item.case.last_name}}, {{item.case.first_name}}
+        {% if item.case.middle_name %}
+            {{item.case.middle_name}}
+        {% endif %}
+    </td>
+    <td>{{item.expert.initials}}</td>
+    <td>
+        {% if item.date is not none %}
+            {{item.date.strftime('%m/%d/%Y %H:%M')}}
+        {% endif %}
+    </td>
+    <td>
+        {% if item.finish_datetime is not none %}
+            {{item.finish_datetime.strftime('%m/%d/%Y %H:%M')}}
+        {% endif %}
+    </td>
+    <td>{{item.purpose.name}}</td>
+    <td>{{item.type.name}}</td>
+    <td>{{item.jurisdiction.name}}</td>
+    <td>
+    {% if item.agency_id %}
+        {{item.agency_A.name}}
+    {% endif %}
+    </td>
+    <td>{{item.person_A1.full_name}}</td>
+    <td>{{item.person_A2.full_name}}</td>
+    <td>{{item.format.name}}</td>
+    <td>{{item.book_location.name}}</td>
+    <td>{{item.change.name}}</td>
+    <td>
+        {% set others = item.others_present|string %}
+        {% if others %}
+            {% set personnel_ids = others.split(', ') %}
+            {% for pid in personnel_ids %}
+                {% if pid.isdigit() %}
+                        {{ kwargs.personnel_initials[pid|int] }}{% if not loop.last %}; {% endif %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </td>
+    <td>
+    {% if item.cross_examined %}
+        {{item.agency_B.name}}
+    {% endif %}
+    </td>
+    <td>
+    {% if item.person_B1 %}
+        {{item.person_B1.full_name}}
+    {% endif %}
+    </td>
+    <td>
+    {% if item.person_B2 %}
+        {{item.person_B2.full_name}}
+    {% endif %}
+    </td>
+    <td>{{item.start}}</td>
+    <td>{{item.finish}}</td>
+    <td>{{item.drive_time}}</td>
+    <td>{{item.excluded_time}}</td>
+    <td>{{item.waiting_time}}</td>
+    <td>{{item.total_testifying_time}}</td>
+    <td>{{item.total_work_time}}</td>
+    <td>
+        {% if item.information_provider %}
+            {% for info in item.information_provider.split(', ') %}
+                {{kwargs['booking_info_provider'].query.get(info|int).name}};
+            {% endfor %}
+        {% endif %}
+    </td>
+    <td>
+        {% if item.topics_discussed %}
+            {% for info in item.topics_discussed.split(', ') %}
+                {{kwargs['booking_info_provided'].query.get(info|int).name}};
+            {% endfor %}
+        {% endif %}
+    </td>
+    <td>{{item.notes}}</td>
+    <td>{{item.legacy_transferred}}</td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}

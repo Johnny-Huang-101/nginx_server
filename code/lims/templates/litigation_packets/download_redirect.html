@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Download</title>
+</head>
+<body>
+    <script type="text/javascript">
+        // Initiate file download
+        window.location.href = "{{ file_url }}";
+
+        // Redirect after 5 seconds (adjust time as needed)
+        setTimeout(function() {
+            window.location.href = "{{ url_for('cases.view', item_id=item_id) }}";
+        }, 5000);
+    </script>
+    <p>Your download should start automatically. If not, <a href="{{ file_url }}">click here to download</a>.</p>
+</body>
+</html>

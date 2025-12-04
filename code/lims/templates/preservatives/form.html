@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container">
+    {% if item_dict is not none %}
+      <h1>{{function}} {{item_dict[kwargs['name']]}}</h1>
+    {% else %}
+      <h1>Add {{item_type}}</h1>
+    {% endif %}
+    <form method="POST" id="form" novalidate="novalidate">
+        {{form.hidden_tag()}}
+                <div class="form-group">
+                    {{form.name.label}}
+                    {{form.name}}
+                </div>
+            <div class="form-group">
+            {{form.submit(class='btn btn-primary')}}
+           <a type="button" class="btn btn-secondary" href="{{url_for(table_name~'.view_list')}}">Exit</a>
+        </div>
+    </form>
+</div>
+
+
+
+{% endblock %}

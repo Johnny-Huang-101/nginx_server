@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Scheduled Packet Requests</h2>
+<a href="{{ url_for('litigation_packets.view_list') }}" class="btn btn-primary mb-3">
+    <i class="fa fa-arrow-left"></i> Back
+</a>
+<a href="{{ url_for('litigation_packets.clear_failed_packets') }}" class="btn btn-danger mb-3">
+    <i class="fa fa-trash"></i> Clear Failed Packets
+</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Packet Name</th>
+            <th>Scheduled Execution</th>
+            <th>Requested By</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in records %}
+            <tr class="{% if r.status == 'Fail' %}table-danger{% endif %}">
+                <td><a href="/litigation_packets/{{ r.packet_id }}">{{ r.packet_name }}</a></td>
+                <td>{{ r.scheduled_exec.strftime('%Y-%m-%d %H:%M') if r.scheduled_exec else '' }}</td>
+                <td>{{ r.requested_by }}</td>
+                <td>
+                    {% if r.status == 'Fail' %}
+                        <span>Failed</span> 
+                    {% elif r.status == 'Scheduled' %}
+                        <span style="margin-right: 8px;">{{ r.status }}</span>
+                        <form method="post" action="{{ url_for('litigation_packets.cancel_packet_schedule', packet_id=r.id) }}" 
+                            style="display:inline-block; margin: 0;">
+                            <button type="submit" class="btn btn-danger btn-sm" style="padding: 0.15rem 0.4rem; font-size: 0.75rem; line-height: 1;">Cancel</button>
+                        </form>
+                    {% else %}
+                        <span>{{ r.status }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if r.status == 'Success' and r.packet_name %}
+                        <a class="btn btn-sm btn-success" href="{{ url_for('litigation_packets.download_lit', id=r.id, item_id=r.item_id) }}">
+                            <i class="fa fa-download"></i> Download
+                        </a>
+                    {% elif r.status == 'Scheduled' %}
+                        <form method="post" action="{{ url_for('cases.run_now', id=r.id) }}">
+                            <button type="submit" class="btn btn-sm btn-warning">
+                            <i class="fa fa-bolt"></i> Run Now
+                            </button>
+                        </form>
+                    {% elif r.status == 'Fail' %}
+                        <a class="btn btn-sm btn-danger" href="{{ url_for('cases.lit_packet_form', packet_id=r.packet_id, item_id=r.item_id) }}">
+                            <i class="fa fa-redo"></i> Retry Packet
+                        </a>
+                    {% endif %}
+
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const buttons = document.querySelectorAll('a.btn-success');
+
+    buttons.forEach(button => {
+        button.addEventListener('click', function (e) {
+            e.preventDefault(); 
+
+            button.classList.add('disabled');
+            button.style.pointerEvents = 'none';
+            button.style.opacity = '0.5';
+            button.textContent = 'Downloaded!';
+
+            // Now programmatically navigate to the href to start download
+            const href = button.getAttribute('href');
+            if (href) {
+                // Use location.href to navigate after UI update
+                window.location.href = href;
+            }
+        });
+    });
+});
+</script>
+
+
+{% endblock %}

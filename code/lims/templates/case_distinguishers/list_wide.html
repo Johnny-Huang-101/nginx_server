@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.button {
+ padding: 10px 24px
+}
+
+</style>
+    <br>
+    <h1>{{item_type~'s'}}</h1>
+    <br>
+     <div class="table display">
+        <div class="table-responsive">
+            <table class="display table-hover small display nowrap" style="width:100%" id="{{table_name}}">
+              <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Case Type(s)</th>
+                </tr>
+              </thead>
+              <tbody id="body">
+              {% for item in items %}
+              <tr>
+                  <th scope="row">
+                      <a href="#">
+                      {{item['name']}}
+                      </a>
+                  </th>
+                  <td>{{item['case_types']}}</td>
+              </tr>
+
+              {% endfor %}
+
+               </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <script>
+
+    $(document).ready(function () {
+    // Setup - add a text input to each footer cell
+
+    var buttons = []
+
+
+    buttons.push({
+            extend: 'csvHtml5',
+            className: 'btn btn-secondary mb-3',
+            text: 'Export',
+            autoFilter: true,
+            title: '{{item_type~'s'}}_',
+            sheetName: 'export'})
+
+
+    $('#{{table_name}} thead tr')
+        .clone(true)
+        .addClass('filters')
+        .appendTo('#{{table_name}} thead');
+    var now = moment().format('YYYYMMDD_HHmmss');
+    var table = $('#{{table_name}}').DataTable({
+        dom: 'Blrtip',
+        scrollX: true,
+        buttons: buttons,
+        orderCellsTop: true,
+        fixedHeader: true,
+        "aaSorting": [[ 0, "asc" ]],
+        initComplete: function () {
+            var api = this.api();
+
+            // For each column
+            api
+                .columns()
+                .eq(0)
+                .each(function (colIdx) {
+                    // Set the header cell to contain the input element
+                    var cell = $('.filters th').eq(
+                        $(api.column(colIdx).header()).index()
+                    );
+                    var title = $(cell).text();
+                    $(cell).html('<input type="text" placeholder="' + title + '" style="width: 100%; border: 1px solid lightgray; border-radius: 5px;  "/>');
+
+                    // On every keypress in this input
+                    $(
+                        'input',
+                        $('.filters th').eq($(api.column(colIdx).header()).index())
+                    )
+                        .off('keyup change')
+                        .on('change', function (e) {
+                            // Get the search value
+                            $(this).attr('title', $(this).val());
+                            var regexr = '({search})'; //$(this).parents('th').find('select').val();
+
+                            var cursorPosition = this.selectionStart;
+                            // Search the column for that value
+                            api
+                                .column(colIdx)
+                                .search(
+                                    this.value != ''
+                                        ? regexr.replace('{search}', '(((' + this.value + ')))')
+                                        : '',
+                                    this.value != '',
+                                    this.value == ''
+                                )
+                                .draw();
+                        })
+                        .on('keyup', function (e) {
+                            e.stopPropagation();
+
+                            $(this).trigger('change');
+                            $(this)
+                                .focus()[0]
+                                .setSelectionRange(cursorPosition, cursorPosition);
+                        });
+                });
+
+        },
+    });
+});
+    </script>
+
+{% endblock %}

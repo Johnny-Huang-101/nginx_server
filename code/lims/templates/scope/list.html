@@ -1,0 +1,52 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+    <i class="fa-solid fa-bullseye"></i>
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Component Name</th>
+    <th>Assay</th>
+    <th>Limit of Detection</th>
+    <th>Internal Standard?</th>
+    <th>Internal Standard Conc.</th>
+    <th>Default Units</th>
+    <th>Validated</th>
+    <th>Report Notes</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        <a href="{{url_for('scope.view', item_id=item.id)}}">
+            {{item.component.name}}
+        </a>
+    </td>
+    <td>{{item.assay.assay_name}}</td>
+    <td>{{item.limit_of_detection}}</td>
+    <td>{{item.internal_standard}}</td>
+    <td>{{item.internal_standard_conc}}</td>
+    <td>{{item.unit.name}}</td>
+    <td>{{item.validated}}</td>
+    <td>{{item.report_notes}}</td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}

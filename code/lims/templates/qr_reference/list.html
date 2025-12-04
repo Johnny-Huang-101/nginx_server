@@ -1,0 +1,25 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Text</th>
+    <th>Path</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>{{item.text}}</td>
+    <td>
+        <a href="../static/filesystem/qr_reference/{{item.id}}.png">{{item.qr_path}}</a>
+    </td>
+{% endblock %}

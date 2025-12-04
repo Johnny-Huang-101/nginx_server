@@ -1,0 +1,247 @@
+{% extends "view_template.html" %}
+
+{% block alerts %}
+{% endblock %}
+
+{% block buttons %}
+{% endblock %}
+
+{% block view %}
+{% endblock %}
+
+{% block accordion %}
+    <div class="card">
+        <div class="card-header view-card-header" id="details">
+            <button class="btn btn-link chevron-btn view" data-toggle="collapse" data-target="#details-coll" aria-expanded="false" aria-controls="details">
+                <span><i class="fa-solid fa-chevron-down mr-2 chevron" style="border: '#FF0000'"></i></span>
+                Booking Details
+            </button>
+        </div>
+        <div id="details-coll" class="collapse show" aria-labelledby="details">
+            <div class="card-body">
+                <div class="row form-group mb-4">
+                    <div class="col-md-2">
+                        <label style="font-weight: bold">Case</label>
+                        <div>
+                            <a href="{{url_for('cases.view', item_id=item.case.id)}}">{{item.case.case_number}}</a>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label style="font-weight: bold">Expert</label>
+                        <div>
+                            {{item.expert.initials}}
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label style="font-weight: bold">Date Range</label>
+                        <div>
+                            {% if item.date is not none and item.finish_datetime is not none %}
+                                {{item.date.strftime('%m/%d/%Y')}} - {{item.finish_datetime.strftime('%m/%d/%Y')}}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="row form-group mb-4">
+                    <div class="col-md-2">
+                        <label style="font-weight: bold">Purpose</label>
+                        <div>
+                            {{item.purpose.name}}
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label style="font-weight: bold">Type</label>
+                        <div>
+                            {{item.type.name}}
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label style="font-weight: bold">Jurisdiction</label>
+                        <div>
+                            {{item.jurisdiction.name}}
+                        </div>
+                    </div>
+                </div>
+                <div class="row form-group mb-4">
+                    <div class="col-md-2">
+                        <label style="font-weight: bold">Format</label>
+                        <div>
+                            {{item.format.name}}
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label style="font-weight: bold">Location</label>
+                        <div>
+                            {{item.book_location.name}}
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row form-group mb-4">
+                    <div class="col-md-2">
+                        <label style="font-weight: bold">Agency Met/Subpoena'd By</label>
+                        <div>
+                            {{item.agency_A.name}}
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label style="font-weight: bold">Person</label>
+                        <div>
+                            {{item.person_A1.full_name}}
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label style="font-weight: bold">Person, additional</label>
+                        <div>
+                            {{item.person_A2.full_name}}
+                        </div>
+                    </div>
+                </div>
+                <div class="row form-group mb-4">
+                    <div class="col-md-2">
+                        <label style="font-weight: bold">Agency, Opposing or Other</label>
+                        <div>
+                            {% if item.cross_examined %}
+                                {{item.agency_B.name}}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label style="font-weight: bold">Person</label>
+                        <div>
+                            {% if item.person_B1 %}
+                                {{item.person_B1.full_name}}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label style="font-weight: bold">Person, additional</label>
+                        <div>
+                            {% if item.person_B2 %}
+                                {{item.person_B2.full_name}}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+                <div class="row form-group mb-4">
+                    <div class="col">
+                        <label style="font-weight: bold">Other OCME Personnel Present</label>
+                    <div>
+                        {% if item.others_present %}
+                            {% set others = item.others_present|string %}
+                            {% for individual in others.split(', ') %}
+                                <ul>{{ kwargs['others_present'].query.get(individual|int).full_name }}</ul>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    </div>
+                </div>
+                </div>
+                <hr>
+                <div class="row form-group mb-4">
+                                        <div class="col">
+                        <label style="font-weight: bold">Change</label>
+                        <div>
+                            {{item.change.name}}
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row form-group mb-4">
+                    <div class="col-md-1">
+                        <label style="font-weight: bold">Start Date</label>
+                        <div>
+                            {% if item.date is not none %}
+                                {{item.date.strftime('%m/%d/%Y %H:%M')}}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <label style="font-weight: bold">Finish Date</label>
+                        <div>
+                            {% if item.finish_datetime is not none %}
+                                {{item.finish_datetime.strftime('%m/%d/%Y %H:%M')}}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <label style="font-weight: bold">Drive Duration</label>
+                        <div>
+                            {{item.drive_time}}
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <label style="font-weight: bold">Excluded Duration</label>
+                        <div>
+                            {{item.excluded_time}}
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <label style="font-weight: bold">Waiting Duration</label>
+                        <div>
+                            {{item.waiting_time}}
+                        </div>
+                    </div>
+                </div>
+                <div class="row form-group mb-4">
+                    <div class="col-md-1">
+                        <label style="font-weight: bold">Total Active Duration</label>
+                        <div>
+                            {{item.total_testifying_time}}
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <label style="font-weight: bold">Total Work Duration</label>
+                        <div>
+                            {{item.total_work_time}}
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <h4>Contextual Information (note: typically used for OOP)</h4>
+                <div class="row form-group mb-4">
+                    <div class="col-md-2">
+                        <label style="font-weight: bold">Information Provided By</label>
+                        <div>
+                            {% if item.information_provider %}
+                                {% for choice in item.information_provider %}
+                                    <ul>{{kwargs['provided_by'].query.get(choice|int).name}}</ul>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label style="font-weight: bold">Topics Discussed</label>
+                        <div>
+                            {% if item.topics_discussed %}
+                                {% for choice in item.topics_discussed %}
+                                    <ul>{{kwargs['information_provided'].query.get(choice|int).name}}</ul>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="row form-group mb-4">
+                    <div class="col-md-2">
+                        <label style="font-weight: bold">Information, Comment</label>
+                        <div>
+                            {{item.narrative}}
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label style="font-weight: bold">Topics, Comment</label>
+                        <div>
+                            {{item.booking_comment}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

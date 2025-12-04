@@ -1,0 +1,438 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class = "container">
+    <h1>{{function}} {{item_type}}</h1>
+    <form novalidate="novalidate" method="POST" enctype="multipart/form-data">
+        {{form.hidden_tag()}}
+
+        <div class="form-group">
+            {{form.solution_type_id.label(class='form-group')}}
+            <select class="form-control {{status}}" name="{{form.solution_type_id.name}}" data-live-search="true"
+                    id="solution_type_id" value="{{form.solution_type_id.data}}" onchange="sTypeSelected()">
+                {% for option in form.solution_type_id %}
+                    {{ option }}
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group name-group" id="name">
+            {{form.name.label(class='form-group')}}
+            {{form.name(class='form-control '~status)}}
+        </div>
+
+        <div class="form-group lot-group" id="lot">
+            {{form.lot.label(class='form-group')}}
+            {{form.lot(class='form-control '~status)}}
+        </div>
+
+        <div class="form-group prepared-by-group" id="prepared_by">
+            {{form.prepared_by.label(class='form-group')}}
+            <span style="color:red">*</span>
+            <br>
+            <select class="form-control {{status}}" name="{{form.prepared_by.name}}" data-live-search="true"
+                    value="{{form.prepared_by.data}}">
+                {% for option in form.prepared_by %}
+                    {{option}}
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group prepared-date-group" id="prepared_date">
+            {{form.prepared_date.label(class='form-group')}}
+            <span style="color:red">*</span>
+            <br>
+            <input type="date" class="form-control {{status}}" name="{{form.prepared_date.name}}"
+                   value="{{form.prepared_date.data}}">
+        </div>
+
+        <div class="form-group retest-date-group" id="retest_date">
+            {{form.retest_date.label(class='form-group')}}
+            <span style="color:red">*</span>
+            <br>
+            <input type="date" class="form-control {{status}}" name="{{form.retest_date.name}}"
+                   value="{{form.retest_date.data}}">
+        </div>
+
+        <div class="form-group part-a-group" id="part_a">
+            {{form.part_a.label}}
+            <br>
+            {{form.part_a(class='form-control '~status)}}
+        </div>
+
+        <div class="form-group part-a-lot-group" id="part_a_lot">
+            {{form.part_a_lot.label}}
+            <br>
+            {{form.part_a_lot(class='form-control '~status)}}
+        </div>
+
+        <div class="form-group part-a-exp-group" id="part_a_exp">
+            {{form.part_a_exp.label(class='form-group')}}
+            <br>
+            <input type="date" class="form-control {{status}}" name="{{form.part_a_exp.name}}"
+                   value="{{form.part_a_exp.data}}">
+        </div>
+
+        <div class="form-group part-b-group" id="part_b">
+            {{form.part_b.label}}
+            <br>
+            {{form.part_b(class='form-control '~status)}}
+        </div>
+
+        <div class="form-group part-b-lot-group" id="part_b_lot">
+            {{form.part_b_lot.label}}
+            <br>
+            {{form.part_b_lot(class='form-control '~status)}}
+        </div>
+
+        <div class="form-group part-b-exp-group" id="part_b_exp">
+            {{form.part_b_exp.label(class='form-group')}}
+            <br>
+            <input type="date" class="form-control {{status}}" name="{{form.part_b_exp.name}}"
+                   value="{{form.part_b_exp.data}}">
+        </div>
+
+        <div class="form-group part-c-group" id="part_c">
+            {{form.part_c.label}}
+            <br>
+            {{form.part_c(class='form-control '~status)}}
+        </div>
+
+        <div class="form-group part-c-lot-group" id="part_c_lot">
+            {{form.part_c_lot.label}}
+            <br>
+            {{form.part_c_lot(class='form-control '~status)}}
+        </div>
+
+        <div class="form-group part-c-exp-group" id="part_c_exp">
+            {{form.part_c_exp.label(class='form-group')}}
+            <br>
+            <input type="date" class="form-control {{status}}" name="{{form.part_c_exp.name}}"
+                   value="{{form.part_c_exp.data}}">
+        </div>
+
+        <div class="form-group concentrator-multiplier-group" id="concentrator_multiplier">
+            {{form.concentrator_multiplier.label}}
+            <br>
+            {{form.concentrator_multiplier(class='form-control '~status)}}
+        </div>
+
+        <div class="form-group parent-standard-lot-group" id="parent_standard_lot">
+            {{form.parent_standard_lot.label}}
+            <br>
+            <select class="form-control {{status}}" name="{{form.parent_standard_lot.name}}" data-live-search="true"
+                    value="{{form.parent_standard_lot.data}}">
+                {% for option in form.parent_standard_lot %}
+                    {{option}}
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group verified-by-group" id="verified_by">
+            {{form.verified_by.label}}
+            <br>
+            <select class="form-control {{status}}" name="{{form.verified_by.name}}" data-live-search="true"
+                    value="{{form.verified_by.data}}">
+                {% for option in form.verified_by %}
+                    {{option}}
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group equipment-used-group" id="equipment_used">
+            {{form.equipment_used.label}}
+            <br>
+            {{form.equipment_used(class='form-control '~status)}}
+            <div style="font-size:0.9rem">
+                <a class='clear' name="{{form.equipment_used.name}}" href="#!">Clear</a>
+            </div>
+        </div>
+
+        <div class="form-group volume-prepared-group" id="volume_prepared">
+            {{form.volume_prepared.label}}
+            <br>
+            {{form.volume_prepared(class='form-control '~status)}}
+        </div>
+
+        <div class="form-group solvent-used-group" id="solvent_used">
+            {{form.solvent_used.label}}
+            <br>
+            <select class="form-control {{status}}" name="{{form.solvent_used.name}}" data-live-search="true"
+                    value="{{form.solvent_used.data}}">
+                {% for option in form.solvent_used %}
+                    {{option}}
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group aliquot-volume-group" id="aliquot_volume">
+            {{form.aliquot_volume.label}}
+            <br>
+            {{form.aliquot_volume(class='form-control '~status)}}
+        </div>
+
+        <div class="form-group total-aliquots-group" id="total_aliquots">
+            {{form.total_aliquots.label}}
+            <br>
+            {{form.total_aliquots(class='form-control '~status)}}
+        </div>
+
+        <div class="form-group pipette-check-group" id="pipette_check">
+            {{form.pipette_check.label}}
+            <br>
+            {{form.pipette_check(class='form-control '~status ~' booleanfield2')}}
+        </div>
+
+        <div class="form-group verification-batches-group" id="verification_batches">
+            {{form.verification_batches.label}}
+            <br>
+            {{form.verification_batches(class='form-control '~status)}}
+            <div style="font-size:0.9rem">
+                <a class='clear' name="{{form.verification_batches.name}}" href="#!">Clear</a>
+            </div>
+        </div>
+
+        <div class="form-group previous-lot-group" id="previous_lot">
+            {{form.previous_lot.label}}
+            <br>
+            <select class="form-control {{status}}" name="{{form.previous_lot.name}}" data-live-search="true"
+                    value="{{form.previous_lot.data}}">
+                {% for option in form.previous_lot %}
+                    {{option}}
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group previous-lot-comments-group" id="previous_lot_comments">
+            {{form.previous_lot_comments.label}}
+            <br>
+            {{form.previous_lot_comments(class='form-control '~status)}}
+        </div>
+
+        <div class="form-group qualitative-attachments-group" id="qualitative_attachments">
+            {{form.qualitative_attachments.label}}
+            <br>
+            {{form.qualitative_attachments(class='form-control '~status)}}
+        </div>
+
+        <div class="form-group qualitative-comments-group" id="qualitative_comments">
+            {{form.qualitative_comments.label}}
+            <br>
+            {{form.qualitative_comments(class='form-control '~status)}}
+        </div>
+
+        <div class="form-group calibration-attachments-group" id="calibration_attachments">
+            {{form.calibration_attachments.label}}
+            <br>
+            {{form.calibration_attachments(class='form-control '~status)}}
+        </div>
+
+        <div class="form-group calibration-comments-group" id="calibration_comments">
+            {{form.calibration_comments.label}}
+            <br>
+            {{form.calibration_comments(class='form-control '~status)}}
+        </div>
+
+        <div class="form-group quantitative-attachments-group" id="quantitative_attachments">
+            {{form.quantitative_attachments.label}}
+            <br>
+            {{form.quantitative_attachments(class='form-control '~status)}}
+        </div>
+
+        <div class="form-group quantitative-comments-group" id="quantitative_comments">
+            {{form.quantitative_comments.label}}
+            <br>
+            {{form.quantitative_comments(class='form-control '~status)}}
+        </div>
+
+        <div class="form-group additional-comments-group" id="additional_comments">
+            {{form.additional_comments.label}}
+            <br>
+            {{form.additional_comments(class='form-control '~status)}}
+        </div>
+
+        <div class="form-group approved-by-group" id="approved_by">
+            {{form.approved_by.label}}
+            <br>
+            <select class="form-control {{status}}" name="{{form.approved_by.name}}" data-live-search="true"
+                    value="{{form.approved_by.data}}">
+                {% for option in form.approved_by %}
+                    {{option}}
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group authorized-date-group" id="authorized_date">
+            {{form.authorized_date.label}}
+            <br>
+            <input type="date" class="form-control {{status}}" name="{{form.authorized_date.name}}"
+                   value="{{form.authorized_date.data}}">
+        </div>
+
+        <div class="form-group extension-memo-group" id="extension_memo">
+            {{form.extension_memo.label}}
+            <br>
+            <select class="form-control {{status}}" name="{{form.extension_memo.name}}" data-live-search="true"
+                    value="{{form.extension_memo.data}}">
+                {% for option in form.extension_memo %}
+                    {{option}}
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group form-actions-group">
+            {{form.submit(class='btn btn-primary')}}
+            <button type="button" class="btn btn-secondary" onclick="history.back()">Back</button>
+        </div>
+    </form>
+</div>
+
+
+<!--following code for hiding fields depending on s_type chosen. Need to set up Form instead of iterating to implement -->
+<!-- onclick="sTypeSelected()" belongs in class of tag that contains id of fields being controlled by s_type-->
+<script>
+
+    const standards = ['4', '5', '6', '7', '8', '9', '10', '11']
+    const qualStand = ['9', '4', '5', '6']
+    const samq = ['10', '11']
+    const quantStand = ['7', '8']
+    const parts = ['part_a', 'part_b', 'part_c']
+    const standardsColumns = ['concentrator_multiplier', 'parent_standard_lot', 'verified_by', 'equipment_used',
+                              'volume_prepared', 'solvent_used', 'aliquot_volume', 'total_aliquots', 'pipette_check',
+                              'additional_comments', 'approved_by', 'authorized_date', 'previous_lot',
+                              'previous_lot_comments', 'extension_memo']
+
+    const qualColumns = ['qualitative_comments', 'qualitative_attachments']
+    const quantColumns = ['quantitative_comments', 'quantitative_attachments']
+    const calColumns = ['calibration_comments', 'calibration_attachments']
+
+    window.onload = sTypeSelected;
+
+    function sTypeSelected(){
+
+        "use strict";
+        var sType = document.getElementById('solution_type_id').selectedOptions[0].value;
+
+        console.log(sType)
+
+        if (standards.includes(sType)) {
+// ALL STANDARDS HAVE FOLLOWING COLUMNS INACTIVE
+            parts.forEach(function(part) {
+                $('#' + part).css('display', 'none');
+                $('#' + part + '_lot').css('display', 'none');
+                $('#' + part + '_exp').css('display', 'none');
+            });
+
+// ALL STANDARDS HAVE FOLLOWING COLUMNS ACTIVE
+            standardsColumns.forEach(function(column) {
+                $('#' + column).css('display', 'block');
+            });
+
+// QUALITATIVE STANDARDS SEE VERIFICATION FRM
+            if (qualStand.includes(sType)) {
+
+                qualColumns.forEach(function(column) {
+                    $('#' + column).css('display', 'block');
+                });
+
+                quantColumns.forEach(function(column) {
+                    $('#' + column).css('display', 'none');
+                });
+
+                calColumns.forEach(function(column) {
+                    $('#' + column).css('display', 'none');
+                });
+
+            } else if (quantStand.includes(sType)) {
+
+                qualColumns.forEach(function(column) {
+                    $('#' + column).css('display', 'none');
+                });
+
+                quantColumns.forEach(function(column) {
+                    $('#' + column).css('display', 'block');
+                });
+
+                $('#verification_batches').css('display', 'block');
+
+                if (sType == 'Calibrator') {
+
+                    calColumns.forEach(function(column) {
+                        $('#' + column).css('display', 'block');
+                    });
+
+                    $('#previous_lot').css('display', 'block');
+                    $('#previous_lot_comments').css('display', 'block');
+
+                } else if (sType == 'Quant QC') {
+                    $('#previous_lot').css('display', 'none');
+                    $('#previous_lot_comments').css('display', 'none');
+
+                    calColumns.forEach(function(column) {
+                        $('#' + column).css('display', 'none');
+                    });
+
+                } else {
+
+                    calColumns.forEach(function(column) {
+                        $('#' + column).css('display', 'none');
+                    });
+                }
+
+            } else if (samq.includes(sType)) {
+
+                $('#verification_batches').css('display', 'block');
+
+                quantColumns.forEach(function(column) {
+                    $('#' + column).css('display', 'none');
+                });
+
+                quantColumns.forEach(function(column) {
+                    $('#' + column).css('display', 'none');
+                });
+
+            } else {
+
+                qualColumns.forEach(function(column) {
+                    $('#' + column).css('display', 'none');
+                });
+
+                quantColumns.forEach(function(column) {
+                    $('#' + column).css('display', 'block');
+                });
+            }
+
+        } else {
+
+            parts.forEach(function(part) {
+                $('#' + part).css('display', 'block');
+                $('#' + part + '_lot').css('display', 'block');
+                $('#' + part + '_exp').css('display', 'block');
+                $('#concentrator_multiplier').css('display', 'none');
+            });
+
+            standardsColumns.forEach(function(column) {
+                $('#' + column).css('display', 'none');
+            });
+
+            qualColumns.forEach(function(qual) {
+                $('#' + qual).css('display', 'none');
+            });
+
+            quantColumns.forEach(function(qual) {
+                $('#' + qual).css('display', 'none');
+            });
+
+            calColumns.forEach(function(qual) {
+                $('#' + qual).css('display', 'none');
+            });
+
+            $('#verification_batches').css('display', 'none');
+            $('#previous_lot').css('display', 'none');
+            $('#previous_lot_comments').css('display', 'none');
+        }
+    }
+</script>
+
+{% endblock %}
+

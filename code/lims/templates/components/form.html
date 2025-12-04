@@ -1,0 +1,57 @@
+{% extends "form_template.html" %}
+
+<!-- ALERTS -->
+{% block alerts %}
+{% endblock %}
+
+<!-- HEADER -->
+{% block header %}
+{% endblock %}
+
+{% block form %}
+<div class="form-group">
+    {{form.name.label}}
+    {{form.name}}
+</div>
+<div class="form-group">
+    {{form.compound_id.label}}
+    <a href="#!" data-toggle="tooltip"
+    title="Only compounds with drug classes assigned are shown">
+        <i class="fa-solid fa-circle-question" ></i>
+    </a>
+    {{form.compound_id}}
+</div>
+<div class="form-group">
+    {{form.rank.label}}
+     <a href="#!" data-toggle="tooltip"
+     title="The order in which the component is shown within it's drug class on reports">
+        <i class="fa-solid fa-circle-question" ></i>
+    </a>
+    {{form.rank}}
+        <p>
+            <span id="rank-str">{{kwargs['rank_str']}}</span>
+            <b>
+                <a href="#" id="drug-class" data-target="#rank-collapse" data-toggle="collapse">
+                    {{kwargs['drug_class_name']}}
+                </a>
+            </b>
+        </p>
+    <div class="collapse" id="rank-collapse">
+        <div class="card card-body">
+            <b>Ranks for <span id="drug-class-name">{{kwargs['drug_class_name']}}</span></b>
+            <div id="ranks">
+                {% for rank, compound in kwargs['ranks'] %}
+                    {{rank}}. {{compound}}<br>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="/static/js/components.js"></script>
+{% endblock %}

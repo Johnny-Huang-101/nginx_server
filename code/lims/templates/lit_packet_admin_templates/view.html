@@ -1,0 +1,446 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div id="header">
+    {% if item.locked %}
+    <div class="alert alert-warning" role="alert" style="margin-top: 12px">
+        <i class="fa-solid fa-lock"></i> <b>{{alias}}</b> has been locked by <b>{{item.locked_by}}</b> on <b>{{item.lock_date.strftime('%m/%d/%Y')}}</b> at <b>{{item.lock_date.strftime('%H:%M')}}</b>.
+    </div>
+    {% elif item.db_status == 'Removal Pending' %}
+    <div class="alert alert-warning" role="alert" style="margin-top: 12px">
+        <b>{{alias}}</b> has been marked for removal by <b>{{item.modified_by}}</b>
+        on <b>{{item.modify_date.strftime('%m/%d/%Y')}}</b> at <b>{{item.modify_date.strftime('%H:%M')}}</b>.
+        for the following reason:
+        <ul>
+            <li>{{item.remove_reason}}</li>
+        </ul>
+    </div>
+    {% elif item.db_status == 'Removed' %}
+    <div class="alert alert-warning" role="alert" style="margin-top: 12px">
+        <b>{{alias}}</b> was removed by <b>{{item.modified_by}}</b> on
+        <b>{{item.modify_date.strftime('%m/%d/%Y')}}</b> at <b>{{item.modify_date.strftime('%H:%M')}}</b>.
+    </div>
+    {% endif %}
+
+    {% if pending_mods %}
+        <div class="alert alert-warning" role="alert" style="margin-top: 12px">
+            <b>{{alias}}</b> has pending changes for the following fields by
+            <b>{{pending_mods[0].submitter.initials}}</b> at <b>{{pending_mods[0].submitted_date.strftime("%m/%d/%Y %H:%M")}}</b>:
+            <ul>
+                {% for mod in pending_mods %}
+                    <li>
+                        <b>{{mod.field}}</b>: {{mod.original_value_text}} > {{mod.new_value_text}}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+  <!-- ALERT BLOCK -->
+
+    {% block alerts %}
+    {% endblock %}
+
+    <!-- ########## -->
+
+    <div style="margin-top:6px">
+        <a href="{{url_for('dashboard.get_dashboard')}}"><i class="fa-solid fa-house"></i></a>
+        > <a href="{{url_for(table_name~'.view_list')}}">{{item_name}}</a>
+        > {{alias}}
+    </div>
+
+    <hr style="border-width:5px; margin-top: 6px">
+        <h1>{{alias}}</h1>
+    <hr style="border-width:5px">
+
+    {% if current_user.permissions != 'View' %}
+        {% if not item.remove_reason %}
+            {% if (item.locked and item.locked_by == current_user.initials) or (not item.locked) %}
+                {% if item.pending_submitter %}
+                    {% if item.pending_submitter == current_user.initials %}
+                        <a class="btn btn-primary" href="{{ url_for(table_name~'.edit', item_id = item.id)}}" role="button">Edit</a>
+                    {% else %}
+                        <a class="btn btn-primary" href="{{ url_for(table_name~'.approve', item_id = item.id)}}" role="button">Approve</a>
+                    {% endif %}
+                {% else %}
+                    <a class="btn btn-primary" href="{{ url_for(table_name~'.update', item_id = item.id)}}" role="button">Update</a>
+                {% endif %}
+            {% endif %}
+            {% if not item.locked %}
+                {% if not item.pending_submitter %}
+                    <a class="btn btn-secondary" href="{{ url_for(table_name~'.attach', item_id=item.id) }}"><i class="fa-solid fa-paperclip"></i> Attach</a>
+                    <a class="btn btn-danger" data-toggle="modal" data-target="#remove-modal">Remove</a>
+                {% endif %}
+                {% if current_user.permissions in ['Admin', 'Developer', 'Owner']  %}
+                     <a class="btn btn-danger" data-toggle="modal" data-target="#delete-modal">Delete</a>
+                    <a class="btn btn-secondary" href="{{ url_for(table_name~'.lock', item_id=item.id) }}"><i class="fa-solid fa-lock"></i> Lock</a>
+                {% endif %}
+            {% else %}
+                {% if item.locked_by == current_user.initials or current_user.permissions in ['Admin','Developer', 'Owner'] %}
+                    <a class="btn btn-secondary" href="{{url_for(table_name~'.unlock', item_id=item.id)}}" ><i class="fa-solid fa-unlock"></i> Unlock</a>
+                {% endif %}
+            {% endif %}
+        {% elif current_user.permissions in ['Admin','Developer', 'Owner'] %}
+            {% if item.db_status == 'Removed' %}
+                <a class="btn btn-secondary" href="{{ url_for(table_name~'.restore', item_id=item.id) }}">Restore</a>
+            {% elif current_user.initials != item.modified_by %}
+                <a class="btn btn-success" href="{{ url_for(table_name~'.approve_remove', item_id=item.id) }}">Approve Removal</a>
+                <a class="btn btn-danger" href="{{ url_for(table_name~'.reject_remove', item_id=item.id) }}">Reject Removal</a>
+            {% endif %}
+        {% endif %}
+
+    <a class="btn btn-primary" href="{{ url_for('lit_packet_admin_assays.add', template_id=item.id) }}" role="button">Add Assay</a>
+        <a class="btn btn-primary" href="{{ url_for('lit_packet_admin_attachments.add', template_id=item.id) }}" role="button">Add Attachment</a>
+    <a class="btn btn-primary" href="/lit_packet_admin_templates/{{item.id}}/update" role="button">Add Case Contents</a>
+    <a class="btn btn-primary" href="{{url_for(table_name~'.update_sort_order', item_id=item.id)}}">Update Sort Order</a>
+
+    {% endif %}
+
+    <div id="body" class="mt-3">
+        <!-- VIEW BLOCK -->
+        {% block view %}
+        {% endblock %}
+         <!-- ######### -->
+        <div id="accordion">
+            <div class="card" style="display:none;">
+                <div class="card-header" id="attachments" style="height:50px; padding:0px; display:flex;align-items:center;">
+                    <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#attachments-collapse" aria-expanded="false" aria-controls="attachments">
+                        <span ><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+                        Attachments
+                    </button>
+                </div>
+                <div id="attachments-collapse" class="collapse" aria-labelledby="attachments-heading" >
+                    <div class="card-body">
+                        <div class="table display">
+                            <div class="table-responsive">
+                                <table class="display table-striped table-hover nowrap small datatable" style="width:100%;" id="attachments-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Delete</th>
+                                        <th>ID</th>
+                                        <th>File Name</th>
+                                        <th>Path</th>
+                                        <th>Created By</th>
+                                        <th>Create Date</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for item in attachments %}
+                                    <tr>
+                                        <td><a href="{{url_for(table_name~'.delete', item_id=item.id)}}" class="btn btn-danger btn-size"><i class="fa fa-trash-o btn-icon"></i></a></td>
+
+                                        <td>{{item.id}}</td>
+                                        <td>
+                                            <a href="../static/filesystem/attachments/item.table">
+                                                {{item.name}}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="{{item.path}}">
+                                                {{item.path}}
+                                            </a>
+                                        </td>
+                                        <td>{{item.created_by}}</td>
+                                        <td>
+                                            {% if item.create_date %}
+                                            {{item.create_date.strftime("%m/%d/%Y %H:%M")}}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card" style="display:none;">
+                <div class="card-header" id="modifications" style="height:50px; padding:0px; display:flex;align-items:center;" >
+                    <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#modifications-collapse" aria-expanded="false" aria-controls="modifications" >
+                        <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+                        Modifications
+                    </button>
+                </div>
+                <div id="modifications-collapse" class="collapse" aria-labelledby="modifications-heading">
+                    <div class="card-body">
+                        <div class="table display" id="table-div">
+                            <div class="table-responsive">
+                                <table class="display table-striped table-hover nowrap small datatable" style="width:100%;" id="modifications-table">
+                                    <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Event</th>
+                                        <th>Status</th>
+                                        <th>Revision</th>
+                                        <th>Field</th>
+                                        <th>Original Value</th>
+                                        <th>New Value</th>
+                                        <th>Submitted By</th>
+                                        <th>Submitted Date</th>
+                                        <th>Reviewed By</th>
+                                        <th>Reviewed Date</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for item in mods %}
+                                    <tr>
+                                        <td>{{item.id}}</td>
+                                        <td>{{item.event}}</td>
+                                        <td>{{item.status}}</td>
+                                        <td>{{item.revision}}</td>
+                                        <td>{{item.field}}</td>
+                                        <td>{{item.original_value_text}}</td>
+                                        <td>
+                                            {% if item.field_name == 'file_name' %}
+                                            <a href="../static/filesystem/imports/{{item.new_value_text}}" download>
+                                                {{item.new_value_text}}
+                                            </a>
+                                            {% else %}
+                                                {{item.new_value_text}}
+                                            {% endif %}
+                                        </td>
+                                        <td>{{item.submitter.initials}}</td>
+                                        <td>{{item.submitted_date.strftime("%m/%d/%Y %H:%M")}}</td>
+                                        <td>
+                                            {% if item.reviewed_by %}
+                                            {{item.reviewer.initials}}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if item.review_date %}
+                                            {{item.review_date.strftime("%m/%d/%Y %H:%M")}}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <h4>Case Contents: {{item.case_contents}}</h4>
+            <hr>
+            {% if kwargs['assays'] %}
+            <table class="display table-striped table-hover nowrap small" style="width:100%;" id="assays-table">
+                <thead>
+                <tr>
+                    <th style="font-size: 1.2rem;">Delete</th>
+                    <th style="font-size: 1.2rem;">Sort Order</th>
+                    <th style="font-size: 1.2rem;">Assay Name</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for assay in kwargs['assays'] %}
+                <tr>
+                    <td style="width: 7vw; padding-left: 0.8vw;">
+                        <a class="btn btn-danger btn-size delete-icon" data-file-id="{{ assay.id }}">
+                            <i class="fa fa-trash-o btn-icon"
+                               style="cursor: pointer"></i>
+                        </a>
+                    </td>
+                    <td>
+                        {{assay.lit_admin_sort_order}}
+                    </td>
+                    <td style="font-size: 1.2rem;"><a href="/lit_packet_admin_assays/{{assay.id}}">{{ assay.name }}</a>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>No assay's added to template.</p>
+            {% endif %}
+            <hr>
+            {% if kwargs['attachments'] %}
+            <table class="display table-striped table-hover nowrap small" style="width:100%;" id="attachment-admin-table">
+                <thead>
+                <tr>
+                    <th style="font-size: 1.2rem;">Delete</th>
+                    <th style="font-size: 1.2rem;">Route</th>
+                    <th style="font-size: 1.2rem;">Attachment Type</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for attachment in kwargs['attachments'] %}
+                <tr>
+                    <td style="width: 7vw; padding-left: 0.8vw;">
+                        <a class="btn btn-danger btn-size delete-icon-attach" data-file-id="{{attachment.id}}">
+                            <i class="fa fa-trash-o btn-icon"
+                               style="cursor: pointer"></i>
+                        </a>
+                    </td>
+                    <td style="font-size: 1.2rem; width: 20vw"><a href="/lit_packet_admin_attachments/{{attachment.id}}/update">{{attachment.route}}</a>
+                    </td>
+                    <td style="font-size: 1.2rem;">{{attachment.attachment_type}}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>No attachment's added to template.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" tabindex="-1" role="dialog" id="remove-modal">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Remove {{alias}}?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="{{ url_for(table_name~'.remove', item_id=item.id) }}" method="POST">
+                <div class="modal-body">
+                    <p>Are you sure you want to remove <b>{{alias}}</b>?</p>
+                    <label>Please enter the reason for removal.</label>
+                    <div class="form-group">
+                        <textarea class="form-control" name="reason" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <input class="btn btn-danger" type="submit" value="Remove">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE ITEM  -->
+<div class="modal" tabindex="-1" role="dialog" id="delete-modal">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete {{alias}}?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <b>{{alias}}</b>?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+
+                <form action="{{ url_for(table_name~'.delete', item_id= item.id) }}" method="POST">
+                    <input class="btn btn-danger" type="submit" value="Delete">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL BLOCK -->
+
+{% block modals %}
+{% endblock %}
+
+<!-- ########## -->
+
+<!-- SCRIPT BLOCK -->
+
+{% block scripts %}
+{% endblock %}
+
+<!-- ########## -->
+
+<script src="/static/main.js"></script>
+
+<script>
+$(document).ready(function () {
+    // Show modal and set file ID when trash icon is clicked
+    $(document).on('click', '.delete-icon', function () {
+        var fileId = $(this).data('file-id');
+        console.log('Trash icon clicked. File ID: ' + fileId); // Add this log
+        $('#deleteModal').data('file-id', fileId).modal('show');
+    });
+
+    // Navigate to a link when delete button is pressed
+    $('#confirmDelete').on('click', function () {
+        var fileId = $('#deleteModal').data('file-id');
+        console.log('Delete confirmed. File ID: ' + fileId); // Add this log
+        window.location.href = '/lit_packet_admin_assays/' + fileId + '/delete';
+    });
+});
+
+    $(document).ready(function () {
+    // Show modal and set file ID when trash icon is clicked
+    $(document).on('click', '.delete-icon-attach', function () {
+        var fileId = $(this).data('file-id');
+        console.log('Trash icon clicked. File ID: ' + fileId); // Add this log
+        $('#deleteModal').data('file-id', fileId).modal('show');
+    });
+
+    // Navigate to a link when delete button is pressed
+    $('#confirmDelete').on('click', function () {
+        var fileId = $('#deleteModal').data('file-id');
+        console.log('Delete confirmed. File ID: ' + fileId); // Add this log
+        window.location.href = '/lit_packet_admin_attachments/' + fileId + '/delete';
+    });
+});
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('.expand').on('click', function(){
+            var isExpanded = $(this).parents().next('.row_control').attr("aria-expanded")
+            $(this).parents().next('.hidden_row').toggle();
+            //alert();
+
+        });
+    });
+</script>
+
+<script>
+    $('.collapse').on('shown.bs.collapse', function () {
+       $($.fn.dataTable.tables(true)).DataTable()
+          .columns.adjust();
+    });
+</script>
+
+<script>
+    $('.chevron-btn').on('click', function () {
+        var isExpanded = $(this).attr("aria-expanded");
+
+        if ($(this).find('.chevron').hasClass("fa-chevron-right")) {
+            if (isExpanded == 'false') {
+               $(this).find('.chevron').addClass("fa-chevron-down");
+               $(this).find('.chevron').removeClass("fa-chevron-right");
+           }
+       } else {
+            if (isExpanded == 'true') {
+                $(this).find('.chevron').addClass("fa-chevron-right");
+                $(this).find('.chevron').removeClass("fa-chevron-down");
+            }
+       }
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+        <th>Case Number</th>
+        <th>Type</th>
+        <th>Quantity</th>
+        <th>Description</th>
+        <th>Disposition</th>
+        <th>Received Date/Time</th>
+        <th>Received By</th>
+        <th>Released Date/Time</th>
+        <th>Released To</th>
+
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+        <td>{{ item.case.case_number }}</td>
+        <td>{{ item.type or '' }}</td>
+        <td>{{ item.quantity or '' }}</td>
+        <td class="text-truncate" style="max-width: 280px;">{{ item.description or '' }}</td>
+        <td>{{ item.disposition or '' }}</td>
+        <td>{{ item.received_by or '' }}</td>
+        <td>{{ item.received_date.strftime('%Y-%m-%d %H:%M') if item.received_date else '' }}</td>
+        <td>{{ item.released_to or '' }}</td>
+        <td>{{ item.released_date.strftime('%Y-%m-%d %H:%M') if item.released_date else '' }}</td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}

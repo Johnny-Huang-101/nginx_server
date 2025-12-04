@@ -1,0 +1,267 @@
+{% extends "view_template.html" %}
+
+{% block alerts %}
+{% endblock %}
+
+{% block header %}
+<h1>
+    {% if item.accession_number %}
+        {{item.accession_number}} |
+    {% endif %}
+    [{{item.type.code}}] - {{item.type.name}} |
+    <a href="{{url_for('cases.view', item_id=item.case.id) }}">{{item.case.case_number}}</a>
+</h1>
+{% endblock %}
+
+{% block buttons %}
+    {% if current_user.permissions not in ['Developer', 'ADM-Management', 'FLD-Administrative'] %}
+       <a href="{{url_for(table_name~'.print_container_label', item_id=item.id)}}" class="btn btn-primary printLabelBtn"><i class="fa fa-print" aria-hidden="true"></i> Print Label</a>
+    {% endif %}
+    {% if item.locked_by == current_user.initials %}
+        <a class="btn btn-primary" style="display:inline-block" href="{{ url_for('containers.unlock', item_id=item.id) }}" role="button">Unlock</a>
+    {% elif current_user.permissions in ['Admin', 'Owner'] and item.locked %}
+        <a class="btn btn-primary" style="display:inline-block" href="{{ url_for('containers.unlock', item_id=item.id) }}" role="button">Unlock</a>
+    {% endif %}
+    {% if item.remove_reason %}
+        {% if current_user.permissions in ['Admin', 'Owner'] %}
+            {% if item.db_status == 'Removed' %}
+                <a class="btn btn-secondary" href="{{ url_for(table_name~'.restore', item_id=item.id) }}">Restore</a>
+            {% elif current_user.initials != item.modified_by %}
+                <a class="btn btn-success" href="{{ url_for(table_name~'.approve_remove', item_id=item.id) }}">Approve Removal</a>
+                <a class="btn btn-danger" href="{{ url_for(table_name~'.reject_remove', item_id=item.id) }}">Reject Removal</a>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+    {% if current_user.permissions not in ['MED-Autopsy', 'MED', 'ADM-Management', 'INV'] %}
+        <a class="btn btn-secondary" href="{{ url_for('comment_instances.add', comment_item_type='Containers', comment_item_id=item.id, redirect_url=url_for('containers.view', item_id=item.id))}}">Add Comment</a>
+    {% endif %}
+    {% if view_only and current_user.permissions not in ['Developer', 'ADM-Management', 'FLD-Administrative', 'INV'] %}
+        <a class="btn btn-danger" data-toggle="modal" data-target="#remove-modal">Remove</a>
+    {% endif %}
+{% endblock %}
+
+{% block view %}
+{% endblock %}
+
+{% block accordion %}
+<div class="card">
+    <div class="card-header view-card-header" id="details">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#details-coll" aria-expanded="false" aria-controls="details">
+            <span><i class="fa-solid fa-chevron-down mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Container Details
+        </button>
+    </div>
+    <div id="details-coll" class="collapse show" aria-labelledby="details">
+        <div class="card-body">
+            <div class="row">
+                <div class="col">
+                    <table class="table table-hover table-striped details-table" style="width:100%">
+                        <tr>
+                            <th>Specimens Accessioned/Submitted</th>
+                            <td>{{item.n_specimens}}/{{item.n_specimens_submitted}}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col">
+                    <table class="table table-hover table-striped details-table" style="width:100%">
+                        <tr>
+                            <th>Submitted By</th>
+                            <td>{{item.submitter.full_name}}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col">
+                    <table class="table table-hover table-striped details-table" style="width:100%">
+                        <tr>
+                            <th>Submission Date/Time</th>
+                            <td>
+                                {{item.submission_date.strftime('%m/%d/%Y')}}
+                                {% if item.submission_time %}
+                                at {{item.submission_time[:2] }}:{{item.submission_time[2:]}}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <table class="table table-hover table-striped details-table" style="width:100%">
+                        <tr>
+                            <th>Evidence Comments</th>
+                            <td>
+                                {% if kwargs['evidence_comments'] %}
+                                {% for evidence_comment in kwargs['evidence_comments'] %}
+                                {{evidence_comment}}<br>
+                                {% endfor %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header view-card-header" id="specimens-card">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#specimens-card-collapse" aria-expanded="false" aria-controls="specimens-card">
+            <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Specimens
+        </button>
+    </div>
+    <div id="specimens-card-collapse" class="collapse show" aria-labelledby="specimens-card-heading">
+        <div class="card-body">
+            <a class="btn btn-secondary mb-3 export" href="#" name="specimens">Export</a>
+            <div class="table display">
+                <div class="table-responsive">
+                    <table class="display table-striped table-hover nowrap small view-table" style="width:100%" id="specimens-table">
+                        <thead>
+                        <tr>
+                            <th>Locked</th>
+                            <th>Pending Submitter</th>
+                            <th>Custody</th>
+                            <th>Accession Number</th>
+                            <th>Code</th>
+                            <th>Description</th>
+                            <th>Collected By</th>
+                            <th>Collection Date/Time</th>
+                            <th>Collection Vessel</th>
+                            <th>Current/Submitted Amount</th>
+                            <th>Evidence Comments</th>
+                            <th>Condition</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for specimen in kwargs['specimens'] %}
+                            {% if specimen.db_status in ['Pending', 'Active with Pending Changes', 'Changes Pending'] %}
+                            <tr class="table-primary">
+                                {% elif specimen.db_status == 'Deletion Pending' %}
+                            <tr class="table-danger">
+                                {% elif specimen.db_status == 'Removed' %}
+                            <tr class="table-secondary">
+                                {% else %}
+                            <tr class="table-default">
+                                {% endif %}
+                                <td>
+                                    {% if specimen.locked %}
+                                    <i class="fa-solid fa-lock"></i> {{specimen.locked_by}}
+                                    {% endif %}
+                                </td>
+                                <td>{{specimen.pending_submitter}}</td>
+                                <td>{{specimen.custody}}</td>
+                                <td>
+                                    <a href="{{url_for('specimens.view', item_id=specimen.id)}}">
+                                        {{specimen.accession_number}}
+                                    </a>
+                                </td>
+                                <td>[{{specimen.type.code}}]</td>
+                                <td>{{specimen.type.name}}</td>
+                                <td>
+                                    {% if specimen.collected_by %}
+                                        {{specimen.collector.full_name}}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if specimen.collection_date %}
+                                    {{specimen.collection_date.strftime('%m/%d/%Y')}}
+                                    {{specimen.collection_time}}
+                                    {% endif %}
+                                </td>
+                                <td>{{specimen.collection_container.display_name}}</td>
+                                <td>
+                                    {{specimen.current_sample_amount}}/{{specimen.submitted_sample_amount}}
+                                    {{specimen.type.unit.unit}}
+                                </td>
+                                <td>
+                                    {% if specimen.evidence_comments %}
+                                        {% for evidence_comment in specimen.evidence_comments.split("\n") %}
+                                            {{evidence_comment}}
+                                        {% endfor %}
+                                    {% endif %}
+                                </td>
+                                <td>{{specimen.condition}}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+<div class="modal" tabindex="-1" role="dialog" id="del_modal">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Delete {{item.name}}?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete <b>{{item.name}}</b>?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+
+          <form action="{{ url_for(table_name~'.delete', item_id= item.id) }}" method="POST">
+            <input class="btn btn-danger" type="submit" value="Delete">
+          </form>
+        </div>
+      </div>
+    </div>
+</div>
+<!-- REMOVE ITEM -->
+<div class="modal" tabindex="-1" role="dialog" id="remove-modal">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Remove {{alias}}?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="{{ url_for(table_name~'.remove', item_id=item.id) }}" method="POST">
+                <div class="modal-body">
+                    <p>Are you sure you want to remove <b>{{alias}}</b>?</p>
+                    <label>Please enter the reason for removal.</label>
+                    <div class="form-group">
+                        <textarea class="form-control" name="reason" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <input class="btn btn-danger" type="submit" value="Remove">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+   $(document).ready( function () {
+        $('#specimens-table').DataTable({
+            pageLength: -1,
+            scrollX: true,
+            scrollY: '50vh',
+            scrollCollapse: true,
+            lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+            order: [],
+        });
+    });
+</script>
+<script src = "../../static/js/label_printing.js" type="text/javascript" charset="UTF-8"> </script>
+
+{% endblock %}
+
+
+
+
+

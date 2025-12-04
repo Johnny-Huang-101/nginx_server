@@ -1,0 +1,45 @@
+{% extends "view_template.html" %}
+
+{% block alerts %}
+{% endblock %}
+
+{% block buttons %}
+{% endblock %}
+
+{% block view %}
+{% endblock %}
+
+{% block accordion %}
+<div class="card">
+    <div class="card-header view-card-header" id="details">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#details-coll" aria-expanded="false" aria-controls="details">
+            <span><i class="fa-solid fa-chevron-down mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Current Display
+        </button>
+    </div>
+    <div id="details-coll" class="collapse show" aria-labelledby="details">
+        <div class="card-body">
+            <div class="my-3">
+                <table class="table table-hover table-striped details-table" style="width:100%">
+                    <tr>
+                        <th>Application Name</th>
+                        <td>{{item.db_names.message}}</td>
+                    </tr>
+                    <tr>
+                        <th>Welcome Message</th>
+                        <td>{{item.welcome_messages.message}} {{current_user.initials}}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
+
+

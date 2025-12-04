@@ -1,0 +1,65 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+{% endblock %}
+
+<!--Custom Buttons-->
+{% block buttons %}
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Comment ID</th>
+    <th>Comment Type</th>
+    <th>Comment</th>
+    <th>Item ID</th>
+    <th>Item Type</th>
+    <th>Include In Report?</th>
+{% endblock %}
+
+{% block body scoped %}
+
+    {%
+        set table, route, name = kwargs['modules'][item.comment_item_type][0],
+                                 kwargs['modules'][item.comment_item_type][1],
+                                 kwargs['modules'][item.comment_item_type][2]
+    %}
+
+    <td>{{item.comment.code}}</td>
+    <td>{{item.comment_type}}</td>
+    <td>
+        <a href="{{url_for(table_name~'.update', item_id=item.id, comment_item_id=item.comment_item_id, comment_item_type=item.comment_item_type)}}">
+            {% if item.comment %}
+                {{item.comment.comment}}
+            {% else %}
+                {{item.comment_text}}
+            {% endif %}
+        </a>
+
+    </td>
+    <td>
+        <a href="{{url_for(route~'.view', item_id=item.comment_item_id)}}">
+            {% if table.query.get(item.comment_item_id) %}
+    {{ table.query.get(item.comment_item_id).__dict__[name] }}
+{% else %}
+    <span class="text-muted">No Data</span>
+{% endif %}
+        </a>
+    </td>
+    <td>{{item.comment_item_type}}</td>
+    <td>{{item.include_in_report}}</td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}
+

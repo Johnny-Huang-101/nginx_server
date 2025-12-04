@@ -1,0 +1,60 @@
+{% extends "form_template.html" %}
+{% block alerts %}
+{% endblock %}
+
+<!-- HEADER -->
+{% block header %}
+{% endblock %}
+
+{% block form %}
+
+<h3>Filter by:</h3>
+<br><div><strong>FA Case Entry Date (CLIO) aka Case Create Date (FA)</strong></div>
+<div class="row form-row my-4">
+    <div class="col-md-2">
+        {{form.created_start.label}}
+        {{form.created_start}}
+    </div>
+    <div class="col-md-2">
+        {{form.created_end.label}}
+        {{form.created_end}}
+    </div>
+</div>
+    <div class="row form-row my-4">
+        <div class="col-md-4">
+        {{form.mod.label}}<br>Leaving this field blank includes all MODs.
+        {{form.mod}}
+    </div>
+</div>
+<div class="row form-row my-4">
+    <div class="col-md-4">
+        {{form.cod.label}}
+        {{form.cod}}
+    </div>
+</div>
+<div class="row form-row my-4">
+    <div class="col-md-4">
+        {{form.content_preset.label}}
+        {{form.content_preset}}
+    </div>
+</div>
+{% endblock %}
+
+
+{% block buttons %}
+{% endblock %}
+
+{% block modals %}
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $('#form').on('submit', function() {
+        $('#submit').prop('disabled', false)
+        $('#processing').modal('hide');
+        window.location.href="/cases"
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,206 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+<button class="btn btn-secondary" data-toggle="modal" data-target="#results-filter-modal">
+    Filter
+</button>
+
+{% if current_user.permissions in ['Admin', 'Owner'] %}
+<a class="btn btn-secondary" href="{{url_for(table_name~'.import_results')}}">Import Batch Results</a>
+{% endif %}
+<a class="btn btn-secondary" href="" data-target="#alcohol-verbal" data-toggle="modal">Print Alcohol Verbal</a>
+
+
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+  <th></th>
+    <th>Case</th>
+    <th>Test</th>
+    <th>Position</th>
+    <th>Batch</th>
+    <th>Assay</th>
+    <th>Component Name (Printed)</th>
+    <th>Component Name (Live)</th>
+    <th>Result Status</th>
+    <th>Result Type</th>
+    <th>Result</th>
+    <th>Supplementary Result(s)</th>
+    <th>Concentration</th>
+    <th>Measurement Uncertainty</th>
+    <th>Units</th>
+    <th>Qualitative</th>
+    <th>Qualitative Reason</th>
+    <th>Report Reason</th>
+    <th>Comment Numbers</th>
+    <th>Result Comments (Manual)</th>
+    <th>Component Comments (Manual)</th>
+    <th>Scope ID</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td><a href="{{url_for('results.view', item_id=item.id)}}"><i class="fas fa-edit"></i></a></td>
+    <td>
+        <a href="{{url_for('cases.view', item_id=item.case_id)}}">
+            {{item.case.case_number}}
+        </a>
+    </td>
+    <td>{{item.test.test_name}}</td>
+    <td>{{item.test.test_name[-2:]}}</td>
+    <td>
+        <a href="{{url_for('batches.view', item_id=item.test.batch_id)}}">
+            {{item.test.batch.batch_id}}
+        </a>
+    </td>
+    <td>{{item.test.assay.assay_name}}</td>
+    <td>{{item.component_name}}</td>
+    <td>
+        <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+           {{item.component.name}}
+        </a>
+    </td>
+    <td>{{item.result_status}}</td>
+    <td>{{item.result_type}}</td>
+    <td>{{item.result}}</td>
+    <td>{{item.supplementary_result}}</td>
+    <td>{{item.concentration}}</td>
+    <td>{{item.measurement_uncertainty}}</td>
+    <td>
+        {% if item.unit %}
+            {{item.unit.name}}
+        {% endif %}
+    </td>
+    <td>{{item.qualitative}}</td>
+    <td>{{item.qualitative_reason}}</td>
+    <td>{{item.report_reason}}</td>
+    <td>{{item.comment_numbers}}</td>
+    <td>{{item.component_comments_manual}}</td>
+    <td>{{item.result_comments_manual}}</td>
+    <td>{{item.scope_id}}</td>
+{% endblock %}
+
+{% block modals %}
+<div class="modal" id="alcohol-verbal" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Alcohol Verbal</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form enctype="multipart/form-data" id="alcohol_verbal_form" method="POST">
+                    {{ kwargs.alcohol_verbal_form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ kwargs.alcohol_verbal_form.batch_id.label(class="form-label") }}
+                        {{ kwargs.alcohol_verbal_form.batch_id(class="selectpicker", data_width="20vw",
+                        data_height="50vh", multiple=True) }}
+                    </div>
+                    <div id="selected-items" style="margin-top: 10px;"></div>
+                    <div class="modal-footer" style="justify-content: center">
+                        {{ kwargs.alcohol_verbal_form.alcohol_verbal_submit(class='btn btn-primary') }}
+                        <button class="btn btn-secondary" data-dismiss="modal" type="button">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="results-filter-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <form method="GET" action="{{ url_for(table_name ~ '.view_list') }}">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Filter Results</h5>
+          <button type="button" class="close" data-dismiss="modal">
+            <span>&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+
+            <div class="form-group">
+            <label for="disciplines">Disciplines</label>
+            <select name="disciplines" id="disciplines" class="form-control selectpicker" multiple data-live-search="true" data-actions-box="true">
+                {% for discipline in kwargs['discipline_options'] %}
+                <option value="{{ discipline }}" {% if discipline in selected_disciplines %}selected{% endif %}>{{ discipline }}</option>
+                {% endfor %}
+            </select>
+            </div>
+
+
+            <div class="form-group">
+            <label for="assays">Assays</label>
+            <select name="assays" id="assays" class="form-control selectpicker" multiple data-live-search="true" data-actions-box="true">
+
+                {% for assay in kwargs['assay_options'] %}
+                <option value="{{ assay }}" {% if assay in selected_assays %}selected{% endif %}>{{ assay }}</option>
+                {% endfor %}
+            </select>
+            </div>
+
+
+
+          <div class="form-group">
+            <label for="result_statuses">Result Status</label>
+            <select name="result_statuses" id="result_statuses" class="form-control selectpicker" multiple data-live-search="true" data-actions-box="true">
+              {% for status in kwargs['result_status_options'] %}
+                <option value="{{ status }}" {% if status in result_statuses %}selected{% endif %}>{{ status }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="result_types">Result Type</label>
+            <select name="result_types" id="result_types" class="form-control selectpicker" multiple data-live-search="true" data-actions-box="true">
+              {% for rtype in kwargs['result_type_options'] %}
+                <option value="{{ rtype }}" {% if rtype in result_types %}selected{% endif %}>{{ rtype }}</option>
+              {% endfor %}
+            </select>
+          </div>
+            <div class="alert alert-info mt-3 mb-0" role="alert" style="font-size: 0.9rem;">
+              <strong>Note:</strong> If no options are selected, all values will be included by default. For example, leaving Result Status empty will return results with all statuses.
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Apply Filters</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(document).ready(function () {
+    $('#results-filter-modal').on('shown.bs.modal', function () {
+      setTimeout(function () {
+        $('#result_statuses, #result_types').selectpicker('refresh');
+      }, 100); // Small delay to make sure DOM is ready
+    });
+  });
+</script>
+<script>
+  $(document).ready(function () {
+    $('#assays').select2({
+      width: '100%',
+      placeholder: 'Select Assays'
+    });
+  });
+</script>
+
+
+{% endblock %}
+

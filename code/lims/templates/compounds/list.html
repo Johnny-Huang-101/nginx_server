@@ -1,0 +1,105 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+{% block alerts %}
+<!--Any custom alerts can be inserted here-->
+    {% if kwargs['missing_drug_class'] or kwargs['missing_iupac'] %}
+        <div class="alert alert-info" role="alert">
+            There are currently:
+            <ul class="alert-list">
+                {% if kwargs['missing_drug_class'] %}
+                    <li>
+                        <a href="{{url_for(table_name~'.view_list', query='missing_drug_class') }}"><strong>{{kwargs['missing_drug_class']}} compounds</strong></a> missing drug classes.
+                    </li>
+                {% endif %}
+                {% if kwargs['missing_iupac'] %}
+                    <li>
+                        <a href="{{url_for(table_name~'.view_list', query='missing_iupac') }}"><strong>{{kwargs['missing_iupac']}} compounds</strong></a> missing IUPAC.
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    {% endif %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>SFOCME Name</th>
+    <th>Code</th>
+    <th>Date Added</th>
+    <th>Drug Class</th>
+    <th>Synonyms</th>
+    <th>Monograph</th>
+    <th>PubChem</th>
+    <th>IUPAC Name</th>
+    <th>CAS No.</th>
+    <th>Molecular Formula</th>
+    <th>Exact Mass</th>
+    <th>InChIKey</th>
+    <th>SMILES</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+            {{item.name}}
+        </a>
+    </td>
+    <td>{{item.code}}</td>
+    <td>
+        {% if item.inventory_add_date %}
+        {{item.inventory_add_date.strftime('%m/%d/%Y')}}
+        {% endif %}
+    </td>
+    <td>
+        {% if item.drug_class %}
+        <a href="{{ url_for('drug_classes.view', item_id=item.drug_class.id) }}">
+            {{item.drug_class.name}}
+        </a>
+        {% endif %}
+    </td>
+    <td>{{item.synonyms}}</td>
+    <td>
+        {% if item.monograph %}
+        <a href="{{url_for('drug_monographs.view', item_id=item.monograph.id)}}">
+            {{item.monograph.name}}
+        </a>
+        {% endif %}
+    </td>
+    <td>
+        {% if item.inchikey %}
+            <a href="https://pubchem.ncbi.nlm.nih.gov/#query={{item.inchikey}}" target="_blank">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
+        {% endif %}
+    </td>
+    <td>
+        {% if item.iupac %}
+            {{item.iupac}}
+        {% endif%}
+    </td>
+    <td>{{item.cas_no}}</td>
+    <td>{{item.formula}}</td>
+    <td>{{item.mass}}</td>
+    <td>{{item.inchikey}}</td>
+    <td>{{item.smiles}}</td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}
+

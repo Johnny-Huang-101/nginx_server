@@ -1,0 +1,996 @@
+{% extends "view_template.html" %}
+
+{% block alerts %}
+{% endblock %}
+
+{% block header %}
+    <h1>
+        {{item.accession_number}} |
+        [{{item.type.code}}] - {{item.type.name}} |
+        <a href="{{url_for('cases.view', item_id=item.case.id) }}">{{item.case.case_number}}</a>
+    </h1>
+{% endblock %}
+
+{% block buttons %}
+<div>
+    {% if current_user.permissions != 'ADM-Management' %}
+    {% if item.pending_submitter %}
+        {% if item.locked and item.locked_by == current_user.initials %}
+            {% if current_user.initials == item.pending_submitter and not view_only  %}
+                <a class="btn btn-primary mb-3" style="display:inline-block" href="{{ url_for('specimens.edit', item_id=item.id)}}" role="button">Edit</a>
+            {% elif current_user.initials != item.pending_submitter and view_only %}
+                <a class="btn btn-primary mb-3" style="display:inline-block" href="{{ url_for('cases.approve', item_id = item.id)}}" role="button">Review</a>
+            {% endif %}
+        {% elif item.locked %}
+        {% else %}
+            {% if current_user.initials != item.pending_submitter and view_only == 'False' %}
+                <a class="btn btn-primary mb-3" style="display:inline-block" href="{{ url_for('cases.edit', item_id=item.id, event=event)}}" role="button">Edit</a>
+            {% elif current_user.initials != item.pending_submitter and view_only != 'False' %}
+            {% else %}
+                <a class="btn btn-primary mb-3" style="display:inline-block" href="{{ url_for('cases.approve', item_id = item.id, event=event)}}" role="button">Review</a>
+            {% endif %}
+        {% endif %}
+    {% else %}
+          <a class="btn btn-primary mb-3" style="display:inline-block" href="" role="button" id="specimens-update" data-toggle="modal" data-target="#take-custody">Update</a>
+          <div class="dropdown" style="display:inline-block">
+            {% if current_user.permissions in ['Admin', 'Owner', 'FLD'] %}
+          <button class="btn btn-success dropdown-toggle mb-3" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fa-solid fa-circle-plus"></i> New
+          </button>
+
+            <div class="dropdown-menu">
+                {% if item.db_status == 'Active' %}
+
+                <a class="dropdown-item" href="{{ url_for('tests.add', item_id=item.id) }}">Test</a>
+                {% endif %}
+
+            </div>
+            {% endif %}
+            {% if current_user.permissions not in ['INV'] %}
+          <a class="btn btn-secondary mb-3" href="{{ url_for(table_name~'.attach', item_id=item.id) }}"><i class="fa-solid fa-paperclip"></i> Attach</a>
+            {% endif %}
+        </div>
+   {% endif %}
+   {% if item.locked %}
+    {% if item.locked_by == current_user.initials %}
+        <a class="btn btn-primary mb-3" style="display:inline-block" href="{{ url_for('specimens.unlock', item_id=item.id) }}" role="button">Unlock</a>
+    {% elif current_user.permissions in ['Admin', 'Owner'] %}
+        <a class="btn btn-primary mb-3" style="display:inline-block" href="{{ url_for('specimens.unlock', item_id=item.id) }}" role="button">Unlock</a>
+    {% endif %}
+   {% elif current_user.permissions in ['Admin', 'Owner'] %}
+    <a class="btn btn-danger mb-3" href="{{ url_for(table_name~'.lock', item_id=item.id) }}"><i class="fa-solid fa-lock"></i> Lock</a>
+   {% endif %}
+    {% if current_user.permissions not in ['Developer', 'ADM-Management', 'FLD-Administrative'] %}
+   <a href="{{url_for(table_name~'.print_specimen_label', item_id=item.id)}}" class="btn btn-primary mb-3 printLabelBtn"><i class="fa fa-print" aria-hidden="true"></i> Print Label</a>
+    {% endif %}
+    {% if kwargs['pending_audits']|length > 0 and current_user.permissions in ['Admin', 'Owner'] %}
+        <a href="" class="btn btn-success mb-3" data-toggle="modal" data-target="#review-custody">Review Custody Changes</a>
+    {% endif %}
+    {% if current_user.permissions not in ['INV'] %}
+    <a href="" class="btn btn-primary mb-3" data-toggle="modal" data-target="#custody_change">Correct Custody</a>
+    {% endif %}
+    {% if current_user.permissions in ['Admin', 'Owner'] %}
+        <a href="" class="btn btn-primary mb-3" data-toggle="modal" data-target="#admin_custody_change">Admin</a>
+    {% endif %}
+    {% if item.remove_reason %}
+        {% if current_user.permissions in ['Admin', 'Owner'] %}
+            {% if item.db_status == 'Removed' %}
+                <a class="btn btn-secondary mb-3" href="{{ url_for(table_name~'.restore', item_id=item.id) }}">Restore</a>
+            {% elif current_user.initials != item.modified_by %}
+                <a class="btn btn-success mb-3" href="{{ url_for(table_name~'.approve_remove', item_id=item.id) }}">Approve Removal</a>
+                <a class="btn btn-danger mb-3" href="{{ url_for(table_name~'.reject_remove', item_id=item.id) }}">Reject Removal</a>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+    {% if current_user.permissions not in ['MED-Autopsy', 'MED', 'INV'] %}
+        <a class="btn btn-secondary mb-3" href="{{ url_for('comment_instances.add', comment_item_type='Specimens', comment_item_id=item.id, redirect_url=url_for('specimens.view', item_id=item.id))}}">Add Comment</a>
+    {% endif %}
+    {% if current_user.permissions not in ['INV'] %}
+    <a class="btn btn-danger mb-3" data-toggle="modal" data-target="#remove-modal">Remove</a>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block view %}
+{% endblock %}
+
+{% block accordion %}
+<div class="card">
+    <div class="card-header view-card-header" id="details">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#details-coll" aria-expanded="false" aria-controls="details">
+            <span><i class="fa-solid fa-chevron-down mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Specimen Details
+        </button>
+    </div>
+    <div id="details-coll" class="collapse show" aria-labelledby="details">
+        <div class="card-body">
+            <div class="row">
+                <div class="col">
+                    <table class="table-hover table-striped nowrap" style="width: 100%" id="case_details">
+                        <tbody>
+                        <tr>
+                            <th>Parent Container (Accession Number)</th>
+                            <td>{{item.container.accession_number}}</td>
+                        </tr>
+                        <tr>
+                            <th>Parent Container (Type)</th>
+                            <td>
+                                {% if item.container_id is not none %}
+                                    {{item.container.type.name}}
+                                {% else %}
+                                    No Container
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Collection Date/Time</th>
+                            <td>
+                                {% if item.collection_date %}
+                                    {{item.collection_date.strftime("%m/%d/%Y")}}
+                                {% endif %}
+                                {% if item.collection_time %}
+                                    at {{item.collection_time[:2]~":"~item.collection_time[2:]}}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Submitted Amount</th>
+                            <td>{{item.submitted_sample_amount}} {{item.type.unit.name}}</td>
+                        </tr>
+                        <tr>
+                            <th>Current Amount</th>
+                            <td>{{item.current_sample_amount}} {{item.type.unit.name}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col">
+                    <table class="table-hover table-striped nowrap" style="width: 100%">
+                        <tbody>
+                        <tr>
+                            <th>Collection Site</th>
+                            <td>{{item.specimen_site.name}}</td>
+                        </tr>
+                        <tr>
+                            <th>Collection Vessel</th>
+                            <td>{{item.collection_container.name}}</td>
+                        </tr>
+                        <tr>
+                            <th>Accessioned By</th>
+                            <td>{{item.accessioner.initials}}</td>
+                        </tr>
+                        <tr>
+                            <th>Accessioned Date</th>
+                            {% if item.accession_date == None %}
+                            <td></td>
+                            {% else %}
+                            <td>{{item.accession_date.strftime("%m/%d/%Y %H:%M")}}</td>
+                            {% endif %}
+                        </tr>
+                        <tr>
+                            <th>Custody</th>
+                            <td>{{item.custody}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <table class="table-hover table-striped nowrap" style="width: 100%">
+                        <tbody>
+                            <tr>
+                                <th>Discipline</th>
+                                <td>{{item.discipline}} &emsp;&emsp; {% if current_user.permissions != 'ADM-Management' %}<a href="" data-toggle="modal" data-target="#edit-discipline" data-value="{{item.id}}" class="trigger-modal">Add</a>{%endif%}</td>
+                            </tr>
+                            <tr>
+                                <th>Condition</th>
+                                <td>{{item.condition}}</td>
+                            </tr>
+                            <tr>
+                                <th>Evidence Comments</th>
+                                <td>
+                                    {% if item.evidence_comments %}
+                                        {% for evidence_comment in item.evidence_comments.split("\n") %}
+                                            {{evidence_comment}}<br>
+                                        {% endfor %}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header view-card-header" id="specimen-audit-card">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#specimen-audit-card-collapse" aria-expanded="false" aria-controls="specimen-audit-card">
+            <span><i class="fa-solid fa-chevron-down mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Specimen Audit
+        </button>
+    </div>
+    <div id="specimen-audit-card-collapse" class="collapse show" aria-labelledby="specimen-audit-card-heading">
+        <div class="card-body">
+            <a class="btn btn-secondary mb-3 export" href="#" name="specimens">Export</a>
+            <div class="table display">
+                <div class="table-responsive">
+                    <table class="display table-striped table-hover nowrap small view-table" style="width:100%" id="specimen-audit-table">
+                        <thead>
+                        <tr>
+                            <th class="click"></th>
+                            {% if current_user.permissions in ['Admin', 'Owner'] %}
+                                <th></th>
+                            {% endif %}
+                            <th>ID</th>
+                            <th>Custody</th>
+                            <th>Reason</th>
+                            <th>Date/Time</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {% for audit in kwargs['specimen_audit'] %}
+                                {% if audit.db_status == 'Pending' %}
+                                    <tr style="background-color: #b8daff">
+                                {% else %}
+                                    <tr>
+                                {% endif %}
+                                        <td style="display: none"></td>
+                                        {% if current_user.permissions in ['Admin', 'Owner'] %}
+                                            <td>
+                                                <a href="#"
+                                                data-toggle="modal"
+                                                data-target="#admin_audit_remove"
+                                                data-href="{{url_for('specimens.view', item_id=item.id)}}"
+                                                data-form="{{url_for('specimen_audit.remove', item_id=audit.id) }}"
+                                                data-rownum="{{loop.revindex}}"
+                                                data-destination="{{audit.destination}}"
+                                                data-reason="{{audit.reason}}"
+                                                data-datetime="{{audit.o_time.strftime('%m/%d/%Y %H:%M') if audit.o_time else ''}}">
+                                                <i class="fa fa-trash-o" aria-hidden="true" style="color:red"></i>
+                                                </a>
+                                            </td>
+                                        {% endif %}
+                                        <td>{{loop.revindex}}</td>
+                                        <td>{{audit.destination}}</td>
+                                        <td>{{audit.reason}}</td>
+                                        <td>
+                                            {% if audit.o_time %}
+                                                {{audit.o_time.strftime('%m/%d/%Y %H:%M')}}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% if current_user.permissions not in ['MED-Autopsy', 'INV'] %}
+<div class="card">
+    <div class="card-header view-card-header" id="tests-card">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#tests-card-collapse" aria-expanded="false" aria-controls="tests-card">
+            <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Tests
+        </button>
+    </div>
+    <div id="tests-card-collapse" class="collapse" aria-labelledby="tests-card-heading">
+        <div class="card-body">
+            <a class="btn btn-secondary mb-3 export" href="#" name="tests">Export</a>
+            <div>
+                <a href="#!" id="tests-show-all">Show All</a> |
+                <a href="#!" id="tests-collapse-all">Collapse All</a>
+            </div>
+            <div class="table display">
+                <div class="table-responsive">
+                    <table class="display table-striped table-hover nowrap small view-table" style="width:100%" id="tests-table">
+                        <thead>
+                        <tr>
+                            <th></th>
+                            <th>Assay</th>
+                            <th>Discipline</th>
+                            <th>Batch</th>
+                            <th>Batch Date and Time</th>
+                            <th>Test</th>
+                            <th>Test Status</th>
+                            <th>Dilution</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% if kwargs['tests'] | length > 0 %}
+                            {% for test in kwargs['tests'] %}
+                            {% if loop.cycle('odd', 'even') == 'even' %}
+                                {% set color = 'white' %}
+                            {% else %}
+                                {% set color = '#F9F9F9' %}
+                            {% endif %}
+                            <tr class="main" style="background-color: {{color}}">
+                                <td class="row-control">
+                                    {% if test.id in kwargs['result_test_ids']  %}
+                                        <a href="#!"><i class="fa-solid fa-square-plus expand"></i></a>
+                                    {% endif %}
+                                </td>
+                                <td>{{test.assay.assay_name}}</td>
+                                <td>{{test.assay.discipline}}</td>
+                                <td>
+                                    {% if test.batch %}
+                                    <a href="{{url_for('batches.view', item_id=test.batch.id)}}">
+                                        {{test.batch.batch_id}}
+                                    </a>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if test.batch %}
+                                    {% if test.batch.extraction_date%}
+                                    {{test.batch.extraction_date.strftime('%m/%d/%Y %H:%M')}}
+                                    {% endif %}
+                                    {% endif %}
+                                </td>
+                                <td>{{test.test_name}}</td>
+                                <td>{{test.test_status}}</td>
+                                <td>{{test.dilution}}</td>
+                            </tr>
+                            {% if test.id in kwargs['test_ids'] %}
+                                <tr class="hidden_row collapse">
+                                    <td colspan="11">
+                                        <table class="display table-hover table-striped nowrap ml-5" style="left-margin: 50px;" id="result">
+                                            <thead>
+                                            <tr>
+                                                <th>Result Status</th>
+                                                <th>Result Type</th>
+                                                <th>Component Name</th>
+                                                <th>Result</th>
+                                                <th>Supp. Result</th>
+                                                <th>Qualitative</th>
+                                                <th>Drug Class</th>
+                                                <th>Drug Class Rank</th>
+                                                <th>Component Rank</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% if test.id in kwargs['test_ids'] %}
+                                                {% for result in kwargs['results'] %}
+                                                    {% if result.test_id == test.id and result.result_status == 'Confirmed' %}
+                                                        {% if result.unit %}
+                                                            {% set unit = result.unit.name %}
+                                                        {% endif %}
+                                                        <tr>
+                                                            <td>{{result.result_status}}</td>
+                                                            <td>{{result.result_type}}</td>
+                                                            <td>
+                                                                {% if result.component %}
+                                                                <a href="{{url_for('components.view', item_id=result.component_id) }}">
+                                                                    {{result.component.name}}
+                                                                </a>
+                                                                {% else %}
+                                                                {{result.component_name}}
+                                                                {% endif %}
+                                                            </td>
+                                                            <td align="right">
+                                                                {{result.result}}
+                                                                {% if result.result_type != 'Not Detected' %}
+                                                                {{unit}}
+                                                                {% endif %}
+                                                            </td>
+                                                            <td align="right">
+                                                                {% if result.supplementary_result %}
+                                                                {{result.supplementary_result}}
+                                                                {% if result.supplementary_result %}
+                                                                {{unit}}
+                                                                {% endif %}
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>{{result.qualitative_reason}}</td>
+                                                            <td>{{result.component.drug_class.name}}</td>
+                                                            <td>
+                                                                {% if item.case.type.code == 'PM' %}
+                                                                    {{result.component.drug_class.pm_rank}}
+                                                                {% elif item.case.type.code in ['D', 'M', 'P'] %}
+                                                                    {{result.component.drug_class.m_d_rank}}
+                                                                {% elif item.case.type.code == 'X' %}
+                                                                    {{result.component.drug_class.x_rank}}
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>{{result.component.rank}}</td>
+                                                        </tr>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% else %}
+                                                <tr>
+                                                    <td colspan="7" style="text-align: center">
+                                                        <b>No Result Found</b><br>
+                                                        If historical data, check test comments
+                                                    </td>
+                                                </tr>
+                                            {% endif %}
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="11" style="text-align: center; background-color:#F9F9F9">No Tests Added</td>
+                            </tr>
+                        {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+<div class="card">
+    {% if current_user.permissions in ['Admin', 'Owner', 'FLD' , 'FLD-MethodDevelopment'] %}
+    <div class="card-header view-card-header" id="results-card">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#results-card-collapse" aria-expanded="false" aria-controls="results-card">
+            <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Results
+        </button>
+    </div>
+    <div id="results-card-collapse" class="collapse" aria-labelledby="results-card">
+        <div class="card-body">
+            <div class="alert alert-secondary" id="confirmed-only-alert">Showing only <b>confirmed</b> results. Click the <b>Clear</b> button to show all results.</div>
+            <a class="btn btn-primary mb-2" id="clear-filter">Clear</a>
+            <a class="btn btn-primary mb-2" id="filter-confirmed">Confirmed</a>
+            <div class="table display">
+                <div class="table-responsive">
+                    <table class="display table-hover table-striped small nowrap datatable" style="width:100%" id="results-table">
+                        <thead>
+                        <tr>
+                            <th>Assay</th>
+                            <th>Discipline</th>
+                            <th>Batch</th>
+                            <th>Batch Date and Time</th>
+                            <th>Accession Number</th>
+                            <th>Specimen</th>
+                            <th>Result Status</th>
+                            <th>Result Type</th>
+                            <th>Drug Class</th>
+                            <th>Component Name</th>
+                            <th>Result</th>
+                            <th>Supplementary Result</th>
+                            <th>Qualitative</th>
+                            <th>Report Reason</th>
+                            <th>Test</th>
+                            <th>Reported</th>
+                            <th>Primary</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for item in kwargs['results'] %}
+                        {% if item.unit %}
+                        {% set unit = item.unit.name %}
+                        {% endif %}
+                        <tr>
+                            <td>{{item.test.assay.assay_name}}</td>
+                            <td>{{ item.test.assay.discipline }}</td>
+                            <td>
+                                <a href="{{url_for('batches.view', item_id=item.test.batch.id)}}">
+                                    {{item.test.batch.batch_id}}
+                                </a>
+                            </td>
+                            <td>
+                                {% if item.test.batch %}
+                                {{item.test.batch.extraction_date.strftime('%m/%d/%Y %H:%M')}}
+                                {% endif %}
+                            </td>
+                            <td>{{item.test.specimen.accession_number}}</td>
+                            <td>[{{item.test.specimen.type.code}}]</td>
+                            <td id="result-status">{{item.result_status}}</td>
+                            <td>{{item.result_type}}</td>
+                            <td>
+                                {% if item.component %}
+                                    {{item.component.drug_class.name}}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.component %}
+                                <a href="{{url_for('components.view', item_id=item.component_id) }}">
+                                    {{item.component.name}}
+                                </a>
+                                {% else %}
+                                {{item.component_name}}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{item.result}}
+                                {% if item.result_type != 'Not Detected' %}
+                                {{unit}}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.supplementary_result %}
+                                {{item.supplementary_result}}
+                                {% if item.supplementary_result %}
+                                {{unit}}
+                                {% endif %}
+                                {% endif %}
+                            </td>
+                            <td>{{item.qualitative_reason}}</td>
+                            <td>{{item.report_reason}}</td>
+                            <td>{{item.test.test_name}}</td>
+                            <td>{{item.reported}}</td>
+                            <td>{{item.primary}}</td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block modals %}
+<div class="modal" tabindex="-1" role="dialog" id="remove-modal">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Remove {{alias}}?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="{{ url_for(table_name~'.remove', item_id=item.id) }}" method="POST">
+                <div class="modal-body">
+                    <p>Are you sure you want to remove <b>{{alias}}</b>?</p>
+                    <label>Please enter the reason for removal.</label>
+                    <div class="form-group">
+                        <textarea class="form-control" name="reason" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <input class="btn btn-danger" type="submit" value="Remove">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!--<div class="modal" tabindex="-1" id="update" data-backdrop="static">-->
+<!--        <div class="modal-dialog modal-lg modal-dialog-centered">-->
+<!--            <div class="modal-content">-->
+<!--                <div class="modal-header">-->
+<!--                    <h5 class="modal-title"><b><span class="case-number"></span></b> currently has pending components.</h5>-->
+<!--                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
+<!--                        <span aria-hidden="true">&times;</span>-->
+<!--                    </button>-->
+<!--                </div>-->
+<!--                <div class="modal-body">-->
+<!--                    <p style="text-align:center;">-->
+<!--                        By clicking on <b>Update</b>, you will lock the case and its containers-->
+<!--                        and specimens take any pending specimens into your custody.-->
+<!--                    </p>-->
+<!--                    <p style="text-align:center;">-->
+<!--                        What would you like to do?-->
+<!--                    </p>-->
+<!--                </div>-->
+<!--                &lt;!&ndash;buttons go below&ndash;&gt;-->
+<!--                <div class="modal-footer" style="justify-content:center;">-->
+<!--                    <a class="btn btn-primary mr-3" style="width: 10rem" href="#" id="edit-review"><span class="func_text"></span></a>-->
+<!--                    <a class="btn btn-secondary ml-3" style="width: 10rem" href="#" id="view-only">View Only </a>-->
+<!--                    <a class="btn btn-secondary ml-3" style="width: 10rem" data-dismiss="modal">Cancel</a>-->
+
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<div class="modal" id="admin_audit_remove" role="dialog" tabindex="-1">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirm Remove Audit Entry</h5>
+        <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="font-weight-bold mb-2">
+          Warning:<br>
+          You are removing an entry in the specimen audit trail.<br>
+          Please confirm you are removing the correct entry.
+        </p>
+
+        <!-- Row details populated by JS -->
+        <dl class="row small mb-0">
+          <dt class="col-sm-4">ID</dt>        <dd class="col-sm-8" id="m-rownum"></dd>
+          <dt class="col-sm-4">Custody</dt>   <dd class="col-sm-8" id="m-destination"></dd>
+          <dt class="col-sm-4">Reason</dt>    <dd class="col-sm-8" id="m-reason"></dd>
+          <dt class="col-sm-4">Date/Time</dt> <dd class="col-sm-8" id="m-datetime"></dd>
+        </dl>
+
+        <form action="" method="POST" id="admin-remove">
+            <input type="hidden" name="redirect" value="">
+            <div class="modal-body">
+                <label>Please enter the reason for removal.</label>
+                <div class="form-group">
+                    <textarea class="form-control" name="reason" required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content:center">
+                <input class="btn btn-danger" type="submit" value="Remove">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <!-- ^ use data-dismiss to close, not data-toggle/target -->
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal" id="admin_custody_change" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Custody Type</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <p style="font-weight: bold">
+                        Warning: <br>
+                        Custody will be changed without a specimen audit entry. <br>
+                        Please be sure to correct specimen audit as needed.
+                    </p>
+                </div>
+                <form enctype="multipart/form-data" id="admin_custody_form" method="POST">
+                    {{ kwargs.admin_custody_form.hidden_tag() }}
+
+                    <div class="form-group">
+                        {{ kwargs.admin_custody_form.custody_type.label(style='margin-right: 10%') }}
+                        {{ kwargs.admin_custody_form.custody_type(class='form-control', id='admin_custody_type') }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ kwargs.admin_custody_form.custody.label(style='margin-right: 10%') }}
+                        {{ kwargs.admin_custody_form.custody(class='form-control', id='admin_custody') }}
+                    </div>
+                    <div class="modal-footer" style="justify-content: center">
+                        {{ kwargs.admin_custody_form.admin_custody_submit(class='btn btn-primary') }}
+                        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#admin_custody_change">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="custody_change" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Custody Type</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form enctype="multipart/form-data" id="custody_form" method="POST">
+                    {{ kwargs.custody_form.hidden_tag() }}
+
+                    <div class="form-group">
+                        {{ kwargs.custody_form.custody_type.label(style='margin-right: 10%') }}
+                        {{ kwargs.custody_form.custody_type(class='form-control') }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ kwargs.custody_form.custody.label(style='margin-right: 10%') }}
+                        {{ kwargs.custody_form.custody(class='form-control') }}
+                    </div>
+ <!-- Addition of datalist provides preset suggestions for reason of custody change.-->
+                    <div class="form-group">
+                        {{ kwargs.custody_form.reason.label(style='margin-right: 10%') }}
+                    <div class="input-group">
+                        <textarea
+                        class="form-control"
+                        id="reason_text"
+                        name="{{ kwargs.custody_form.reason.name }}"
+                        rows="4"                    
+                        placeholder="Pick a preset or type your own"
+                        >{{ kwargs.custody_form.reason.data or '' }}</textarea>
+
+                        <div class="input-group-append">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                                data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Reasons
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right" id="reason_presets_menu">
+                            <button class="dropdown-item" type="button" data-value="Transferred to [personnel, agency, etc.] for [reason ] on [ mm/dd/yyyy hh:mm ], correcting line [#].">Transferred to </button>
+                            <button class="dropdown-item" type="button" data-value="Submitted to [location name] on [mm/dd/yyyy hh:mm ], correcting line [#].">Submitted to</button>
+                            <button class="dropdown-item" type="button" data-value="Remained in [location name] between [mm/dd/yyyy hh:mm - mm/dd/yyyy hh:mm], correcting line [## - ##].">Remained in</button>
+                            <button class="dropdown-item" type="button" data-value="Stored in [location name] on [ mm/dd/yyyy hh:mm], correcting line #.">Stored in</button>
+                        </div>
+                        </div>
+                    </div>
+                    <small class="form-text text-muted">
+                         Use the preset, replace the bracketed text, and delete the brackets.
+                    </small>
+                    </div>
+                    <div class="modal-footer" style="justify-content: center">
+                        {{ kwargs.custody_form.custody_submit(class='btn btn-primary') }}
+                        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#custody_change">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Set Finalized for single REF result (copied from batches Set Finalized for single REF result) -->
+<div class="modal" tabindex="-1" role="dialog" id="edit-discipline">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add a Discipline</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form method="POST">
+          {{kwargs['disc_form'].hidden_tag()}}
+          <div class="form-group">
+            {{kwargs['disc_form'].add_discipline.label(class="form-label")}}
+            {{kwargs['disc_form'].add_discipline(class='form-control')}}
+          </div>
+          <div class="modal-footer" style="justify-content: center">
+            {{kwargs['disc_form'].disc_submit(class='btn btn-primary') }}
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="review-custody" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Review Custody Change</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>The following custody changes have been made:</p>
+                <table class="display table-striped table-hover nowrap small view-table" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Custody</th>
+                            <th>Reason</th>
+                            <th>Date/Time</th>
+                            <th>Submitter</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for audit in kwargs['pending_audits'] %}
+                            <tr>
+                                <td>{{loop.revindex}}</td>
+                                <td>{{audit.destination}}</td>
+                                <td>{{audit.reason}}</td>
+                                <td>
+                                    {% if audit.o_time %}
+                                        {{audit.o_time.strftime('%m/%d/%Y %H:%M')}}
+                                    {% endif %}
+                                </td>
+                                <td>{{audit.created_by}}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <a href="{{url_for(table_name~'.review_custody', item_id=item.id, func='approve')}}" class="btn btn-success">Confirm Entries</a>
+                <a href="{{url_for(table_name~'.review_custody', item_id=item.id, func='reject')}}" class="btn btn-secondary">Reject Entries</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="take-custody" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Take Custody</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Would you like to take custody of this specimen?</p>
+            </div>
+            <div class="modal-footer" style="align-content: center">
+                <a href="{{ url_for('specimens.update', item_id=item.id, custody=1)}}" class="btn btn-success">Yes</a>
+                <a href="{{ url_for('specimens.update', item_id=item.id, custody=0)}}" class="btn btn-secondary">No</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- <script type="text/javascript">
+    $(document).ready(function() {
+        $('.row-control').on('click', function(){
+            var isExpanded = $(this).parents().next('.row_control').attr("aria-expanded")
+            $(this).parents().next('.hidden_row').toggle();
+            //alert();
+</script> -->
+<script>
+   $(document).ready( function () {
+        $('#specimen-audit-table').DataTable({
+            pageLength: -1,
+            scrollX: true,
+            scrollY: '50vh',
+            scrollCollapse: true,
+            lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+            order: [],
+        });
+    });
+</script>
+<script>
+   $(document).ready( function () {
+        $('#results-table').DataTable({
+            pageLength: -1,
+            scrollX: true,
+            scrollY: '50vh',
+            scrollCollapse: true,
+            lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+            order: [],
+        });
+    });
+</script>
+
+<script>
+        $('.expand').on('click', function(){
+            var isExpanded = $(this).parents().next('.hidden_row').hasClass('show');
+            var row = $(this).parents().next('.hidden_row')
+            console.log(isExpanded);
+            if (isExpanded) {
+                console.log('expanded')
+                $(this).removeClass('fa-square-minus');
+                $(this).addClass('fa-square-plus');
+                $(this).parents().next('.hidden_row').removeClass('show');
+            } else {
+                console.log('collapsed')
+                $(this).removeClass('fa-square-plus');
+                $(this).addClass('fa-square-minus');
+                $(this).parents().next('.hidden_row').addClass('show');
+            }
+        });
+</script>
+
+
+
+<script>
+    $('#tests-show-all').on('click', function() {
+        $.each($('.expand'), function () {
+            var isExpanded = $(this).parents().next('.hidden_row').hasClass('show');
+            if (isExpanded == false) {
+                $(this).removeClass('fa-square-plus');
+                $(this).addClass('fa-square-minus');
+                $(this).parents().next('.hidden_row').addClass('show');
+            }
+        });
+    });
+</script>
+
+<script>
+    $('#tests-collapse-all').on('click', function() {
+        $.each($('.expand'), function () {
+            var isExpanded = $(this).parents().next('.hidden_row').hasClass('show');
+            if (isExpanded) {
+                $(this).removeClass('fa-square-minus');
+                $(this).addClass('fa-square-plus');
+                $(this).parents().next('.hidden_row').removeClass('show');
+            }
+        });
+    });
+</script>
+<script>
+    $('#clear-filter').on('click', function() {
+         var table = $('#results-table').DataTable()
+         table.columns().search("").draw()
+         $('#confirmed-only-alert').attr('hidden', true)
+    })
+</script>
+<script>
+
+    function ShowConfirmed() {
+        var table = $('#results-table').DataTable()
+        var colIdx = table.column($('#result-status')).index()
+        table.column(colIdx).search('^Confirmed$', true, false).draw()
+        $('#confirmed-only-alert').attr('hidden', false)
+    }
+
+    $(document).ready(ShowConfirmed)
+    $('#filter-confirmed').on('click', ShowConfirmed)
+
+</script>
+<script src="../../static/js/specimens.js"></script>
+<script src = "../../static/js/label_printing.js" type="text/javascript" charset="UTF-8"> </script>
+<!--JS for Change Custody Modal: 
+Listens for clicks on dropdown preset items inside #reason_presets_menu. 
+When a preset is clicked, its text (data-value) is appended to the textarea #reason_text.-->
+<script>
+(function () {
+  var SEPARATOR = ' '; // change to "\n" for new lines
+
+  function appendWithSep(base, addition) {
+    base = (base || '').trim();
+    addition = (addition || '').trim();
+    if (!addition) return base || '';
+    if (!base) return addition;
+    if (base.endsWith(addition)) return base;
+    if (!base.endsWith(SEPARATOR)) return base + SEPARATOR + addition;
+    return base + addition;
+  }
+
+  document.addEventListener('click', function (e) {
+    var item = e.target.closest('#reason_presets_menu .dropdown-item');
+    if (!item) return;
+
+    var input = document.getElementById('reason_text');
+    if (!input) return;
+
+    var text = item.getAttribute('data-value') || '';
+    input.value = appendWithSep(input.value, text);
+    input.focus();
+    try {
+      var pos = input.value.length;
+      input.setSelectionRange(pos, pos);
+    } catch (_) {}
+  });
+})();
+</script>
+
+<script>
+  $('#admin_audit_remove').on('show.bs.modal', function (event) {
+    var $btn = $(event.relatedTarget);     // the <a> that opened the modal
+    var href = $btn.data('href');          // what you want to store
+
+    var rownum      = $btn.data('rownum') || '';
+    var destination = $btn.data('destination') || '';
+    var reason      = $btn.data('reason') || '';
+    var datetime    = $btn.data('datetime') || '';
+    var formAction = $btn.data('form') || '';
+
+    var $modal = $(this);
+
+    // set the hidden redirect field to data-href
+    $modal.find('input[name="redirect"]').val(href);
+    $modal.find('form#admin-remove').attr('action', formAction);
+
+    // (if you still have the old Confirm link)
+    $modal.find('#confirm-remove').attr('href', href);
+
+    // fill the labels
+    $modal.find('#m-rownum').text(rownum);
+    $modal.find('#m-destination').text(destination);
+    $modal.find('#m-reason').text(reason);
+    $modal.find('#m-datetime').text(datetime);
+
+  });
+</script>
+
+
+{% endblock %}
+
+
+
+

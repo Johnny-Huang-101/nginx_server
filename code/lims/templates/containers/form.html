@@ -1,0 +1,177 @@
+{% extends "form_template.html" %}
+{% set module_name = 'containers' %}
+{% block form %}
+
+<div class="row form-group mb-4">
+    <div class="col">
+        {{form.case_id.label}}
+        {{form.case_id}}
+    </div>
+    <div class="col">
+        {{form.container_type_id.label}}
+        {{form.container_type_id}}
+    </div>
+    <div class="col">
+        {{form.discipline.label}}<a href="#!" data-toggle="tooltip" tabindex="-1"
+            title="Investigators Quick Reference:<br>
+                    <ul><li>GSR → Physical</li>
+                    <li>Bloodspot → Physical</li>
+                    <li>Paraphernalia → Drug</li>
+                    <li>AM Bag → Toxicology</li></ul>">
+            <i class="fa-solid fa-circle-question"></i>
+        </a>
+        {{form.discipline}}
+    </div>
+    <div class="col">
+        {{form.n_specimens_submitted.label}}
+        {{form.n_specimens_submitted}}
+    </div>
+</div>
+<hr style="border-width:3px">
+<div class="row form-group my-4">
+    <div class="col">
+        {{form.division_id.label}}
+        {{form.division_id(id='division_id')}}
+    </div>
+    <div class="col">
+        {{form.submitted_by.label}}
+        {{form.submitted_by(id='submitted_by')}}
+    </div>
+    <div class="col">
+        {{form.submission_date.label}}
+        {{form.submission_date}}
+        <div class="form-group mb-0">
+            {{form.future_submission_date(class="")}}
+            {{form.future_submission_date.label}}
+        </div>
+    </div>
+    <div class="col">
+        {{form.submission_time.label}} e.g., HHMM (no colon)
+        {{form.submission_time}}
+    </div>
+</div>
+<div class="row form-group my-4">
+    <div class="col">
+        {{form.submission_route_type.label}}
+        {{form.submission_route_type}}
+    </div>
+    <div class="col" style="display: none" id="transfer">
+        {{form.transfer_by.label}}
+        {{form.transfer_by}}
+        <p><b>From</b></p>
+    </div>
+    <div class="col">
+        {{form.location_type.label}}
+        {{form.location_type}}
+    </div>
+    <div class="col">
+        {{form.submission_route.label}}
+        {{form.submission_route}}
+        <a href="../static/filesystem/LockerLayout.jpg" target="_blank" id="locker-layout">Locker Layout</a>
+    </div>
+      <div class="col">
+        {{form.observed_by.label}}
+        {{form.observed_by}}
+    </div>
+</div>
+
+<hr style="border-width:3px">
+<div class="row form-group my-4">
+    <div class="col">
+        {{form.evidence_comments.label}}
+        {{form.evidence_comments}}
+        <div style="font-size:0.9rem">
+            <a href="#" data-toggle="modal" data-target="#comments_modal">Add comment</a>
+            |
+            <a href="#!" id="sort" >Sort</a>
+            |
+            <a href="#!" id="undo" >Undo</a>
+            |
+            <a href="#!" id="clear" >Clear</a>
+        </div>
+    </div>
+</div>
+{% if function != 'Add' %}
+    <div class="row form-group mt-4">
+        <div class="col">
+            <b>Comments</b>
+            <br>
+            {% if kwargs['comments']|length >= 1 %}
+                {% for comment in kwargs['comments'] %}
+                    {{comment.comment_text}} - {{comment.created_by}} {{comment.create_date.strftime('%Y-%m-%d')}} <br>
+                {% endfor %}
+            {% else %}
+                No Comments to Display
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
+<div class="row form-group mt-4">
+    {% if function == 'Add'%}
+        <div class="col">
+            {{form.comments.label}} For INV, list Alias and MRN.
+            {{form.comments(id="notes")}}
+            <a href="#!" tabindex="-1" class="result-symbol" data-symbol="Alias:\nMRN:\n">Alias, MRN:</a>      
+        </div>
+    {% endif %}
+    <div class="col">
+        {{form.communications.label}} (SFOCME Internal Use Only)
+        {{ form.communications }}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block buttons %}
+<!--    <a class="btn btn-primary" href="#" data-toggle="modal" data-target="#confirm-location">Submit</a>-->
+    {% if function == 'Add' %}
+        {{form.submit(class='btn btn-primary submitBtnHisto', **{'data-class': 'containers'})}}
+        {{form.submit_exit(class='btn btn-primary submitBtnHisto', **{'data-class': 'containers'})}}
+    {% endif %}
+{% endblock %}
+
+{% block modals %}
+
+<div class="modal" tabindex="-1" role="dialog" id="comments_modal">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select comments</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="evidence_comment_form">
+                    {% for field in kwargs['evidence_comment_form'] %}
+                    {% if field.name not in ['csrf_token'] %}
+                    <div class="form-group">
+                        {{field.label}}
+                        {{field(class='form-control')}}
+                        <div class="invalid-feedback" id="{{field.name}}_invalid">
+                        </div>
+                    </div>
+
+                    {% endif %}
+                    {% endfor %}
+                </form>
+                <a href="/static/filesystem/evidence_comments/evidence_envelope_reference.pdf" target="_blank">Evidence Envelope Reference</a>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button class="btn btn-primary" id="submit_comment">Submit</button>
+            </div>
+        </div>
+        <div id="success" align="center"></div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+
+<script src="/static/js/evidence_comments.js"></script>
+<script src="/static/js/containers.js"></script>
+<script src = "../../static/js/label_printing.js" type="text/javascript" charset="UTF-8"> </script>
+{% endblock %}

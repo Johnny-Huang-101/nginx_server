@@ -1,0 +1,621 @@
+{% extends "base.html" %}
+{% block content %}
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<div class="container-fluid mt-4 px-4">
+  <h1 class="text-center mb-4">FORENSIGHT</h1>
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <!-- ========================= ROWS OF 3 (TOP SECTION) ========================= -->
+        <div class="form-row mb-3">
+          <div class="form-group col-md-4">
+            {{ form.from_date.label }}
+            {{ form.from_date(class="form-control", type="date", id="from_date") }}
+          </div>
+          <div class="form-group col-md-4">
+            {{ form.to_date.label }}
+            {{ form.to_date(class="form-control", type="date", id="to_date") }}
+          </div>
+          <div class="form-group col-md-4">
+            {{ form.case_status.label(class='form-label') }}
+            {{ form.case_status(class='form-control selectpicker', multiple=True, data_actions_box="true",
+            id="case_status") }}
+          </div>
+        </div>
+
+        <div class="form-row mb-3">
+          <div class="form-group col-md-4">
+            {{ form.genders.label(class='form-label') }}
+            {{ form.genders(class='form-control selectpicker', multiple=True, data_actions_box="true", id="genders") }}
+          </div>
+          <div class="form-group col-md-4">
+            {{ form.races.label(class='form-label') }}
+            {{ form.races(class='form-control selectpicker', multiple=True, data_actions_box="true", id="races") }}
+          </div>
+          <div class="form-group col-md-4">
+            {{ form.start_age.label(class='form-label') }}
+            {{ form.start_age(class='form-control', type='number', min='0', max='150', step='1', id="start_age") }}
+          </div>
+        </div>
+
+        <div class="form-row mb-3">
+          <div class="form-group col-md-4">
+            {{ form.end_age.label(class='form-label') }}
+            {{ form.end_age(class='form-control', type='number', min='0', max='150', step='1', id="end_age") }}
+          </div>
+          <div class="form-group col-md-4">
+            {{ form.case_types.label(class='form-label') }}
+            {{ form.case_types(class='form-control selectpicker', multiple=True, data_actions_box="true",
+            id="case_types") }}
+          </div>
+          <div class="form-group col-md-4">
+            {{ form.disciplines.label(class='form-label') }}
+            {{ form.disciplines(class='form-control selectpicker', multiple=True, data_actions_box="true",
+            id="disciplines") }}
+          </div>
+        </div>
+
+            <!-- Row: Specimen Types (2/3) + Drug Class (1/3) -->
+    <div class="form-row mb-3">
+      <div class="form-group col-md-8">
+        {{ form.specimen_types.label(class='form-label') }}
+        {{ form.specimen_types(
+            class='form-control selectpicker',
+            multiple=True,
+            data_actions_box="true",
+            data_live_search="true",
+            id="specimen_types") }}
+      </div>
+      <div class="form-group col-md-4">
+        {{ form.drug_class.label(class='form-label') }}
+        {{ form.drug_class(
+            class='form-control selectpicker',
+            data_live_search="true",
+            id="drug_class") }}
+      </div>
+    </div>
+
+    <!-- Row: Components (2/3) + Component Match (1/3) -->
+    <div class="form-row mb-3">
+      <div class="form-group col-md-8">
+        {{ form.components.label(class='form-label') }}
+        {{ form.components(
+            class='form-control selectpicker',
+            multiple=True,
+            data_actions_box="true",
+            data_live_search="true",
+            id="components") }}
+      </div>
+      <div class="form-group col-md-4" id="component_logic_group">
+        {{ form.component_logic.label(class='form-label') }}
+        {{ form.component_logic(
+            class='form-control selectpicker',
+            id="component_logic") }}
+      </div>
+    </div>
+
+
+        <div class="form-row mb-3">
+          <div class="form-group col-md-4">
+            {{ form.reported_results.label(class='form-label') }}
+            {{ form.reported_results(class='form-control selectpicker', id="reported_results") }}
+          </div>
+          <div class="form-group col-md-8">
+            {{ form.result_status.label(class='form-label') }}
+            {# Disabled by default (reported_results == Yes). JS will toggle. #}
+            {{ form.result_status(class='form-control selectpicker', multiple=True, data_actions_box="true",
+            id="result_status", disabled=True) }}
+          </div>
+        </div>
+
+        <hr class="my-3">
+
+        <!-- ========================= PM-ONLY SECTION ========================= -->
+        <style>
+          .section-disabled {
+            opacity: .55;
+            pointer-events: none;
+          }
+        </style>
+
+        <div id="pmSection" class="section-disabled">
+          <div class="form-row mb-3">
+            <div class="form-group col-md-4">
+              {{ form.autopsy_type.label(class='form-label') }}
+              {{ form.autopsy_type(class='form-control selectpicker', multiple=True, data_actions_box="true",
+              id="autopsy_type") }}
+            </div>
+            <div class="form-group col-md-4">
+              {{ form.death_types.label(class='form-label') }}
+              {{ form.death_types(class='form-control selectpicker', multiple=True, data_actions_box="true",
+              id="death_types") }}
+            </div>
+            <div class="form-group col-md-4">
+              {{ form.manner_of_death.label(class='form-label') }}
+              {{ form.manner_of_death(class='form-control selectpicker', multiple=True, data_actions_box="true",
+              id="manner_of_death") }}
+            </div>
+          </div>
+
+          <div class="form-row mb-3">
+            <div class="form-group col-md-4">
+              {{ form.fixed_address.label(class='form-label') }}
+              {{ form.fixed_address(class='form-control selectpicker', id='fixed_address_select') }}
+            </div>
+
+            <!-- Fixed Address Location (multi + live search) -->
+            <div class="form-group col-md-4">
+              {{ form.fixed_address_location.label(class='form-label') }}
+              {{ form.fixed_address_location(
+              class='form-control selectpicker',
+              multiple=True,
+              data_actions_box="true",
+              data_live_search="true",
+              id='fixed_address_location_select') }}
+            </div>
+
+            <!-- Death Address (multi + live search) -->
+            <div class="form-group col-md-4">
+              {{ form.death_location.label(class='form-label') }}
+              {{ form.death_location(
+              class='form-control selectpicker',
+              multiple=True,
+              data_actions_box="true",
+              data_live_search="true",
+              id="death_location") }}
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center">
+          {{ form.submit(class='btn btn-primary px-4') }}
+          {{ form.clear(class='btn btn-light border px-3 ml-2') }}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% if map_html %}
+  <div class="card shadow-sm mb-4">
+    <div class="card-header"><strong>Map - PM Only</strong></div>
+    <div class="card-body p-0">
+      <iframe
+        id="forensight-map-frame"
+        style="width: 100%; height: 800px; border: 0;"
+        referrerpolicy="no-referrer"
+        sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation">
+      </iframe>
+      <script>
+        (function () {
+          var iframe = document.getElementById('forensight-map-frame');
+          // This must be valid JS *and* valid Jinja:
+          iframe.srcdoc = {{ map_html | tojson | safe }};
+        })();
+      </script>
+    </div>
+  </div>
+{% endif %}
+{% if gender_pie_html or race_pie_html or age_pie_html or deathloc_pie_html %}
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <!-- Top row: Gender & Race -->
+    <div class="row justify-content-center">
+      <div class="col-md-5 mb-4 d-flex justify-content-end">
+        {% if gender_pie_html %}
+          <div style="width:100%; max-width:540px;">
+            {{ gender_pie_html|safe }}
+          </div>
+        {% endif %}
+      </div>
+      <div class="col-md-5 mb-4 d-flex justify-content-start">
+        {% if race_pie_html %}
+          <div style="width:100%; max-width:540px;">
+            {{ race_pie_html|safe }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Bottom row: Age & Death Location -->
+    <div class="row justify-content-center">
+      <div class="col-md-5 mb-4 d-flex justify-content-end">
+        {% if age_pie_html %}
+          <div style="width:100%; max-width:540px;">
+            {{ age_pie_html|safe }}
+          </div>
+        {% endif %}
+      </div>
+      <div class="col-md-5 mb-4 d-flex justify-content-start">
+        {% if deathloc_pie_html %}
+          <div style="width:100%; max-width:540px;">
+            {{ deathloc_pie_html|safe }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+
+
+<!-- ========================= Behavior (jQuery/bootstrap-select) ========================= -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const hasPickers = !!(window.$ && $.fn && $.fn.selectpicker);
+
+    function refreshPickers(scope) {
+      if (!hasPickers) return;
+      (scope ? $(scope).find('.selectpicker') : $('.selectpicker'))
+        .selectpicker('render')
+        .selectpicker('refresh');
+    }
+
+    // ----- Element refs -----
+    const caseTypesEl        = document.getElementById('case_types');
+    const pmSection          = document.getElementById('pmSection');
+
+    const fixedAddressSel    = document.getElementById('fixed_address_select');
+    const fixedLocationSel   = document.getElementById('fixed_address_location_select');
+
+    const discEl             = document.getElementById('disciplines');
+    const stEl               = document.getElementById('specimen_types');
+
+    const drugClassEl        = document.getElementById('drug_class');
+    const compEl             = document.getElementById('components');
+    const compLogicEl        = document.getElementById('component_logic');
+    const compLogicGroupEl   = document.getElementById('component_logic_group');
+
+    const reportedResultsEl  = document.getElementById('reported_results');
+    const resultStatusEl     = document.getElementById('result_status');
+
+    // ======================= Specimen Types: LIVE FILTER by Discipline =======================
+    const ST_DATA = {{ specimen_types_payload|tojson }};
+    function stTokens(s) {
+      if (!s) return [];
+      return s.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+    }
+    const ST = ST_DATA.map(row => ({
+      id: String(row.id),
+      name: row.name,
+      toks: stTokens(row.disciplines)
+    }));
+
+    function getSelectedDisciplines() {
+      if (!discEl) return [];
+      return Array.from(discEl.options)
+        .filter(o => o.selected)
+        .map(o => o.text.trim().toLowerCase());
+    }
+
+    const ALL_DISC = (function () {
+      if (!discEl) return [];
+      return Array.from(discEl.options).map(o => o.text.trim().toLowerCase());
+    })();
+
+    function isAllDiscSelected(selected) {
+      if (!selected || selected.length === 0) return true;
+      return selected.length === ALL_DISC.length;
+    }
+
+    let prevVisibleST = (function () {
+      if (!stEl) return new Set();
+      return new Set(Array.from(stEl.options).map(o => o.value));
+    })();
+
+    function rebuildSpecimenTypes() {
+      if (!stEl || !discEl) return;
+
+      const selectedDisc = getSelectedDisciplines();
+      const prevSelected = new Set(
+        Array.from(stEl.options).filter(o => o.selected).map(o => o.value)
+      );
+
+      const visible = ST.filter(st => {
+        if (isAllDiscSelected(selectedDisc)) return true;
+        return selectedDisc.some(d => st.toks.includes(d));
+      });
+
+      const newVisibleIds = new Set(visible.map(v => v.id));
+
+      if (hasPickers) $('#specimen_types').selectpicker('destroy');
+
+      stEl.innerHTML = '';
+      visible.forEach(st => {
+        const opt = document.createElement('option');
+        opt.value = st.id;
+        opt.textContent = st.name;
+
+        if (
+          prevSelected.size === 0 ||
+          prevSelected.has(st.id) ||
+          !prevVisibleST.has(st.id)
+        ) {
+          opt.selected = true;
+        }
+
+        stEl.appendChild(opt);
+      });
+
+      prevVisibleST = newVisibleIds;
+
+      if (hasPickers) {
+        $('#specimen_types')
+          .attr('data-live-search', 'true')
+          .attr('data-selected-text-format', 'count > 3')
+          .selectpicker({ liveSearch: true, actionsBox: true })
+          .selectpicker('render')
+          .selectpicker('refresh');
+      }
+    }
+
+    // ======================= Components: FILTER BY DRUG CLASS (UI ONLY) & PERSIST =======================
+    const COMPONENTS_DATA = {{ components_payload|tojson }};
+    const COMPONENTS_ALL = COMPONENTS_DATA.map(r => ({
+      id: String(r.id),
+      name: r.name,
+      dcid: r.drug_class_id === null || r.drug_class_id === undefined
+        ? null
+        : Number(r.drug_class_id)
+    }));
+
+    // Persistent set of selected component IDs
+    let selectedComponents = new Set(
+      compEl
+        ? Array.from(compEl.options).filter(o => o.selected).map(o => String(o.value))
+        : []
+    );
+
+    let isRebuildingComponents = false;
+
+    function renderComponents(visibleList) {
+      if (!compEl) return;
+
+      isRebuildingComponents = true;
+
+      if (hasPickers) $('#components').selectpicker('destroy');
+
+      compEl.innerHTML = '';
+      visibleList.forEach(c => {
+        const id = String(c.id);
+        const opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = c.name;
+        opt.selected = selectedComponents.has(id);
+        compEl.appendChild(opt);
+      });
+
+      if (hasPickers) {
+        $('#components')
+          .attr('data-live-search', 'true')
+          .attr('data-selected-text-format', 'count > 3')
+          .selectpicker({ liveSearch: true, actionsBox: true })
+          .selectpicker('render')
+          .selectpicker('refresh');
+      }
+
+      setTimeout(function () {
+        isRebuildingComponents = false;
+        toggleComponentLogic(); // reevaluate AND/OR visibility
+      }, 0);
+    }
+
+    function rebuildComponents() {
+      if (!compEl || !drugClassEl) return;
+
+      const val = drugClassEl.value;
+      let visible;
+      if (val && !isNaN(parseInt(val, 10))) {
+        const selId = parseInt(val, 10);
+        visible = COMPONENTS_ALL.filter(c => c.dcid === selId);
+      } else {
+        visible = COMPONENTS_ALL.slice();
+      }
+
+      renderComponents(visible);
+    }
+
+    function onComponentsChanged(e, clickedIndex, isSelected) {
+      if (!compEl || isRebuildingComponents) return;
+
+      if (typeof clickedIndex === 'number') {
+        const opt = compEl.options[clickedIndex];
+        if (!opt) return;
+        const id = String(opt.value);
+        if (isSelected) {
+          selectedComponents.add(id);
+        } else {
+          selectedComponents.delete(id);
+        }
+      } else {
+        // Bulk action: sync visible
+        Array.from(compEl.options).forEach(o => {
+          const id = String(o.value);
+          if (o.selected) selectedComponents.add(id);
+          else selectedComponents.delete(id);
+        });
+      }
+
+      toggleComponentLogic();
+    }
+
+    // ======================= Component Logic (AND/OR) visibility =======================
+   function toggleComponentLogic() {
+      if (!compEl || !compLogicEl) return;
+
+      let selectedCount = 0;
+
+      if (hasPickers) {
+        // Ask bootstrap-select directly; it's the source of truth
+        const vals = $('#components').val();
+        selectedCount = vals ? vals.length : 0;
+      } else {
+        selectedCount = Array.from(compEl.options).filter(o => o.selected).length;
+      }
+
+      const shouldEnable = selectedCount > 1;
+
+      compLogicEl.disabled = !shouldEnable;
+
+      if (hasPickers) {
+        $('#component_logic')
+          .prop('disabled', !shouldEnable)
+          .selectpicker('refresh');
+      }
+    }
+
+
+    // ======================= PM gating =======================
+    function caseTypesHasPM() {
+      if (!caseTypesEl) return false;
+      return Array.from(caseTypesEl.options)
+        .filter(o => o.selected)
+        .some(o => (o.text || '').trim().toUpperCase() === 'PM');
+    }
+
+    function setPMSectionEnabled(enabled) {
+      if (!pmSection) return;
+      pmSection.classList.toggle('section-disabled', !enabled);
+      pmSection.querySelectorAll('select, input, textarea, button')
+        .forEach(el => { el.disabled = !enabled; });
+      refreshPickers(pmSection);
+      toggleFixedAddressLocation();
+    }
+
+    // ======================= Fixed Address dependency =======================
+    function isFixedYes() {
+      return (fixedAddressSel?.value || '').toLowerCase() === 'yes';
+    }
+
+    function toggleFixedAddressLocation() {
+      if (!fixedLocationSel) return;
+      const pmDisabled = pmSection && pmSection.classList.contains('section-disabled');
+      const enabled = isFixedYes() && !pmDisabled;
+
+      fixedLocationSel.disabled = !enabled;
+      if (!enabled && fixedLocationSel.options) {
+        Array.from(fixedLocationSel.options).forEach(o => { o.selected = false; });
+      }
+      const group = fixedLocationSel.closest && fixedLocationSel.closest('.form-group');
+      refreshPickers(group || null);
+    }
+
+    // ======================= Reported Results ↔ Result Status =======================
+    function setResultStatusEnabled(enabled) {
+      if (!resultStatusEl) return;
+      if (hasPickers) $('#result_status').selectpicker('destroy');
+
+      resultStatusEl.disabled = !enabled;
+      if (enabled) {
+        Array.from(resultStatusEl.options).forEach(o => { o.selected = true; });
+      } else {
+        Array.from(resultStatusEl.options).forEach(o => { o.selected = false; });
+      }
+
+      if (hasPickers) {
+        $('#result_status')
+          .attr('data-live-search', 'true')
+          .attr('data-selected-text-format', 'count > 3')
+          .selectpicker({ liveSearch: true, actionsBox: true })
+          .selectpicker('render')
+          .selectpicker('refresh');
+      }
+    }
+
+    function onReportedResultsChange() {
+      const val = (reportedResultsEl?.value || '').toLowerCase();
+      setResultStatusEnabled(val === 'no');
+    }
+
+    // ======================= Initialize selectpickers =======================
+    if (hasPickers) {
+      $('.selectpicker')
+        .each(function () {
+          const $el = $(this);
+          if (
+            $el.is('#specimen_types') ||
+            $el.is('#drug_class') ||
+            $el.is('#components') ||
+            $el.is('#fixed_address_location_select') ||
+            $el.is('#death_location') ||
+            $el.is('#reported_results') ||
+            $el.is('#result_status') ||
+            $el.is('#component_logic')
+          ) {
+            $el.attr('data-live-search', 'true');
+          }
+        })
+        .selectpicker({
+          liveSearch: true,
+          actionsBox: true,
+          selectedTextFormat: 'count > 3'
+        })
+        .selectpicker('render')
+        .selectpicker('refresh');
+    }
+
+    // ======================= Event wiring =======================
+
+    // Discipline → Specimen Types
+    if (hasPickers) {
+      $('#disciplines').on('changed.bs.select', rebuildSpecimenTypes);
+    } else if (discEl) {
+      discEl.addEventListener('change', rebuildSpecimenTypes);
+    }
+
+    // Drug Class → Components
+    if (hasPickers) {
+      $('#drug_class').on('changed.bs.select', rebuildComponents);
+      $('#components').on('changed.bs.select', onComponentsChanged);
+    } else {
+      drugClassEl && drugClassEl.addEventListener('change', rebuildComponents);
+      compEl && compEl.addEventListener('change', function () {
+        onComponentsChanged();
+      });
+    }
+
+    // Case Types → PM section
+    if (hasPickers) {
+      $('#case_types').on('changed.bs.select', function () {
+        setPMSectionEnabled(caseTypesHasPM());
+      });
+    } else if (caseTypesEl) {
+      caseTypesEl.addEventListener('change', function () {
+        setPMSectionEnabled(caseTypesHasPM());
+      });
+    }
+
+    // Fixed Address → Fixed Location
+    if (hasPickers) {
+      $('#fixed_address_select').on('changed.bs.select', toggleFixedAddressLocation);
+    } else if (fixedAddressSel) {
+      fixedAddressSel.addEventListener('change', toggleFixedAddressLocation);
+    }
+
+    // Reported Results → Result Status
+    if (hasPickers) {
+      $('#reported_results').on('changed.bs.select', onReportedResultsChange);
+    } else if (reportedResultsEl) {
+      reportedResultsEl.addEventListener('change', onReportedResultsChange);
+    }
+
+    // ======================= Initial states =======================
+    setPMSectionEnabled(caseTypesHasPM());
+    toggleFixedAddressLocation();
+    rebuildSpecimenTypes();
+    rebuildComponents();
+    onReportedResultsChange();
+    toggleComponentLogic();
+
+    refreshPickers();
+  });
+</script>
+
+
+
+
+{% endblock %}

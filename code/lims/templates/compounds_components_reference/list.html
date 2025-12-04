@@ -1,0 +1,37 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+{% block header %}
+    <th>Compound ID</th>
+    <th>Compound</th>
+    <th>Component ID</th>
+    <th>Component</th>
+{% endblock %}
+
+{% block body %}
+    <td>{{item.compound.id}}</td>
+    <td>{{item.compound.name}}</td>
+    <td>{{item.component.id}}</td>
+    <td>{{item.component.name}}</td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}

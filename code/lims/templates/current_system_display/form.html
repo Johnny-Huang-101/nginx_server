@@ -1,0 +1,52 @@
+{% extends "form_template.html" %}
+
+<!-- ALERTS -->
+{% block alerts %}
+{% endblock %}
+
+<!-- HEADER -->
+{% block header %}
+{% endblock %}
+
+
+{% block form %}
+    <div class="form-group">
+        {{form.db_name.label}}
+        {{form.db_name}}
+    </div>
+    <div class="form-group">
+        {{form.welcome_message.label}}
+        {{form.welcome_message}}
+    </div>
+    <div class="form-group">
+        {{form.icon_img_id.label}}
+        {{form.icon_img_id}}
+    </div>
+    <div class="form-group">
+        {{form.logo_img_id.label}}
+        {{form.logo_img_id}}
+    </div>
+    <div class="form-group">
+        {{form.bg_img_id.label}}
+        {{form.bg_img_id}}
+    </div>
+    <div class="form-group">
+        {{form.overlay_img_id.label}}
+        {{form.overlay_img_id}}
+    </div>
+    <div class="form-group">
+        {{form.accession_letter.label}}
+        {{form.accession_letter}}
+    </div>
+    <div class="form-group">
+        {{form.accession_counter.label}}
+        {{form.accession_counter}}
+    </div>
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

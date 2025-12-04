@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+
+    .rows {
+
+    line-height: 3px;
+    min-height: 3px;
+    height: 3px;
+    }
+
+</style>
+
+<div class="container-fluid">
+    <hr style="border-width:5px">
+    <h1 align="center">
+        {{item.batch_id}} | {{item.batch_status}}
+    </h1>
+    <hr style="border-width:5px">
+    <div id="buttons">
+        <button id="select_all" class="btn btn-primary">Select all specimens</button>
+        <button id="clear" class="btn btn-secondary">Clear selections</button>
+    </div>
+
+    <form method="POST" id="form" novalidate="novalidate">
+        {{form.hidden_tag()}}
+
+        <div class="form-group" style="display:none">
+            {{form.selected_specimens(class='selectpicker')}}
+        </div>
+
+        <div>
+            <div class="table display">
+                <div class="table-responsive">
+                    <table class="table display table-hover small nowrap" style="width:100%; border:1px solid #ced4da" id="tests">
+                        <thead>
+                          <tr>
+                              <th>ID</th>
+                              <th>Case</th>
+                              <th>Accession Number</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                        {% set count = namespace(counter=0) %}
+                            {% for x in specimen_id %}
+                              <tr class>
+                                  <td>{{x}}</td>
+                                  <td>{{specimen_case[count.counter]}}</td>
+                                  <td>{{specimen_accession[count.counter]}}</td>
+                                  {% set count.counter = count.counter + 1 %}
+                          {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div>
+            {{form.submit (class='btn btn-primary')}}
+            {% if count.counter > 0 %}
+                <a type="button" class="btn btn-secondary" href="#" data-toggle="modal" data-target="#warning">Exit</a>
+            {% else %}
+                <a type="button" class="btn btn-secondary" href="{{url_for(table_name~'.view_list')}}">Exit</a>
+            {% endif %}
+        </div>
+        <div class="modal" tabindex="-1" role="dialog" id="warning">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Confirm</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <p>There are still {{count.counter}} specimen that need to be approved.</p>
+                  <p>Please confirm these specimen are to go back into {{item.extractor.initials}}'s custody.</p>
+              </div>
+                  <div class="modal-footer">
+                    {{form.submit (class='btn btn-primary')}}
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                  </div>
+            </div>
+          </div>
+        </div>
+    </form>
+</div>
+
+
+<script>
+    // Initialize the tests datatable
+    $(document).ready(function () {
+        var table = $('#tests').DataTable({
+            dom: 'tr',
+            scrollX: true,
+            //scrollY : "30vh",
+            //scrollCollapse: true,
+            pageLength: -1,
+            "aaSorting": [[ 0, "asc" ]],
+            "language": {
+             "emptyTable": "Please select an assay to see available tests"
+             }
+        });
+    });
+</script>
+
+<script type="text/javascript">
+    // Select all rows in the tests table
+    $('#select_all').click(function() {
+         $.each($("#tests tbody tr"),function(){
+             $(this).addClass('table-active');
+         });
+
+         var selected = [];
+         $.each($("#tests tr.table-active"),function(){
+            selected.push($(this).find('td').eq(0).text());
+         });
+
+         $('#selected_specimens').selectpicker('val',selected);
+         $('#confirm_btn').removeAttr('disabled');
+
+    });
+</script>
+
+<script type="text/javascript">
+    // Make table responsive to click
+    $("#tests").on('click', 'tbody tr', function (e) {
+        var table = $('#tests').DataTable();
+        var dataArr = [];
+        $(this).toggleClass('table-active');
+
+        $.each($("#tests tr.table-active"), function () {
+            dataArr.push($(this).find('td').eq(0).text());
+        });
+
+        $('#selected_specimens').selectpicker('val', dataArr);
+        $('#selected_specimens').selectpicker('refresh'); // Refresh the selectpicker
+        $('#confirm_btn').removeAttr('disabled');
+
+    });
+</script>
+
+<script type=text/javascript>
+    // Clear the selected/highlighted rows
+     $(function() {
+        $('#clear').on('click', function() {
+             $.each($("#tests tbody tr"),function(){
+                 $(this).removeClass('table-active');
+             });
+            $("#selected_specimens").selectpicker('val', '');
+            $('#confirm_btn').attr('disabled','disabled');
+
+         });
+    });
+</script>
+
+{% endblock %}

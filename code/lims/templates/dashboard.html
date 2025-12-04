@@ -1,0 +1,958 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% set disc = (current_user.dashboard_discipline or 'Toxicology')|lower %}
+{% set start_field = disc ~ '_start_date' %}
+{% set alt_start_field = disc ~ '_alternate_start_date' %}
+
+{# keep using your has_attr/attr filters that you registered #}
+
+{# NO d_start / d_alt_start macros; they render text #}
+{% macro d_days(obj) -%}
+{%- set alt = obj|attr(alt_start_field) -%}
+{%- set start = obj|attr(start_field) -%}
+{%- set base = alt or start -%}
+{%- if base -%}
+{# If base is a datetime it has .hour; if it's a date, convert to midnight #}
+{%- if base|has_attr('hour') -%}
+{{ (datetime.now() - base).days }}d
+{%- else -%}
+{{ (datetime.now() - datetime.combine(base, datetime.min.time())).days }}d
+{%- endif -%}
+{%- else -%}
+N/A
+{%- endif -%}
+{%- endmacro %}
+
+{% macro d_date_str(obj) -%}
+{%- set dt = obj|attr(start_field) -%}
+{%- if dt -%}
+{%- if dt|has_attr('hour') -%}
+{{ dt.strftime("%m/%d/%Y") }}
+{%- else -%}
+{{ dt.strftime("%m/%d/%Y") }}
+{%- endif -%}
+{%- endif -%}
+{%- endmacro %}
+
+
+<style>
+    .compact-box {
+        background-color: #d4edda;
+        padding: 4px;
+        margin: 0;
+        border: 1px solid #c3e6cb;
+        border-radius: 4px;
+    }
+
+    .compact-box a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .compact-box:hover {
+        background-color: #b1e6bd;
+    }
+
+    .case-label {
+        font-size: 75%;
+        font-weight: 700;
+    }
+</style>
+
+<head>
+    <title>{{config['SYSTEM_NAME']}}/Dashboard</title>
+</head>
+
+<div id="dashboard-content">
+    <hr style="border-width:5px">
+    <div>
+        <div class="container-fluid pl-0" style="margin-top: 0px;">
+            <div class="d-flex align-items-center" style="padding-bottom: 1vh;">
+                <h1 class="mb-0">
+                    Dashboard |
+                    <form method="POST" action="{{ url_for('dashboard.update_discipline') }}" class="d-inline">
+                        <div class="dropdown d-inline">
+
+                            <button class="btn btn-link dropdown-toggle" style="font-size: 2rem;" type="button"
+                                id="disciplineDropdown" data-toggle="dropdown" aria-haspopup="true"
+                                aria-expanded="false">
+                                {{ current_user.dashboard_discipline or 'Toxicology' }}
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="disciplineDropdown">
+                                {% for option in ['Toxicology', 'Biochemistry', 'Drug', 'External'] %}
+                                <button class="dropdown-item" type="submit" name="discipline" value="{{ option }}">{{
+                                    option }}</button>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </form>
+                </h1>
+
+            </div>
+
+
+            <hr style="border-width: 5px;">
+
+            <div class="col-md-12">
+                <!-- Pending Label + Boxes -->
+                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                    <strong style="min-width: 80px;">Pending:</strong>
+                    <div class="compact-display" style="display: flex; flex-wrap: wrap; gap: 4px;">
+                        {% for item, vals in pending_dict.items() %}
+                        <span class="compact-box">
+                            {% if vals['assay_name'] != 0 %}
+                            <a class="assay-color" href="{{ url_for('batches.add', assay_id=vals['assay_id']) }}">
+                                {{ vals['assay_name'] }} : {{ vals['counts'] }}
+                            </a>
+                            {% else %}
+                            {{ vals['assay_name'] }} : {{ vals['counts'] }}
+                            {% endif %}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {# --- color swatches --- #}
+                {% set EA_BG = '#fff6f1' %} {# lighter orange x2 (from #ffe6dc) #}
+                {% set PA_BG = '#ffd3cb' %} {# same as Pending #}
+                {% set BR_BG = '#ff8e6b' %} {# darker orange x2 (from #ffb8a6) #}
+                {% set ORANGE_BORDER = '#ffc9a1' %}
+
+                <!-- Processing Label + Boxes -->
+                <div style="display: flex; align-items: center; gap: 6px; margin-top: 8px;">
+                    <strong style="min-width: 80px;">Processing:</strong>
+                    <div class="compact-display" style="display: flex; flex-wrap: wrap; gap: 4px;">
+                        {% for batch in processing_batches %}
+                        {# choose background by status (BR > PA > EA like your tooltip) #}
+                        {% set bg = PA_BG %}
+                        {% if batch.reviewed_by_id %}
+                        {% set bg = BR_BG %}
+                        {% elif batch.processed_by_id %}
+                        {% set bg = PA_BG %}
+                        {% elif batch.extracted_by_id %}
+                        {% set bg = EA_BG %}
+                        {% endif %}
+
+                        <span class="compact-box t-tip form-item" data-html="true" data-toggle="tooltip"
+                            data-placement="bottom" title="
+                                <b>{{ batch.batch_id }} - 
+                                {% if batch.reviewed_by_id %} {{ batch.batch_reviewer.initials }} (BR)
+                                {% elif batch.processed_by_id %} {{ batch.processor.initials }} (PA)
+                                {% elif batch.extracted_by_id %} {{ batch.extractor.initials }} (EA)
+                                {% endif %}<br>"
+                            style="background-color: {{ bg }}; border: 1px solid {{ ORANGE_BORDER }};">
+                            <a class="assay-color" href="{{ url_for('batches.view', item_id=batch.id) }}">
+                                {{ batch.name or batch.assay.assay_name }} : {{ batch.test_count }}
+                            </a>
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+
+            <hr style="border-width: 5px;">
+            {% if user_locks and user_locks|length %}
+            <div class="card mb-3">
+                <div class="card-header"><strong>My Locks</strong></div>
+                <div class="card-body p-2">
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 20%;">Module</th>
+                                    <th>Locked Items ({{ current_user.initials }})</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bucket in user_locks %}
+                                {% set items = bucket['items'] %}
+                                {% if items and items|length %}
+                                <tr>
+                                    <td style="white-space: nowrap;">{{ bucket['module'] }}</td>
+                                    <td>
+                                        {# --- GROUPED view for Containers/Specimens (single continuous line) --- #}
+                                        {% if bucket['module'] in ['Containers','Specimens'] and bucket.get('by_case')
+                                        %}
+                                        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:6px;">
+                                            {% for grp in bucket['by_case'] %}
+                                            <strong class="case-label">{{ grp['case_label'] }}:</strong>
+                                            {% for row in grp['rows'] %}
+                                            {% if row['url'] %}
+                                            <a class="badge badge-light" href="{{ row['url'] }}" target="_blank"
+                                                style="color:#007bff">
+                                                {{ row['label'] }}
+                                            </a>
+                                            {% else %}
+                                            <span class="badge badge-light">{{ row['label'] }}</span>
+                                            {% endif %}
+                                            {% endfor %}
+                                            {% if not loop.last %}
+                                            <span class="mx-2 text-muted">|</span>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        {% if bucket['has_more'] %}
+                                        <div class="mt-1"><span class="badge badge-secondary">+ more…</span></div>
+                                        {% endif %}
+
+                                        {# --- DEFAULT (unchanged) for all other modules --- #}
+                                        {% else %}
+                                        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                                            {% for row in items %}
+                                            {% if row['url'] %}
+                                            <a class="badge badge-light" href="{{ row['url'] }}" target="_blank"
+                                                style="color:#007bff">
+                                                {{ row['label'] }}
+                                            </a>
+                                            {% else %}
+                                            <span class="badge badge-light">{{ row['label'] }}</span>
+                                            {% endif %}
+                                            {% endfor %}
+                                            {% if bucket['has_more'] %}
+                                            <span class="badge badge-secondary">+ more…</span>
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+
+            <div class="row">
+                <!-- Left column: Bar Graphs -->
+                <div class="col-md-7">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            {{ testing_bar | safe }}
+                            {{ status_bar | safe }}
+                            {{ litigation_status_bar | safe }}
+
+                        </div>
+                    </div>
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            {{ custom_tat_graph | safe }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right column: Testing + Reporting Tables -->
+                <div class="col-md-5">
+                    <!-- TESTING TABLE -->
+                    <div class="card mb-3">
+                        <div class="card-body p-0">
+                            <div class="table-responsive scrollable-table" style="max-height: 30vh;">
+                                <table class="table mb-0" style="width: 100%;">
+                                    <thead style="background-color: white; color: black;">
+                                        <tr>
+                                            <th colspan="3" style="text-align: center;">Testing : {{
+                                                testing_cases|length }}
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            {% set split = (testing_cases|length // 2) + 1 %}
+                                            {% for i in range(2) %}
+                                            <td style="text-align: left; vertical-align: top;">
+                                                <table class="table table-sm mb-0">
+                                                    <thead>
+                                                        <tr>
+                                                            <th></th>
+                                                            <th></th>
+                                                            <th></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for obj in testing_cases[i*split:(i+1)*split] %}
+                                                        <tr>
+                                                            <td style="min-width: 85px; word-break: break-word;">
+                                                                <span style="white-space: nowrap;">
+                                                                    {% if obj.case.priority == 'High' %}
+                                                                    <span style="color: red;"> <strong>P</strong>
+                                                                    </span>
+                                                                    {% endif %}
+                                                                    {% if obj.case|has_attr(alt_start_field) %}
+                                                                    <a class="case-number"
+                                                                        href="{{ url_for('cases.view', item_id=obj.case.id) }}"
+                                                                        target="_blank" style="color: rgb(87, 3, 165);">
+                                                                        {{ obj.case.case_number }}
+                                                                    </a>
+                                                                    {% else %}
+                                                                    <a class="case-number"
+                                                                        href="{{ url_for('cases.view', item_id=obj.case.id) }}"
+                                                                        target="_blank">
+                                                                        {{ obj.case.case_number }}
+                                                                    </a>
+                                                                    {% endif %}
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                {% if obj.days is not none %}
+                                                                {{ obj.days }}d
+                                                                {% else %}
+                                                                N/A
+                                                                {% endif %}
+                                                            </td>
+                                                            <td style="font-size:14px;">{{ obj.assays | safe }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                            {% endfor %}
+                                        </tr>
+                                    </tbody>
+
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- REPORTING TABLE -->
+                    <div class="card">
+                        <div class="card-body p-0">
+                            <div class="table-responsive scrollable-table" style="max-height: 35vh;">
+                                <table class="table mb-0" style="width: 100%;">
+                                    <thead style="background-color: white; color: black;">
+                                        <tr>
+                                            <th style="text-align: center;">Drafting : {{drafting_cases|length}}</th>
+                                            <th style="text-align: center;">CR (Reverted) : {{ cr_cases_reverted|length
+                                                }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <!-- Left Column: Drafting + CR -->
+                                            <td style="text-align: left; vertical-align: top;">
+                                                <!-- Drafting Table -->
+                                                <div style="margin-bottom: 12px;">
+                                                    <table class="table table-sm mb-2">
+                                                        <thead>
+                                                            <tr>
+                                                                <th style="width: 32%;"></th>
+                                                                <th style="width: 10%;"></th>
+                                                                <th></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for case in drafting_cases %}
+                                                            <tr>
+                                                                <td>
+                                                                    <span style="white-space: nowrap;">
+                                                                        {% if case.priority == 'High' %}
+                                                                        <span style="color: red;"> <strong>P</strong>
+                                                                        </span>
+                                                                        {% endif %}
+                                                                        {% if case|has_attr(alt_start_field) %}
+                                                                        <a class="case-number"
+                                                                            href="{{ url_for('reports.add', item_id=case.id, discipline=current_user.dashboard_discipline) }}"
+                                                                            target="_blank"
+                                                                            style="color: rgb(87, 3, 165);">
+                                                                            {{ case.case_number }}
+                                                                        </a>
+                                                                        {% else %}
+                                                                        <a class="case-number"
+                                                                            href="{{ url_for('reports.add', item_id=case.id, discipline=current_user.dashboard_discipline) }}"
+                                                                            target="_blank">
+                                                                            {{ case.case_number }}
+                                                                        </a>
+                                                                        {% endif %}
+                                                                    </span>
+                                                                </td>
+                                                                <td>
+                                                                    {{ d_days(case) }}
+                                                                </td>
+                                                                <td>{% if case.locked_by %} <i class="fa-solid fa-lock"
+                                                                        style="margin-right: 5px;"></i>{{case.locked_by}}{%
+                                                                    endif %}</td>
+                                                            </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+
+                                                <!-- CR Section -->
+                                                <div
+                                                    style="background-color: white; border: 1px solid lightgray; padding: 4px; margin-bottom: 4px;">
+                                                    <strong>CR : {{ cr_cases_original|length }}</strong>
+                                                </div>
+                                                <table class="table table-sm">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 32%;"></th>
+                                                            <th style="width: 10%"></th>
+                                                            <th></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for item in cr_cases_original %}
+                                                        {% set case = item['case'] %}
+                                                        {% set report = item['report'] %}
+                                                        <tr>
+                                                            <td>
+                                                                <span style="white-space: nowrap;">
+                                                                    {% if case.priority == 'High' %}
+                                                                    <span style="color: red;"> <strong>P</strong>
+                                                                    </span>
+                                                                    {% endif %}
+                                                                    <a class="case-number" href="{% if report.locked_by and report.locked_by == current_user.initials %}
+                                                                            {{ url_for('reports.view', item_id=report.id, view_only=false) }}
+                                                                        {% elif report.assigned_cr == current_user.initials %}
+                                                                        {{ url_for('reports.view', item_id=report.id, view_only=false) }}
+                                                                         {% elif report.assigned_cr != current_user.initials %}
+                                                                         {{ url_for('reports.view', item_id=report.id, view_only=true) }}
+                                                                        {% elif report.locked_by is none %}
+                                                                        {{ url_for('reports.view', item_id=report.id, view_only=false) }}
+                                                                        {% else %}
+                                                                            {{ url_for('reports.view', item_id=report.id, view_only=true) }}
+                                                                        {% endif %}" target="_blank"
+                                                                        data-toggle="tooltip" data-placement="top"
+                                                                        title="{{ report.communications | e | replace('\n', '<br>') | safe }}">
+                                                                        {{ report.report_name }}
+                                                                    </a>
+                                                                </span>
+                                                            <td>{{ d_days(case) }}
+
+                                                            </td>
+                                                            <td>{% if report.locked_by %} <i class="fa-solid fa-lock"
+                                                                    style="margin-right: 5px;"></i>{{report.locked_by}}
+                                                                {% elif report.assigned_cr %}
+                                                                {{report.assigned_cr_user.initials}}{% endif %}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </td>
+
+                                            <!-- Right Column: CR (Reverted) + DR -->
+                                            <td style="text-align: left; vertical-align: top;">
+                                                <table class="table table-sm">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 37%;"></th>
+                                                            <th style="width: 10%"></th>
+                                                            <th></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for item in cr_cases_reverted %}
+                                                        {% set case = item['case'] %}
+                                                        {% set report = item['report'] %}
+                                                        <tr>
+                                                            <td>
+                                                                <span style="white-space: nowrap;">
+                                                                    {% if case.priority == 'High' %}
+                                                                    <span style="color: red;"> <strong>P</strong>
+                                                                    </span>
+                                                                    {% endif %}
+                                                                    <a class="case-number" href="{% if report.locked_by and report.locked_by == current_user.initials %}
+                                                                            {{ url_for('reports.view', item_id=report.id, view_only=false) }}
+                                                                            {% elif report.assigned_cr != current_user.initials %}
+                                                                         {{ url_for('reports.view', item_id=report.id, view_only=true) }}
+                                                                        {% elif report.locked_by is none %}
+                                                                        {{ url_for('reports.view', item_id=report.id, view_only=false) }}
+                                                                        {% else %}
+                                                                            {{ url_for('reports.view', item_id=report.id, view_only=true) }}
+                                                                        {% endif %}" target="_blank"
+                                                                        data-toggle="tooltip" data-placement="top"
+                                                                        title="{{ report.communications | e | replace('\n', '<br>') | safe }}">
+                                                                        {{ report.report_name }}
+                                                                    </a>
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                {{ d_days(case) }}
+
+                                                            </td>
+                                                            <td>{% if report.locked_by %} <i class="fa-solid fa-lock"
+                                                                    style="margin-right: 5px;"></i>{{report.locked_by}}
+                                                                {% endif %}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+
+                                                <!-- DR Section -->
+                                                <div
+                                                    style="background-color: white; border: 1px solid lightgray; padding: 4px; margin-bottom: 4px;">
+                                                    <strong>DR : {{ dr_cases|length }}</strong>
+                                                </div>
+                                                <table class="table table-sm">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 37%;"></th>
+                                                            <th style="width: 10%"></th>
+                                                            <th></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for item in dr_cases %}
+                                                        {% set case = item['case'] %}
+                                                        {% set report = item['report'] %}
+                                                        <tr>
+                                                            <td>
+                                                                <span style="white-space: nowrap;">
+                                                                    {% if case.priority == 'High' %}
+                                                                    <span style="color: red;"> <strong>P</strong>
+                                                                    </span>
+                                                                    {% endif %}
+                                                                    <a class="case-number" href="{% if report.locked_by and report.locked_by == current_user.initials %}
+                                                                            {{ url_for('reports.view', item_id=report.id, view_only=false) }}
+                                                                             % elif report.assigned_dr != current_user.initials %}
+                                                                         {{ url_for('reports.view', item_id=report.id, view_only=true) }}
+                                                                             {% elif report.locked_by is none %}
+                                                                        {{ url_for('reports.view', item_id=report.id, view_only=false) }}
+                                                                        {% else %}
+                                                                            {{ url_for('reports.view', item_id=report.id, view_only=true) }}
+                                                                        {% endif %}" target="_blank"
+                                                                        data-toggle="tooltip" data-placement="top"
+                                                                        title="{{ report.communications | e | replace('\n', '<br>') | safe }}">
+                                                                        {{ report.report_name }}
+                                                                    </a>
+                                                                </span>
+                                                            </td>
+
+                                                            <td>
+                                                                {{ d_days(case) }}
+
+                                                            </td>
+                                                            <td>{% if report.assigned_dr %}
+                                                                {{report.assigned_dr_user.initials}} {% elif
+                                                                report.locked_by %} <i class="fa-solid fa-lock"
+                                                                    style="margin-right: 5px;"></i>{{report.locked_by}}
+                                                                {% endif %}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+                    </div>
+                    <!-- LITIGATION PACKET TABLE -->
+                    <!-- LITIGATION PACKET TABLE -->
+                    <!-- LITIGATION PACKET TABLE -->
+                    <div class="card" style="margin-top: 1em;">
+                        <div class="card-body p-0">
+                            <div class="table-responsive scrollable-table" style="max-height: 35vh;">
+                                <table class="table mb-0" style="width: 100%;">
+                                    <thead style="background-color: white; color: black;">
+                                        <tr>
+                                            <th style="text-align: center;">
+                                                Created: {{ created_packets|length }}
+                                            </th>
+                                            <th style="text-align: center;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <!-- LEFT COLUMN -->
+                                            <td style="text-align: left; vertical-align: top;">
+                                                <table class="table table-sm mb-4">
+                                                    <tbody>
+                                                        {% for packet in created_packets %}
+                                                        <tr>
+                                                            <td style="width: 75%;">
+                                                                <a href="{{ url_for('litigation_packets.view', item_id=packet.id) }}"
+                                                                    target="_blank">
+                                                                    {{ packet.packet_name }}
+                                                                </a>
+                                                            </td>
+                                                            <td style="width: 25%;">
+                                                                {% if packet.create_date %}
+                                                                {{ (datetime.utcnow().date() -
+                                                                packet.create_date.date()).days }}d
+                                                                {% else %} N/A {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+
+                                                <!-- Ready for PP -->
+                                                <div
+                                                    style="background-color: white; border: 1px solid lightgray; padding: 4px; margin-bottom: 4px;">
+                                                    <strong>Ready for PP: {{ ready_pp_packets|length }}</strong>
+                                                </div>
+                                                <table class="table table-sm">
+                                                    <tbody>
+                                                        {% for packet in ready_pp_packets %}
+                                                        <tr>
+                                                            <td style="width: 75%;">
+                                                                <a href="{{ url_for('litigation_packets.view', item_id=packet.id) }}"
+                                                                    target="_blank">
+                                                                    {{ packet.packet_name }}
+                                                                </a>
+                                                            </td>
+                                                            <td style="width: 25%;">
+                                                                {% if packet.create_date %}
+                                                                {{ (datetime.utcnow().date() -
+                                                                packet.create_date.date()).days }}d
+                                                                {% else %} N/A {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </td>
+
+                                            <!-- RIGHT COLUMN -->
+                                            <td style="text-align: left; vertical-align: top;">
+
+                                                <!-- Ready for Declaration (NEW) -->
+                                                <div
+                                                    style="background-color: white; border: 1px solid lightgray; padding: 4px; margin-bottom: 4px;">
+                                                    <strong>Waiting for Declaration: {{ waiting_for_dec_packets|length
+                                                        }}</strong>
+                                                </div>
+                                                <table class="table table-sm mb-4">
+                                                    <tbody>
+                                                        {% for packet in waiting_for_dec_packets %}
+                                                        <tr>
+                                                            <td style="width: 75%;">
+                                                                <a href="{{ url_for('litigation_packets.view', item_id=packet.id) }}"
+                                                                    target="_blank">
+                                                                    {{ packet.packet_name }}
+                                                                </a>
+                                                            </td>
+                                                            <td style="width: 25%;">
+                                                                {% if packet.create_date %}
+                                                                {{ (datetime.utcnow().date() -
+                                                                packet.create_date.date()).days }}d
+                                                                {% else %} N/A {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+
+                                                <!-- Ready for PR -->
+                                                <div
+                                                    style="background-color: white; border: 1px solid lightgray; padding: 4px; margin-bottom: 4px;">
+                                                    <strong>Ready for PR: {{ ready_pr_packets|length }}</strong>
+                                                </div>
+                                                <table class="table table-sm">
+                                                    <tbody>
+                                                        {% for packet in ready_pr_packets %}
+                                                        <tr>
+                                                            <td style="width: 75%;">
+                                                                <a href="{{ url_for('litigation_packets.view', item_id=packet.id) }}"
+                                                                    target="_blank">
+                                                                    {{ packet.packet_name }}
+                                                                </a>
+                                                            </td>
+                                                            <td style="width: 25%;">
+                                                                {% if packet.create_date %}
+                                                                {{ (datetime.utcnow().date() -
+                                                                packet.create_date.date()).days }}d
+                                                                {% else %} N/A {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                </div>
+
+
+
+                <!-- TURN AROUND TIME GRAPHS -->
+                <div class="col-md-12 mt-3 mb-2">
+                    <hr>
+                    <div style="text-align: center;">
+                        <div class="form-group mt-3" style="text-align: center;">
+                            <form method="POST">
+                                <div class="form-group" style="display:inline-block">
+                                    {{form.start_date.label(class='form-group')}}
+                                </div>
+                                <div class="form-group" style="display:inline-block">
+                                    {{form.start_date(class='form-control', type='date')}}
+                                </div>
+                                <div class="form-group ml-3" style="display:inline-block">
+                                    {{form.end_date.label(class='form-group')}}
+                                </div>
+                                <div class="form-group" style="display:inline-block">
+                                    {{form.end_date(class='form-control', type='date')}}
+                                </div>
+                                <div class="form-group ml-3" style="display:inline-block">
+                                    {{form.date_by.label(class='form-group')}}
+                                </div>
+                                <div class="form-group" style="display:inline-block">
+                                    {{form.date_by(class='form-control')}}
+                                </div>
+                                <div class="form-group ml-3" style="display:inline-block">
+                                    {{form.case_type.label(class='form-group')}}
+                                </div>
+                                <div class="form-group mr-3" style="display:inline-block">
+                                    <select class="form-control selectpicker case-select" data-live-search="true"
+                                        data-actions-box="true" multiple name="case_type" id="case_type"
+                                        title="All Case Types">
+                                        {% for option in form.case_type %}
+                                        {{ option }}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group" style="display:inline-block">
+                                    {{form.submit(class='btn btn-primary')}}
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <h5 class="text-center">
+                        Turn Around Times for
+                        {% if not selected_case_type_names or selected_case_type_names|length ==
+                        form.case_type.choices|length %}
+                        <span style="color: #007bff; font-weight: 500;">All</span>
+                        {% else %}
+                        <span style="color: #007bff; font-weight: 500;">
+                            {{ selected_case_type_names | join(', ') }}
+                        </span>
+                        {% endif %}
+
+                        Closed Cases Submitted Between
+                        {{ form.start_date.data.strftime('%m/%d/%Y') if form.start_date.data else 'Start Date' }} -
+                        {{ form.end_date.data.strftime('%m/%d/%Y') if form.end_date.data else 'End Date' }}
+                    </h5>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        {{ tat_graph|safe }}
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        {{ box_plot |safe }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header" id="tat_table_heading" style="text-align: left">
+                    <h5 class="mb-0">
+                        <button aria-controls="tat_table" aria-expanded="false" class="btn btn-link chevron-btn"
+                            data-target="#tat_table" data-toggle="collapse">
+                            <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: #FF0000"></i></span>
+                            Turn Around Time Data
+                        </button>
+                    </h5>
+                </div>
+                <div aria-labelledby="tat_table_heading" class="collapse" id="tat_table">
+                    <div class="card-body">
+                        <div class="table display" style="text-align: left">
+                            <div class="table-responsive" style="max-height: 50vh; overflow-y: auto;">
+                                <table class="display table-hover table-striped small display nowrap"
+                                    id="tat_data_table" style="width:100%">
+                                    <thead>
+                                        <tr>
+                                            <th>Month</th>
+                                            <th>Submitted</th>
+                                            <th>Open</th>
+                                            <th>Closed</th>
+                                            <th>Avg TAT</th>
+                                            <th>Median TAT</th>
+                                            <th>&lt;15</th>
+                                            <th>&lt;15 (%)</th>
+                                            <th>&lt;30</th>
+                                            <th>&lt;30 (%)</th>
+                                            <th>&lt;45</th>
+                                            <th>&lt;45 (%)</th>
+                                            <th>&lt;60</th>
+                                            <th>&lt;60 (%)</th>
+                                            <th>&lt;90</th>
+                                            <th>&lt;90 (%)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for date, data in counts_dict.items() %}
+                                        <tr>
+                                            <td><strong>{{ date }}</strong></td>
+                                            <td>{{ data['Submitted'] or 0 }}</td>
+                                            <td>{{ data['Open'] or 0 }}</td>
+                                            <td>{{ data['Closed'] or 0 }}</td>
+                                            <td>{{ data['Avg TAT'] or '' }}</td>
+                                            <td>{{ data['Median TAT'] or '' }}</td>
+                                            <td>{{ data['<15'] or 0 }}</td>
+                                            <td>{{ data['<15 (%)'] or 0 }}%</td>
+                                            <td>{{ data['<30'] or 0 }}</td>
+                                            <td>{{ data['<30 (%)'] or 0 }}%</td>
+                                            <td>{{ data['<45'] or 0 }}</td>
+                                            <td>{{ data['<45 (%)'] or 0 }}%</td>
+                                            <td>{{ data['<60'] or 0 }}</td>
+                                            <td>{{ data['<60 (%)'] or 0 }}%</td>
+                                            <td>{{ data['<90'] or 0 }}</td>
+                                            <td>{{ data['<90 (%)'] or 0 }}%</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-md-12 mt-3 mb-2">
+                <h5 class="text-center">
+                    {% if not selected_case_type_names or selected_case_type_names|length ==
+                    form.case_type.choices|length
+                    %}
+                    <span style="color: #007bff; font-weight: 500;">All</span>
+                    {% else %}
+                    <span style="color: #007bff; font-weight: 500;">
+                        {{ selected_case_type_names | join(', ') }}
+                    </span>
+                    {% endif %}
+
+                    Cases Submitted Between
+                    {{ form.start_date.data.strftime('%m/%d/%Y') if form.start_date.data else 'Start Date' }} -
+                    {{ form.end_date.data.strftime('%m/%d/%Y') if form.end_date.data else 'End Date' }}
+                </h5>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    {{ volume_graph |safe }}
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    {{ open_closed_barchart |safe }}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header" id="open_cases_heading" style="text-align: left">
+                    <h5 class="mb-0">
+                        <button aria-controls="open_cases" aria-expanded="false" class="btn btn-link chevron-btn"
+                            data-target="#open_cases" data-toggle="collapse">
+                            <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: #FF0000"></i></span>
+                            Open Cases
+                        </button>
+                    </h5>
+                </div>
+                <div aria-labelledby="open_cases_heading" class="collapse" id="open_cases">
+                    <div class="card-body">
+                        <div class="table display" style="text-align: left">
+                            <div class="table-responsive" style="max-height: 50vh; overflow-y: auto;">
+                                <table class="display table-hover table-striped small display nowrap"
+                                    id="open_cases_table" style="width:100%">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:100px">Case Number</th>
+                                            <th>Case Type</th>
+                                            <th>Case Status</th>
+                                            <th>Start Date</th>
+                                            <th>Days open</th>
+                                        </tr>
+                                    </thead>
+                                    {% for item in open_cases %}
+                                    <tr>
+                                        <th>
+                                            <a href="{{ url_for('cases.view', item_id=item.id) }}">
+                                                {{item.case_number}}
+                                            </a>
+                                        </th>
+                                        <td>{{item.type.code}}</td>
+                                        <td>{{item.case_status}}</td>
+                                        <td>{{ d_date_str(item) }}</td>
+                                        <td>
+                                            {{ d_days(item) }}
+
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="card">
+                <div class="card-header" id="submitted_table_heading" style="text-align: left">
+                    <h5 class="mb-0">
+                        <button aria-controls="submitted_table" aria-expanded="false" class="btn btn-link chevron-btn"
+                            data-target="#submitted_table" data-toggle="collapse">
+                            <span><i class="fa-solid fa-chevron-right mr-2 chevron"></i></span>
+                            Submitted Case Types
+                        </button>
+                    </h5>
+                </div>
+                <div aria-labelledby="submitted_table_heading" class="collapse" id="submitted_table">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="display table-hover table-striped small" id="case_type_table"
+                                style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Date</th>
+                                        {% for col in submitted_case_columns %}
+                                        <th>{{ col }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in submitted_case_table.values() %}
+                                    {% set weight = 'bold' if row['Date'] in ['Total', 'Average', 'Median', 'Min',
+                                    'Max']
+                                    else 'normal' %}
+                                    <tr>
+                                        <td style="font-weight:{{weight}}">{{ loop.index }}</td>
+                                        <th style="font-weight:{{weight}}">{{ row['Date'] }}</th>
+                                        {% for col in submitted_case_columns %}
+                                        <td style="font-weight:{{weight}}">
+                                            {% set val = row.get(col, 0) %}
+                                            {{ "%.1f"|format(val) if row['Date'] in ['Average', 'Median'] else
+                                            ("%d"|format(val)) }}
+                                        </td>
+
+                                        {% endfor %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+        </div>
+
+        {% endblock %}

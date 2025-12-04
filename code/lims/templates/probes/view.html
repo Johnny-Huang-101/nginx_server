@@ -1,0 +1,76 @@
+{% extends "view_template.html" %}
+{% block alerts %}
+{% endblock %}
+
+{% block buttons %}
+<!--    <a class="btn btn-primary" href="{{url_for('services.add', equipment_type=item_name, item_id=item.id)}}">Add Service</a>-->
+    <a class="btn btn-primary" href="{{url_for(table_name~'.export_attachments', item_id=item.id)}}">Export Attachments</a>
+{% endblock %}
+
+{% block view %}
+{% endblock %}
+
+{% block accordion %}
+          <div class="card">
+                <div class="card-header" id="services-heading" style="height:50px; padding:0px; display:flex;align-items:center;">
+                    <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#services-collapse" aria-expanded="false" aria-controls="services">
+                        <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+                        Service History
+                    </button>
+                </div>
+                <div id="services-collapse" class="collapse" aria-labelledby="services-heading">
+                    <div class="card-body">
+                        <div class="table display" id="table-div">
+                            <div class="table-responsive">
+                                <table class="display table-striped table-hover nowrap small datatable" style="width:100%;" id="services-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Service Type</th>
+                                        <th>Vendor Personnel</th>
+                                        <th>Issue</th>
+                                        <th>Resolution</th>
+                                        <th>Notes</th>
+                                        <th>Date Created</th>
+                                        <th>Created By</th>
+                                        <th>Modify Date</th>
+                                        <th>Modified By Date</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for item in services %}
+                                    <tr>
+                                        <td>{{item.service_date.strftime('%m/%d/%Y')}}</td>
+                                        <td>
+                                            <a href="{{url_for('services.view', item_id=item.id)}}">
+                                               {{item.service_types}}
+                                            </a>
+                                        </td>
+                                        <td>{{item.vendor.full_name}}</td>
+                                        <td>{{item.issue}}</td>
+                                        <td>{{item.resolution}}</td>
+                                        <td>{{item.notes}}</td>
+                                        <td>{{item.create_date.strftime('%m/%d/%Y %H:%M')}}</td>
+                                        <td>{{item.created_by}}</td>
+                                        <td>
+                                            {% if item.modify_date %}
+                                            {{item.modify_date.strftime('%m/%d/%Y %H:%M')}}
+                                            {% endif %}
+                                        </td>
+                                        <td>{{item.modified_by}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

@@ -1,0 +1,606 @@
+{% extends "base.html" %} 
+
+{% block content %} 
+<style>
+  .compact-card .card-body {
+    padding: 0.5rem;
+  }
+
+  .compact-card .card-title {
+    margin-bottom: 0.4rem;
+    font-size: 1rem;
+
+  }
+
+  .compact-card h2 {
+    margin: 0;
+    font-size: 2rem;
+
+  }
+
+  .compact-card {
+    margin-bottom: 0.5rem;
+  }
+
+  .compact-pie .card-body {
+    padding: 0.75rem;
+  }
+
+  .compact-pie .card-title {
+    font-size: 1rem;
+  }
+</style>
+
+{% set selected_year = request.args.get('year') %} 
+{% set date_range_str = "Jan 1, " ~ selected_year ~" – Dec 31, " ~ selected_year if selected_year else "< " ~ days ~ " Days" %}
+<div class="container-fluid mt-4">
+  <div class="row align-items-center mb-4">
+    <div class="col-md-6">
+      <h2>Hello, Dr {{ current_user.full_name }}</h2>
+      <p class="text-muted">
+        {% if current_user.initials == 'CSL' %} Welcome to your CME Dashboard {%
+        elif current_user.permissions in ['Owner', 'ADM-Management'] %} Welcome
+        to the ME Dashboard {% else %} Welcome to your AME Dashboard {% endif %}
+      </p>
+    <form method="get" action="{{ url_for('ame_dashboard.get_ame_dashboard') }}">
+      <label for="initials" class="mr-2"><strong>Filter by:</strong></label>
+      <div class="btn-group" role="group">
+        {% for initials in med_initials %}
+          {% set display_text = 'None Assigned' if initials == 'None' else initials %}
+          <button
+            type="submit"
+            name="initials"
+            value="{{ initials }}"
+            class="btn {% if initials == selected_initials %}btn-dark{% else %}btn-outline-dark{% endif %}">
+            {{ display_text }}
+          </button>
+        {% endfor %}
+      </div>
+
+      {# Preserve year and days if selected #}
+      {% if request.args.get('year') %}
+        <input type="hidden" name="year" value="{{ request.args.get('year') }}">
+      {% endif %}
+      {% if days %}
+        <input type="hidden" name="days" value="{{ days }}">
+      {% endif %}
+    </form>
+    </div>
+
+    <div class="col-md-6 text-md-right">
+      <form
+        method="get"
+        action="{{ url_for('ame_dashboard.get_ame_dashboard') }}"
+      >
+        {% if selected_initials %}
+        <input type="hidden" name="initials" value="{{ selected_initials }}" />
+        {% endif %}
+
+        <div class="d-flex flex-column align-items-end">
+          <!-- Days -->
+          <div class="btn-group mb-2" role="group">
+            {% for option in ['15', '30', '60', '90', '120'] %}
+            <button
+              type="submit"
+              name="days"
+              value="{{ option }}"
+              class="btn {% if option == days|string and not selected_year %}btn-primary{% else %}btn-outline-primary{% endif %}"
+            >
+              {{ option }} Days
+            </button>
+            {% endfor %}
+          </div>
+
+          <!-- Years -->
+          <div class="btn-group" role="group">
+            {% for year in ['2025', '2024'] %}
+            <form
+              method="get"
+              action="{{ url_for('ame_dashboard.get_ame_dashboard') }}"
+              class="d-inline"
+            >
+              {% if selected_initials %}
+              <input
+                type="hidden"
+                name="initials"
+                value="{{ selected_initials }}"
+              />
+              {% endif %}
+              <button
+                type="submit"
+                name="year"
+                value="{{ year }}"
+                class="btn {% if year == request.args.get('year') %}btn-primary{% else %}btn-outline-primary{% endif %}"
+              >
+                {{ year }}
+              </button>
+            </form>
+            {% endfor %}
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- < Days Section -->
+  <div class="row" style="margin-bottom: 0px;">
+    <div class="col-md-6">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <h5 class="card-title text-center">{{ date_range_str }}</h5>
+                {{ pie_chart_lt | safe }}
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+            <h3 style="text-align: center;">< {{days}} days</h3>
+          <div class="mb-3">
+            <div class="card text-white bg-primary compact-card">
+              <div class="card-body text-center">
+                <h5 class="card-title">Pending Death Certificates</h5>
+                <h2>
+                  {{ lt_counts.dc }} {% if lt_counts.dc_admin_review %} : {{
+                  lt_counts.dc_admin_review }} Admin {% endif %}
+                </h2>
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <div class="card text-white bg-success compact-card">
+              <div class="card-body text-center">
+                <h5 class="card-title">Pending Autopsy Reports</h5>
+                <h2>
+                  {% if lt_counts.ar_only and lt_counts.ar > 0 %}
+                  {{lt_counts.ar_only}} ({{ lt_counts.ar + lt_counts.ar_only }}) {% else %} {{
+                  lt_counts.ar }} {% endif %}
+                </h2>
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <div class="card text-white bg-secondary compact-card">
+              <div class="card-body text-center">
+                <h5 class="card-title">Closed</h5>
+                <h2>{{ lt_counts.closed }}</h2>
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <div class="card text-white compact-card" style="background-color: black">
+              <div class="card-body text-center">
+                <h5 class="card-title">TOTAL</h5>
+                <h2>
+                  {{ lt_counts.ar_only + lt_counts.ar + lt_counts.closed +
+                  lt_counts.dc_admin_review + lt_counts.dc}}
+                </h2>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% if not selected_year %}
+    <!-- > Days Section -->
+    <div class="col-md-6">
+      <div class="row">
+        <div class="col-md-6">
+          <h3 style="text-align: center;">> {{days}} days</h3>
+          <div class="mb-3">
+            <div class="card text-white bg-primary compact-card">
+              <div class="card-body text-center">
+                <h5 class="card-title">Pending Death Certificates</h5>
+                <h2>
+                  {{ gt_counts.dc }} {% if gt_counts.dc_admin_review %} : {{
+                  gt_counts.dc_admin_review }} Admin {% endif %}
+                </h2>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card text-white bg-success compact-card">
+              <div class="card-body text-center">
+                <h5 class="card-title">Pending Autopsy Reports</h5>
+                <h2>
+                  {% if gt_counts.ar_only and gt_counts.ar > 0 %}
+                  {{gt_counts.ar_only}} ({{ gt_counts.ar + gt_counts.ar_only}}) {% else %} {{
+                  gt_counts.ar }} {% endif %}
+                </h2>
+              </div>
+            </div>
+            <div class="card text-white bg-secondary compact-card" style="margin-top: 1rem">
+              <div class="card-body text-center">
+                <h5 class="card-title">Closed (Last 12 months)</h5>
+                <h2>{{ closed_last_12mo }}</h2>
+              </div>
+            </div>
+          </div>
+          <div class="mb-3" style="margin-top: 1rem">
+            <div class="card text-white compact-card" style="background-color: black">
+              <div class="card-body text-center">
+                <h5 class="card-title">TOTAL</h5>
+                <h2>
+                  {{ gt_counts.ar_only + gt_counts.ar + closed_last_12mo +
+                  gt_counts.dc_admin_review + gt_counts.dc}}
+                </h2>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <h5 class="card-title text-center">&gt; {{ days }} Days</h5>
+              {{ pie_chart_gt | safe }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% endif %}
+    
+  </div>
+  {% if not selected_year %}
+  <!-- Centered box below totals -->
+  <div class="row justify-content-center">
+    <div class="col-md-4">
+      <div class="card text-white compact-card" style="background-color: black">
+        <div class="card-body text-center">
+          <h5 class="card-title">Overall Total</h5>
+          <h2>
+            {{ lt_counts.ar_only + lt_counts.ar + lt_counts.closed +
+            lt_counts.dc_admin_review + lt_counts.dc + gt_counts.ar_only +
+            gt_counts.ar + closed_last_12mo + gt_counts.dc_admin_review +
+            gt_counts.dc}}
+          </h2>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if current_user.initials == 'CSL' %}
+  <div class="text-left mb-2">
+    <a
+      href="{{ url_for('ame_dashboard.all_personnel_boxplots', days=days, comparison='<') }}"
+      class="btn btn-sm btn-outline-primary mb-2"
+      >Compare All Data</a
+    >
+  </div>
+  {% endif %}
+
+  <div class="card mb-4">
+    <div class="card-header view-card-header">
+      <i class="fa-solid fa-chart-box mr-2"></i> <strong style="font-size: 1.2rem;"> Days Open ({{ date_range_str
+      }})</strong>
+    </div>
+
+    <div class="card-body">{{ box_plot_lt | safe }}</div>
+  </div>
+  {% if not selected_year %}
+  <div class="card mb-4">
+    <div class="card-header view-card-header">
+      <i class="fa-solid fa-chart-box mr-2"></i> <strong style="font-size: 1.2rem;">Days Open (&gt; {{ days }}
+      Days)</strong>
+    </div>
+    <div class="card-body">{{ box_plot_gt | safe }}</div>
+  </div>
+  {% endif %} {% if selected_year %}
+  <div class="card mb-4">
+    <div class="card-header view-card-header">
+      <i class="fa-solid fa-chart-box mr-2"></i><strong style="font-size: 1.2rem;">Closed Case Turn Around Time %</strong>
+    </div>
+    <div class="card-body">{{ tat_graph | safe }}</div>
+  </div>
+  {% endif %}
+
+  <!-- Pending Death Certificate -->
+  <div class="card mb-4">
+    <div class="card-header view-card-header" id="pending-dc-header">
+      <span><i class="fa-solid fa-folder-open mr-2"></i></span> <strong style="font-size: 1.2rem;">Pending Death
+      Certificate</strong>
+    </div>
+    <div class="card-body">
+      <div class="table display">
+        <div class="table-responsive">
+          <table
+            class="table-striped table-hover nowrap small view-table"
+            style="width: 100%"
+            id="pending-dc-table"
+          >
+            <thead>
+              <tr>
+                <th>Case No.</th>
+                <th>Name</th>
+                <th>Date of Death</th>
+                <th>Days Open</th>
+                <th>Case Comments</th>
+                <th>Acc OD Prelim</th>
+                <th>Requested</th>
+                <th>Records</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for case in all_pending_cert_display
+              %}
+
+              <tr {% if (datetime.now() - case.fa_case_entry_date).days>
+                days %} style="background-color: #fff3cd;" {% endif %}>
+                <td>
+                  <a href="/cases/{{ case.id }}" target="_blank"
+                    >{{ case.case_number or '-' }}</a
+                  >
+                </td>
+                <td>
+                  {{ case.last_name }} {{ case.first_name }} {% if
+                  case.middle_name %} {{ case.middle_name }} {% endif %}
+                </td>
+                <td>
+                  {{ case.date_of_incident.strftime('%m/%d/%Y') if
+                  case.date_of_incident else '' }}
+                </td>
+                <td>{{ (datetime.now() - case.fa_case_entry_date).days }}</td>
+                <td>{{ case.fa_case_comments or '' }}</td>
+                <td>
+                  {{ 'Yes' if case.accidental_overdose_preliminary else 'No' }}
+                </td>
+                <td>
+                  {% set requests = [] %} {% if case.toxicology_requested ==
+                  'Yes' %} {% set _ = requests.append('Toxicology') %} {% endif
+                  %} {% if case.biochemistry_requested == 'Yes' %} {% set _ =
+                  requests.append('Biochemistry') %} {% endif %} {% if
+                  case.external_requested == 'Yes' %} {% set _ =
+                  requests.append('External') %} {% endif %} {% if
+                  case.histology_requested == 'Yes' %} {% set _ =
+                  requests.append('Histology') %} {% endif %} {% if
+                  case.physical_requested == 'Yes' %} {% set _ =
+                  requests.append('Physical') %} {% endif %} {% if
+                  case.drug_requested == 'Yes' %} {% set _ =
+                  requests.append('Drug') %} {% endif %} {{ requests|join(', ')
+                  }}
+                </td>
+                <td>
+                  {% for r in case.formatted_reports %}
+                  <a href="/reports/{{ r.id }}" target="_blank">{{ r.label }}</a
+                  >{% if not loop.last %}, {% endif %} {% endfor %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending Autopsy Report -->
+  <div class="card mb-4">
+    <div class="card-header view-card-header" id="pending-ar-header">
+      <span><i class="fa-solid fa-folder-open mr-2"></i></span> <strong style="font-size: 1.2rem;">Pending Autopsy
+      Report</strong>
+    </div>
+    <div class="card-body">
+      <div class="table display">
+        <div class="table-responsive">
+          <table
+            class="table-striped table-hover nowrap small view-table"
+            style="width: 100%"
+            id="pending-ar-table"
+          >
+            <thead>
+              <tr>
+                <th>Case No.</th>
+                <th>Name</th>
+                <th>Date of Death</th>
+                <th>Days Open</th>
+                <th>Case Comments</th>
+                <th>Acc OD Prelim</th>
+                <th>Requested</th>
+                <th>Records</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for case in lt_pending_autopsy_cases + gt_pending_autopsy_cases
+              %}
+              <tr {% if (datetime.now() - case.fa_case_entry_date).days>
+                days %} style="background-color: #fff3cd;" {% endif %}>
+                <td>
+                  <a href="/cases/{{ case.id }}" target="_blank"
+                    >{{ case.case_number or '-' }}</a
+                  >
+                </td>
+                <td>
+                  {{ case.last_name }} {{ case.first_name }} {% if
+                  case.middle_name %} {{ case.middle_name }} {% endif %}
+                </td>
+                <td>
+                  {{ case.date_of_incident.strftime('%m/%d/%Y') if
+                  case.date_of_incident else '' }}
+                </td>
+                <td>{{ (datetime.now() - case.fa_case_entry_date).days }}</td>
+                <td>{{ case.fa_case_comments or '' }}</td>
+                <td>
+                  {{ 'Yes' if case.accidental_overdose_preliminary else 'No' }}
+                </td>
+                <td>
+                  {% set requests = [] %} {% if case.toxicology_requested ==
+                  'Yes' %} {% set _ = requests.append('Toxicology') %} {% endif
+                  %} {% if case.biochemistry_requested == 'Yes' %} {% set _ =
+                  requests.append('Biochemistry') %} {% endif %} {% if
+                  case.external_requested == 'Yes' %} {% set _ =
+                  requests.append('External') %} {% endif %} {% if
+                  case.histology_requested == 'Yes' %} {% set _ =
+                  requests.append('Histology') %} {% endif %} {% if
+                  case.physical_requested == 'Yes' %} {% set _ =
+                  requests.append('Physical') %} {% endif %} {% if
+                  case.drug_requested == 'Yes' %} {% set _ =
+                  requests.append('Drug') %} {% endif %} {{ requests|join(', ')
+                  }}
+                </td>
+                <td>
+                  {% for r in case.formatted_reports %}
+                  <a href="/reports/{{ r.id }}" target="_blank">{{ r.label }}</a
+                  >{% if not loop.last %}, {% endif %} {% endfor %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Closed Cases -->
+  <div class="card">
+    <div class="card-header view-card-header" id="closed-cases-header">
+      <span><i class="fa-solid fa-folder mr-2"></i></span> <strong style="font-size: 1.2rem;">Closed Cases</strong>
+    </div>
+    <div class="card-body">
+      <div class="table display">
+        <div class="table-responsive">
+          <table
+            class="table-striped table-hover nowrap small view-table"
+            style="width: 100%"
+            id="closed-cases-table"
+          >
+            <thead>
+              <tr>
+                <th style="min-width: 110px">Case No.</th>
+                <th>Name</th>
+                <th>Date of Death</th>
+                <th>Manner of Death</th>
+                <th
+                  style="
+                    max-width: 180px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  "
+                >
+                  Cause of Death
+                </th>
+                <th>TAT (Days)</th>
+                <th>Records</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for case in lt_closed_cases %}
+              <tr>
+                <td>
+                  <a href="/cases/{{ case.id }}" target="_blank"
+                    >{{ case.case_number or '-' }}</a
+                  >
+                </td>
+                <td>
+                  {{ case.last_name }} {{ case.first_name }} {% if
+                  case.middle_name %} {{ case.middle_name }} {% endif %}
+                </td>
+                <td>
+                  {{ case.date_of_incident.strftime('%m/%d/%Y') if
+                  case.date_of_incident else '' }}
+                </td>
+                <td>{{ case.manner_of_death or '' }}</td>
+                <td>{{ case.cod_a or '' }}</td>
+                <td>
+                    {% if case.autopsy_type != 'ADMINISTRATIVE REVIEW' %}
+                  {{ (case.certificate_report_date -
+                  case.fa_case_entry_date).days if case.certificate_report_date
+                  and case.fa_case_entry_date else '' }}
+                  {% else %}
+                    N/A
+                  {% endif %}
+                </td>
+                <td>
+                  {% for r in case.formatted_reports %}
+                  <a href="/reports/{{ r.id }}" target="_blank">{{ r.label }}</a
+                  >{% if not loop.last %}, {% endif %} {% endfor %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Closed Cases (Last 12 months) -->
+  <div class="card mt-4">
+    <div class="card-header view-card-header" id="closed-cases-last12mo-header">
+      <span><i class="fa-solid fa-folder mr-2"></i></span> <strong style="font-size: 1.2rem;">Closed Cases (Last 12
+      months)</strong>
+    </div>
+    <div class="card-body">
+      <div class="table display">
+        <div class="table-responsive">
+          <table
+            class="table-striped table-hover nowrap small view-table"
+            style="width: 100%"
+            id="closed-cases-last12mo-table"
+          >
+            <thead>
+              <tr>
+                <th style="min-width: 110px">Case No.</th>
+                <th>Name</th>
+                <th>Date of Death</th>
+                <th>Manner of Death</th>
+                <th
+                  style="
+                    max-width: 180px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  "
+                >
+                  Cause of Death
+                </th>
+                <th>TAT (Days)</th>
+                <th>Records</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for case in closed_last_12mo_cases %}
+              <tr>
+                <td>
+                  <a href="/cases/{{ case.id }}" target="_blank"
+                    >{{ case.case_number or '-' }}</a
+                  >
+                </td>
+                <td>
+                  {{ case.last_name }} {{ case.first_name }} {% if
+                  case.middle_name %} {{ case.middle_name }} {% endif %}
+                </td>
+                <td>
+                  {{ case.date_of_incident.strftime('%m/%d/%Y') if
+                  case.date_of_incident else '' }}
+                </td>
+                <td>{{ case.manner_of_death or '' }}</td>
+                <td>{{ case.cod_a or '' }}</td>
+                <td>
+                    {% if case.autopsy_type != 'ADMINISTRATIVE REVIEW' %}
+                  {{ (case.certificate_report_date -
+                  case.fa_case_entry_date).days if case.certificate_report_date
+                  and case.fa_case_entry_date else '' }}
+                  {% else %}
+                  N/A
+                  {% endif %}
+                </td>
+                <td>
+                  {% for r in case.formatted_reports %}
+                  <a href="/reports/{{ r.id }}" target="_blank">{{ r.label }}</a
+                  >{% if not loop.last %}, {% endif %} {% endfor %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% endblock %}
+</div>

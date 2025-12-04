@@ -1,0 +1,175 @@
+<!--     Export All LIMS Data warning    -->
+<div class="modal" tabindex="-1" id="export_all" data-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <b>Export all CLIO data</b>
+      </div>
+      <div class="modal-body">
+        <p>By proceeding, you will export all CLIO data to excel. This process may take several minutes</p>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-primary" onclick="processingModal()" href="{{url_for('core.export_all')}}">Export</a>
+        <a class="btn btn-secondary" href="#" data-dismiss="modal">Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!--     Import LIMS Data warning (NOT USED)   -->
+<div class="modal" tabindex="-1" id="import_all" data-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        Import CLIO Data
+      </div>
+      <div class="modal-body">
+        <p>By proceeding, you will delete all data from the CLIO and import new data. This process will take several minutes</p>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-primary" onclick="processingModal()" href="{{url_for('core.import_all')}}">Import</a>
+        <a class="btn btn-secondary" href="#" data-dismiss="modal">Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Processing modal on form submission -->
+<div class="modal" tabindex="-1" id="processing" data-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="d-flex justify-content-center">
+          <div class="spinner-border" style="width: 10rem; height:10rem" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
+        <div>
+          <h2 align="center">Processing. Please wait....</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Populating modal on list view render -->
+<div class="modal" tabindex="-1" id="populating" data-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="d-flex justify-content-center">
+          <div class="spinner-border" style="width: 10rem; height:10rem" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
+        <div>
+          <h2 align="center">Populating table. Please wait....</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!--  PENDING CASE MODALS  -->
+
+<!--<div class="modal" tabindex="-1" id="view_review" data-backdrop="static">-->
+<!--  <div class="modal-dialog modal-lg modal-dialog-centered">-->
+<!--    <div class="modal-content">-->
+<!--      <div class="modal-header">-->
+<!--        <h5 class="modal-title"><b><span class="case-number"></span></b> currently has pending components.</h5>-->
+<!--        <button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
+<!--          <span aria-hidden="true">&times;</span>-->
+<!--        </button>-->
+<!--      </div>-->
+<!--      <div class="modal-body">-->
+<!--        <p style="text-align:center;">-->
+<!--          By clicking on <b><span class="func_text"></span></b>, you will lock the case and its containers-->
+<!--          and specimens take any pending specimens into your custody.-->
+<!--        </p>-->
+<!--        <p style="text-align:center;">-->
+<!--          What would you like to do?-->
+<!--        </p>-->
+<!--      </div>-->
+<!--      <div class="modal-footer" style="justify-content:center;">-->
+<!--        <a class="btn btn-primary mr-3" style="width: 10rem" href="#" id="edit-review"><span class="func_text"></span></a>-->
+<!--        <a class="btn btn-secondary ml-3" style="width: 10rem" href="#" id="view-only">View Only</a>-->
+<!--        <a class="btn btn-secondary ml-3" style="width: 10rem" data-dismiss="modal">Cancel</a>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
+
+<div class="modal" tabindex="-1" id="view_review" data-backdrop="static">-->
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><b><span class="modal-case-number"></span></b> currently has pending components.</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    By clicking on <b><span class="func_text"></span></b>, you will lock the case and any containers
+                    and specimens for the selected discipline. Any pending specimens for that discipline
+                    will be taken into your custody.
+                </p>
+                <p>
+                    If you would only like to add attachments to the case, please click the <b>View Only</b> button.
+                </p>
+                <div class="form-group">
+                    <label style="font-weight:bold">Discipline (Containers/Specimens):</label>
+                    <select class="form-control" id="discipline-select">
+                    </select>
+                </div>
+                <p style="text-align:center;">
+                    What would you like to do?
+                </p>
+            </div>
+            <!--buttons go below-->
+            <div class="modal-footer" style="justify-content:center;">
+                <a class="btn btn-primary mr-3" style="width: 10rem" href="#" id="edit-review-custody"><span class="func_text"></span> Custody</a>
+                <a class="btn btn-primary mr-3" style="width: 12rem" href="#" id="edit-review-no-custody"><span class="func_text"></span> No Custody</a>
+                <a class="btn btn-secondary ml-3" style="width: 10rem" href="#" id="view-only">View Only</a>
+                <a class="btn btn-secondary ml-3" style="width: 10rem" data-dismiss="modal">Cancel</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal" tabindex="-1" id="locking" data-backdrop="static">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Pending Case</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="text-align:center;">
+          <b><span class="case-number"></span></b> currently has pending components.
+        </p>
+        <p style="text-align:center;">
+          By going to edit the case, you will lock the case and its containers and specimens.
+        </p>
+
+      </div>
+      <div class="modal-footer" style="justify-content:center;">
+        <a class="btn btn-primary mr-3" style="width: 12rem" href="#" id="proceed">Edit Case</a>
+        <a class="btn btn-secondary ml-3 view-only" style="width: 10rem" href="#">View Only</a>
+        <a class="btn btn-secondary ml-3" style="width: 12rem" data-dismiss="modal">Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+    var pendingCaseIdFromSession = "{{ session.get('pending_case_id', '') }}";
+</script>

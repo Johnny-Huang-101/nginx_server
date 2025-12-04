@@ -1,0 +1,749 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .bs-readonly .bootstrap-select .dropdown-toggle,
+    .bs-readonly .bootstrap-select .dropdown-menu { pointer-events: none; }
+    .bs-readonly .bootstrap-select .dropdown-toggle { background-color:#e9ecef; } /* optional */
+</style>
+{% block head %}
+<head>
+    {% if function in ['Edit', 'Approve', 'Update'] %}
+        <title>{{config['SYSTEM_NAME']}}/{{item_name}}/{{item_dict['id']}}/{{function}}</title>
+    {% else %}
+        <title>{{config['SYSTEM_NAME']}}/{{item_name}}/{{function}}</title>
+    {% endif %}
+</head>
+{% endblock %}
+{% if item_dict and item_dict['communications'] and function == 'Approve' %}
+    <div class="alert alert-warning" role="alert" style="margin-top:6px; background-color:rgb(221, 204, 238); color: black; border-color: #8b53e6">
+        {% if item_dict['modified_by'] %}
+            {% set date = item_dict['modify_date'].strftime('%m/%d/%Y %H:%M') %}
+            {% set submitter = item_dict['modified_by'] %}
+        {% else %}
+            {% set date = item_dict['create_date'].strftime('%m/%d/%Y %H:%M') %}
+            {% set submitter = item_dict['created_by'] %}
+        {% endif %}
+        <b>{{submitter}}</b> left the following communication
+        on <b>{{date}}</b>:
+        <ul>
+            <li>{{item_dict['communications']}}</li>
+        </ul>
+    </div>
+{% endif %}
+
+{% if errors.unique_failed  %}
+    <div class="alert alert-danger mt-3" role="alert" style="margin-top:6px">
+        <p class="my-0">{{errors['unique_failed']}}</p>
+    </div>
+{% endif %}
+
+<!-- ALERT BLOCK -->
+
+{% block alerts %}
+{% endblock %}
+
+<!--#############-->
+<div>
+    <div style="margin-top:6px">
+        {% if current_user.permissions not in ['INV', 'MED', 'MED-Autopsy', 'ADM'] %}
+            <a href="{{url_for('dashboard.get_dashboard')}}"><i class="fa-solid fa-house"></i></a>
+        {% else %}
+            <a href="{{url_for('cases.view_list')}}"><i class="fa-solid fa-house"></i></a>
+        {% endif %}
+        > <a href="#">{{item_name}}</a>
+        {% if function not in ['Edit', 'Approve', 'Update', 'Attach'] %}
+            > {{function}}
+        {% else %}
+            > {{alias}}
+            > {{function}}
+        {% endif %}
+     </div>
+    <hr style="border-width:5px; margin-top: 6px">
+    <h1>
+        {% if default_header %}
+            {% if function in ['Edit', 'Approve', 'Update'] %}
+              {{function}} <a class="link-unstyled">{{alias}}</a>
+            {% elif function == 'Attach' %}
+              {{function}} Files To <a class="link-unstyled">{{alias}}</a>
+            {% elif function == 'Import' %}
+                {{function}} <a class="link-unstyled">{{item_name}}</a>
+            {% elif function == 'Add' %}
+              Add <a class="link-unstyled">{{item_type}}</a>
+            {% else %}
+                {{function}}
+            {% endif %}
+        {% endif %}
+
+        {% block header %}
+        {% endblock %}
+    </h1>
+    <hr style="border-width:5px; margin-top: 6px">
+    <form method="POST" id="form" novalidate="novalidate" enctype="multipart/form-data" autocomplete="off">
+        {{ form.hidden_tag() }}
+    
+        <!--FORM BLOCK-->
+        {% block form %}
+            <div class="row mb-3">
+                <div class="col">
+                    {% if 'equipment_used' in required_fields %}
+                        {{form.equipment_used.label(style='font-weight: bold')}}
+                        {{form.equipment_used(class='form-control selectpicker', **{'data-live-search': 'true'})}}
+                    {% else %}
+                        {{form.equipment_used.label(style='font-weight: bold')}}
+                        {{form.equipment_used(class='form-control selectpicker', disabled='disabled')}}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    {% if 'pipette_check' in required_fields %}
+                        {{form.pipette_check.label(style='font-weight: bold')}}
+                        {{form.pipette_check}}
+                    {% else %}
+                        {{form.pipette_check.label(style='font-weight: bold')}}
+                        {{form.pipette_check(disabled='disabled')}}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    {% if 'concentrator_multiplier' in required_fields %}
+                        {{form.concentrator_multiplier.label(style='font-weight: bold')}}
+                        {{form.concentrator_multiplier(class='form-control')}}
+                    {% else %}
+                        {{form.concentrator_multiplier.label(style='font-weight: bold')}}
+                        {{form.concentrator_multiplier(class='form-control', disabled='disabled')}}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row mb-3">
+                {% if item.parent_standard_lot %}
+                    <div class="col bs-readonly">
+                        {{form.parent_standard_lot.label(style='font-weight: bold')}}
+                        {{form.parent_standard_lot(class='form-control selectpicker')}}
+                    </div>
+                {% else %}
+                    <div class="col">
+                        {% if 'parent_standard_lot' in required_fields %}
+                            {{form.parent_standard_lot.label(style='font-weight: bold')}}
+                            {{form.parent_standard_lot(class='form-control selectpicker')}}
+                        {% else %}
+                            {{form.parent_standard_lot.label(style='font-weight: bold')}}
+                            {{form.parent_standard_lot(class='form-control selectpicker', disabled='disabled')}}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    {% if 'part_a_table' in required_fields %}
+                        {{form.part_a_table.label(style='font-weight: bold')}}
+                        {{form.part_a_table(class='form-control selectpicker')}}
+                        <div class="form-check mt-2">
+                            {{form.no_part_a}}
+                            {{form.no_part_a.label(style='font-weight: bold')}}
+                        </div>
+                    {% else %}
+                        {{form.part_a_table.label(style='font-weight: bold')}}
+                        {{form.part_a_table(class='form-control selectpicker', disabled='disabled')}}
+                        <div class="form-check mt-2">
+                            {{form.no_part_a(disabled='disabled')}}
+                            {{form.no_part_a.label(style='font-weight: bold')}}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col">
+                    {% if 'part_a_id' in required_fields %}
+                        {{form.part_a_id.label(style='font-weight: bold')}}
+                        {{form.part_a_id(class='form-control selectpicker', **{'data-live-search': 'true'})}}
+                    {% else %}
+                        {{form.part_a_id.label(style='font-weight: bold')}}
+                        {{form.part_a_id(class='form-control selectpicker', disabled='disabled')}}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    {% if 'part_b_table' in required_fields %}
+                        {{form.part_b_table.label(style='font-weight: bold')}}
+                        {{form.part_b_table(class='form-control selectpicker')}}
+                        <div class="form-check mt-2">
+                            {{form.no_part_b}}
+                            {{form.no_part_b.label(style='font-weight: bold')}}
+                        </div>
+                    {% else %}
+                        {{form.part_b_table.label(style='font-weight: bold')}}
+                        {{form.part_b_table(class='form-control selectpicker', disabled='disabled')}}
+                        <div class="form-check mt-2">
+                            {{form.no_part_b(disabled='disabled')}}
+                            {{form.no_part_b.label(style='font-weight: bold')}}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col">
+                    {% if 'part_b_id' in required_fields %}
+                        {{form.part_b_id.label(style='font-weight: bold')}}
+                        {{form.part_b_id(class='form-control selectpicker', **{'data-live-search': 'true'})}}
+                    {% else %}
+                        {{form.part_b_id.label(style='font-weight: bold')}}
+                        {{form.part_b_id(class='form-control selectpicker', disabled='disabled')}}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    {% if 'part_c_table' in required_fields %}
+                        {{form.part_c_table.label(style='font-weight: bold')}}
+                        {{form.part_c_table(class='form-control selectpicker')}}
+                        <div class="form-check mt-2">
+                            {{form.no_part_c}}
+                            {{form.no_part_c.label(style='font-weight: bold')}}
+                        </div>
+                    {% else %}
+                        {{form.part_c_table.label(style='font-weight: bold')}}
+                        {{form.part_c_table(class='form-control selectpicker', disabled='disabled')}}
+                        <div class="form-check mt-2">
+                            {{form.no_part_c(disabled='disabled')}}
+                            {{form.no_part_c.label(style='font-weight: bold')}}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col">
+                    {% if 'part_c_id' in required_fields %}
+                        {{form.part_c_id.label(style='font-weight: bold')}}
+                        {{form.part_c_id(class='form-control selectpicker', **{'data-live-search': 'true'})}}
+                    {% else %}
+                        {{form.part_c_id.label(style='font-weight: bold')}}
+                        {{form.part_c_id(class='form-control selectpicker', disabled='disabled')}}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    {% if 'solvent_used' in required_fields %}
+                        {{form.solvent_used.label(style='font-weight: bold')}}
+                        {{form.solvent_used(class='form-control selectpicker')}}
+                    {% else %}
+                        {{form.solvent_used.label(style='font-weight: bold')}}
+                        {{form.solvent_used(class='form-control selectpicker', disabled='disabled')}}
+                    {% endif %}
+                </div>
+                <div class="col">
+                    {% if 'component' in required_fields %}
+                        {{form.component.label(style='font-weight: bold')}}
+                        {{form.component(class='form-control selectpicker', **{'data-live-search': 'true'})}}
+                    {% else %}
+                        {{form.component.label(style='font-weight: bold')}}
+                        {{form.component(class='form-control selectpicker', disabled='disabled')}}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    {% if 'preservatives' in required_fields %}
+                        {{form.preservatives.label(style='font-weight: bold')}}
+                        {{form.preservatives(class='form-control selectpicker')}}
+                    {% else %}
+                        {{form.preservatives.label(style='font-weight: bold')}}
+                        {{form.preservatives(class='form-control selectpicker', disabled='disabled')}}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    {% if 'volume_prepared' in required_fields %}
+                        {{form.volume_prepared.label(style='font-weight: bold')}}
+                        {{form.volume_prepared(class='form-control')}}
+                    {% else %}
+                        {{form.volume_prepared.label(style='font-weight: bold')}}
+                        {{form.volume_prepared(class='form-control', disabled='disabled')}}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    {% if 'aliquot_volume' in required_fields %}
+                        {{form.aliquot_volume.label(style='font-weight: bold')}}
+                        {{form.aliquot_volume(class='form-control')}}
+                    {% else %}
+                        {{form.aliquot_volume.label(style='font-weight: bold')}}
+                        {{form.aliquot_volume(class='form-control', disabled='disabled')}}
+                    {% endif %}
+                </div>
+                <div class="col">
+                    {% if 'total_aliquots' in required_fields %}
+                        {{form.total_aliquots.label(style='font-weight: bold')}}
+                        {{form.total_aliquots(class='form-control')}}
+                    {% else %}
+                        {{form.total_aliquots.label(style='font-weight: bold')}}
+                        {{form.total_aliquots(class='form-control', disabled='disabled')}}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    {% if 'verification_batches' in required_fields %}
+                        {{form.verification_batches.label(style='font-weight: bold')}}
+                        {{form.verification_batches(class='form-control selectpicker')}}
+                    {% else %}
+                        {{form.verification_batches.label(style='font-weight: bold')}}
+                        {{form.verification_batches(class='form-control selectpicker', disabled='disabled')}}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    {% if 'verification_comments' in required_fields %}
+                        {{form.verification_comments.label(style='font-weight: bold')}}
+                        {{form.verification_comments(class='form-control')}}
+                    {% else %}
+                        {{form.verification_comments.label(style='font-weight: bold')}}
+                        {{form.verification_comments(class='form-control', disabled='disabled')}}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    {% if 'previous_lot' in required_fields %}
+                        {{form.previous_lot.label(style='font-weight: bold')}}
+                        {{form.previous_lot(class='form-control selectpicker')}}
+                    {% else %}
+                        {{form.previous_lot.label(style='font-weight: bold')}}
+                        {{form.previous_lot(class='form-control selectpicker', disabled='disabled')}}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    {% if 'previous_lot_comments' in required_fields %}
+                        {{form.previous_lot_comments.label(style='font-weight: bold')}}
+                        {{form.previous_lot_comments(class='form-control')}}
+                        <div class="form-check mt-2">
+                            {{form.no_previous_lot}}
+                            {{form.no_previous_lot.label(style='font-weight: bold')}}
+                        </div>
+                    {% else %}
+                        {{form.previous_lot_comments.label(style='font-weight: bold')}}
+                        {{form.previous_lot_comments(class='form-control', disabled='disabled')}}
+                        <div class="form-check mt-2">
+                            {{form.no_previous_lot(disabled='disabled')}}
+                            {{form.no_previous_lot.label(style='font-weight: bold')}}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    {% if 'calibration_comments' in required_fields %}
+                        {{form.calibration_comments.label(style='font-weight: bold')}}
+                        {{form.calibration_comments(class='form-control')}}
+                    {% else %}
+                        {{form.calibration_comments.label(style='font-weight: bold')}}
+                        {{form.calibration_comments(class='form-control', disabled='disabled')}}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    {% if 'qualitative_comments' in required_fields %}
+                        {{form.qualitative_comments.label(style='font-weight: bold')}}
+                        {{form.qualitative_comments(class='form-control')}}
+                    {% else %}
+                        {{form.qualitative_comments.label(style='font-weight: bold')}}
+                        {{form.qualitative_comments(class='form-control', disabled='disabled')}}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    {% if 'quantitative_comments' in required_fields %}
+                        {{form.quantitative_comments.label(style='font-weight: bold')}}
+                        {{form.quantitative_comments(class='form-control')}}
+                    {% else %}
+                        {{form.quantitative_comments.label(style='font-weight: bold')}}
+                        {{form.quantitative_comments(class='form-control', disabled='disabled')}}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    {% if 'additional_comments' in required_fields %}
+                        {{form.additional_comments.label(style='font-weight: bold')}}
+                        {{form.additional_comments(class='form-control')}}
+                    {% else %}
+                        {{form.additional_comments.label(style='font-weight: bold')}}
+                        {{form.additional_comments(class='form-control', disabled='disabled')}}
+                    {% endif %}
+                </div>
+            </div>
+
+        {% endblock %}
+        <!--###########-->
+    
+        <hr>
+    
+        <div class="form-group d-flex gap-2 align-items-center">
+            {% if 'submit' in form and (module_name not in ['containers', 'specimens'] or function != 'Add') %}
+                {{ form.submit(class='btn btn-primary mr-3') }}
+            {% endif %}
+    
+            {% block buttons %}{% endblock %}
+    
+            {% if exit_route %}
+                <a type="button" class="btn btn-secondary" href="{{exit_route}}" id="exit">Exit</a>
+            {% else %}
+                <a type="button" class="btn btn-secondary" href="{{url_for(table_name~'.view_list')}}">Exit</a>
+            {% endif %}
+        </div>
+    </form>
+    
+        
+    {% block text %}
+    {% endblock %}
+</div>
+
+
+<!--MODAL BLOCK-->
+
+{% block modals %}
+{% endblock %}
+
+<!--###########-->
+
+<!-- SCRIPT BLOCK -->
+
+{% block scripts %}
+
+<script src="/static/form.js"></script>
+
+<script>
+    $(function () {
+    const $noPrev   = $('#no_previous_lot');      // the checkbox
+    const $prevLot  = $('#previous_lot');         // select (bootstrap-select)
+    const $prevCmt  = $('#previous_lot_comments'); // textarea/input
+
+    function updatePrevLotState() {
+        const off = $noPrev.prop('checked');
+
+        if (off) {
+            // Clear values (HTML has no real "None"; empty string will post as empty,
+            // which WTForms will treat as None with Optional())
+            $prevLot.val('');
+            $prevCmt.val('N/A');
+
+            // Disable controls
+            $prevLot.prop('disabled', true);
+            $prevCmt.prop('readonly', true);
+
+            // If using bootstrap-select, refresh so the UI reflects disabled/cleared state
+            if ($prevLot.hasClass('selectpicker') && $.fn.selectpicker) {
+                $prevLot.selectpicker('refresh');
+            }
+        } else {
+            // Re-enable
+            $prevLot.prop('disabled', false);
+            $prevCmt.prop('readonly', false);
+            $prevCmt.val('')
+
+            if ($prevLot.hasClass('selectpicker') && $.fn.selectpicker) {
+                $prevLot.selectpicker('refresh');
+            }
+        }
+    }
+
+    // Hook it up
+    $noPrev.on('change', updatePrevLotState);
+
+    });
+</script>
+
+<script>
+$(window).on('load', function () {
+    const $noPrev   = $('#no_previous_lot');      // the checkbox
+    const $prevLot  = $('#previous_lot');         // select (bootstrap-select)
+    const $prevCmt  = $('#previous_lot_comments'); // textarea/input
+
+    function updatePrevLotState() {
+        const isChecked = $noPrev.prop('checked');
+
+        if (isChecked) {
+            console.log('Checked');
+            $prevLot.prop('disabled', true);
+            $prevCmt.prop('readonly', true);
+            $prevLot.val('N/A');
+            if ($prevLot.hasClass('selectpicker') && $.fn.selectpicker) {
+                $prevLot.selectpicker('refresh');
+            }
+        } else {
+            console.log('Not Checked');
+        }
+    }
+
+    updatePrevLotState();
+});
+</script>
+
+<script>
+    $(function () {
+        const $noPartA   = $('#no_part_a');      // the checkbox
+        const $partA  = $('#part_a_table');         // select (bootstrap-select)
+        const $partALot  = $('#part_a_id'); // textarea/input
+
+        function updatePartAState() {
+            const off = $noPartA.prop('checked');
+
+            if (off) {
+                // Clear values (HTML has no real "None"; empty string will post as empty,
+                // which WTForms will treat as None with Optional())
+                $partA.val('N/A');
+                $partALot.val('N/A');
+
+                // Disable controls
+                $partA.prop('disabled', true);
+                $partALot.prop('disabled', true);
+
+                $partA.selectpicker('refresh');
+                $partALot.selectpicker('refresh');
+
+            } else {
+                // Re-enable
+                $partA.prop('disabled', false);
+                $partALot.prop('disabled', false);
+
+                $partA.val('');
+                $partALot.val(0);
+
+                $partA.selectpicker('refresh');
+                $partALot.selectpicker('refresh');
+            }
+        }
+
+        // Hook it up
+        $noPartA.on('change', updatePartAState);
+
+        // On window load, only run if checked (prevents the else branch)
+        $(window).on('load', function () {
+            if ($noPartA.prop('checked')) {
+            updatePartAState();
+            }
+        });
+    });
+</script>
+
+<script>
+    $(function () {
+        const $noPartB   = $('#no_part_b');      // the checkbox
+        const $partB  = $('#part_b_table');         // select (bootstrap-select)
+        const $partBLot  = $('#part_b_id'); // textarea/input
+
+        function updatePartBState() {
+            const off = $noPartB.prop('checked');
+
+            if (off) {
+                // Clear values (HTML has no real "None"; empty string will post as empty,
+                // which WTForms will treat as None with Optional())
+                $partB.val('N/A');
+                $partBLot.val('N/A');
+
+                // Disable controls
+                $partB.prop('disabled', true);
+                $partBLot.prop('disabled', true);
+
+                $partB.selectpicker('refresh');
+                $partBLot.selectpicker('refresh');
+
+            } else {
+                // Re-enable
+                $partB.prop('disabled', false);
+                $partBLot.prop('disabled', false);
+
+                $partB.val('');
+                $partBLot.val(0);
+                
+                $partB.selectpicker('refresh');
+                $partBLot.selectpicker('refresh');
+            }
+        }
+
+        // Hook it up
+        $noPartB.on('change', updatePartBState);
+
+        // On window load, only run if checked (prevents the else branch)
+        $(window).on('load', function () {
+            if ($noPartB.prop('checked')) {
+            updatePartBState();
+            }
+        });
+
+    });
+</script>
+
+<script>
+    $(function () {
+        const $noPartC   = $('#no_part_c');      // the checkbox
+        const $partC  = $('#part_c_table');         // select (bootstrap-select)
+        const $partCLot  = $('#part_c_id'); // textarea/input
+
+        function updatePartCState() {
+            const off = $noPartC.prop('checked');
+
+            if (off) {
+                // Clear values (HTML has no real "None"; empty string will post as empty,
+                // which WTForms will treat as None with Optional())
+                $partC.val('N/A');
+                $partCLot.val('N/A');
+
+                // Disable controls
+                $partC.prop('disabled', true);
+                $partCLot.prop('disabled', true);
+
+                $partC.selectpicker('refresh')
+                $partCLot.selectpicker('refresh');
+
+            } else {
+                // Re-enable
+                $partC.prop('disabled', false);
+                $partCLot.prop('disabled', false);
+
+                $partC.val('');
+                $partCLot.val(0);
+
+                $partC.selectpicker('refresh');
+                $partCLot.selectpicker('refresh');
+            }
+        }
+
+        // Hook it up
+        $noPartC.on('change', updatePartCState);
+
+        // On window load, only run if checked (prevents the else branch)
+        $(window).on('load', function () {
+            if ($noPartC.prop('checked')) {
+            updatePartCState();
+            }
+        });
+
+    });
+</script>
+
+<!-- Part A -->
+<script>
+$(window).on('load', function () {
+  // If value is "N/A", check no_part_a and trigger its existing handler
+  if ($('#part_a').val() === 'N/A') {
+    const $cb = $('#no_part_a');
+    if (!$cb.prop('checked')) $cb.prop('checked', true);
+    $cb.trigger('change');
+  }
+});
+</script>
+
+<!-- Part B -->
+<script>
+$(window).on('load', function () {
+  if ($('#part_b').val() === 'N/A') {
+    const $cb = $('#no_part_b');
+    if (!$cb.prop('checked')) $cb.prop('checked', true);
+    $cb.trigger('change');
+  }
+});
+</script>
+
+<!-- Part C -->
+<script>
+$(window).on('load', function () {
+  if ($('#part_c').val() === 'N/A') {
+    const $cb = $('#no_part_c');
+    if (!$cb.prop('checked')) $cb.prop('checked', true);
+    $cb.trigger('change');
+  }
+});
+</script>
+
+<script>
+    $('#part_a_table').on('change', function() {
+
+        console.log('TEST')
+
+        part_table = $('#part_a_table').val();
+
+        console.log(part_table)
+
+         $.getJSON('/standards_and_solutions/get_table_items/', {
+            part_table: part_table,
+            }, function(data) {
+                var options = '';
+                for (var item of data.choices) {
+                    options += '<option value="' + item.id + '">' + item.name + '</option>';
+                }
+
+                console.log(options)
+
+                $('#part_a_id').html(options)
+                $('#part_a_id').selectpicker('refresh')
+                $('#part_a_id').selectpicker('render')
+                $('#part_a_id').selectpicker('val', 0)
+
+            });
+            return false;
+    });
+    $('#part_b_table').on('change', function() {
+
+        console.log('TEST')
+
+        part_table = $('#part_b_table').val();
+
+        console.log(part_table)
+
+         $.getJSON('/standards_and_solutions/get_table_items/', {
+            part_table: part_table,
+            }, function(data) {
+                var options = '';
+                for (var item of data.choices) {
+                    options += '<option value="' + item.id + '">' + item.name + '</option>';
+                }
+
+                console.log(options)
+
+                $('#part_b_id').html(options)
+                $('#part_b_id').selectpicker('refresh')
+                $('#part_b_id').selectpicker('render')
+                $('#part_b_id').selectpicker('val', 0)
+
+            });
+            return false;
+    });
+    $('#part_c_table').on('change', function() {
+
+        console.log('TEST')
+
+        part_table = $('#part_c_table').val();
+
+        console.log(part_table)
+
+         $.getJSON('/standards_and_solutions/get_table_items/', {
+            part_table: part_table,
+            }, function(data) {
+                var options = '';
+                for (var item of data.choices) {
+                    options += '<option value="' + item.id + '">' + item.name + '</option>';
+                }
+
+                console.log(options)
+
+                $('#part_c_id').html(options)
+                $('#part_c_id').selectpicker('refresh')
+                $('#part_c_id').selectpicker('render')
+                $('#part_c_id').selectpicker('val', 0)
+
+            });
+            return false;
+    });
+</script>
+
+
+
+{% endblock %}
+
+
+{% endblock %}

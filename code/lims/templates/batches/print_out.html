@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <h1>Batch Printout</h1>
+    {% if pdf_file_path %}
+        <iframe src="{{ url_for('static', filename=pdf_file_path) }}" type="application/pdf" width="100%" height="600px"></iframe>
+    {% else %}
+        <p>PDF not found.</p>
+    {% endif %}
+{% endblock %}

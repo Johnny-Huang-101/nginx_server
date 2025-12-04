@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="mt-4 mb-2">
+    <a href="{{ url_for('ame_dashboard.get_ame_dashboard') }}" class="btn btn-outline-secondary">
+        ← Back to Dashboard
+    </a>
+</div>
+
+<h2 class="mb-3" style="text-align: center;">All ME Boxplots</h4>
+<h2 class="mb-3" style="text-align: center;">{{comparison}} {{days}} Days</h4>
+<hr>
+
+{% for item in all_plots_html %}
+    <div class="mb-5">
+        <h5 class="text-primary">{{ item.user }}</h5>
+
+        <div class="d-flex align-items-start">
+            <div class="p-2" style="min-width: 420px;">
+                <div class="border rounded p-3 bg-white shadow-sm">
+                    {{ item.pie_chart | safe }}
+                </div>
+            </div>
+            <div class="p-2 flex-grow-1">
+                <div class="border rounded p-3 bg-white shadow-sm">
+                    {{ item.plot_html | safe }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+
+
+{% endblock %}

@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% set module_name = 'solvents_and_reagents' %}
+{% block content %}
+
+<style>
+    .btn-link {
+        font-size: 24px
+        }
+
+    #hide {
+        display: none;
+    }
+
+    #header {
+        position: static;
+
+        width: 100%;
+    }
+
+    #body{
+        width: 100%;
+        height: 900px;
+        overflow: auto;
+    }
+
+</style>
+
+{% if item.locked %}
+    <div class="alert alert-warning" role="alert" style="margin-top: 12px">
+     <i class="fa-solid fa-lock"></i> This case and its contents have been locked by <b>{{item.locked_by}}</b> on <b>{{item.lock_date.strftime('%m/%d/%Y')}}</b> at <b>{{item.lock_date.strftime('%H:%M')}}</b>.
+    </div>
+{% endif %}
+    <div style="margin-top:6px">
+        <a href=""><i class="fa-solid fa-house"></i></a>
+        > <a href="">{{item_name}}</a>
+        > {{alias}}
+     </div>
+
+<div id="header">
+  <hr style="border-width:5px; margin-top: 6px">
+  <h1>
+    {{alias}} {% if not item.in_use %}<span class="text-danger">NOT IN USE</span>{% endif %}
+  </h1>
+  <hr style="border-width:5px">
+  {% if current_user.permissions in ['Admin', 'Owner', 'FLD-MethodDevelopment', 'FLD'] %}
+    <a class="btn btn-primary" href="{{ url_for(table_name~'.update', item_id = item.id)}}" role="button">Update</a>
+    <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#print_modal">Print Labels</button>
+    {% if current_user.permissions in ['Admin', 'Owner'] %}
+      {% if item.in_use %}
+        <a href="{{url_for(table_name~'.update_in_use', item_id=item.id)}}" class="btn btn-danger">Remove from Use</a>
+      {% else %}
+        <a href="{{url_for(table_name~'.update_in_use', item_id=item.id)}}" class="btn btn-primary">Set In Use</a>
+      {% endif %}
+    {% endif %} 
+  {% endif %}
+</div>
+<div id="body">
+    <br>
+    Location: {{kwargs['location_display']}}
+    <div class="card-header view-card-header" id="batches">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#batches-coll" aria-expanded="false" aria-controls="batches">
+            <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Batches
+        </button>
+    </div>
+    <div id="batches-coll" class="collapse" aria-labelledby="batches-heading">
+        <div class="card">
+            <div class="card-body">
+              <div class="row">
+                    <div class="col" align="left">
+                        <table class="table-hover table-striped nowrap" style="width:100%" id="batches">
+                            <tbody>
+                                {% for batch in kwargs['batches'] %}
+                                    <tr>
+                                        <td>
+                                            {{batch.batch_id}}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+              </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+  <!-- Modal for Pop Up-->
+  {# https://getbootstrap.com/docs/4.1/components/modal/ #}
+  {# Notice how the link with the id to the button above! #}
+  <div class="modal" tabindex="-1" role="dialog" id="del_modal">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Delete {{alias}}?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete <b>{{alias}}</b>?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+
+          <form action="{{ url_for(table_name~'.delete', item_id= item.id) }}" method="POST">
+            <input class="btn btn-danger" type="submit" value="Delete">
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Modal for Printing-->
+  <div class="modal" tabindex="-1" role="dialog" id="print_modal">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Print Labels</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form method="POST">
+            <div class="modal-body" style="text-align: center">
+                <p>How many labels would you like to print?</p>
+                {{kwargs['form'].hidden_tag()}}
+                {{kwargs['form'].amount}}
+            </div>
+            <div class="modal-footer">
+                {{kwargs['form'].submit(class='btn btn-primary submitBtnSaR')}}
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="diWater" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">New Deionized Water</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <p>New Deionized Water added. Please consult supervisor to <b>take previous lot out of use.</b></p>
+            <p>Please <b>print</b> a new label.</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" data-dismiss="modal" data-target="diWater">Ok</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script type="text/javascript">
+  let tableName = "{{table_name}}"
+  let currentUser = "{{current_user.permissions}}"
+</script>
+<script src="/static/js/remove-update.js"></script>
+<script src ="/static/js/label_printing.js" type="text/javascript" charset="UTF-8"> </script>
+
+{% if kwargs['show_modal'] %}
+  <script>
+      $(function(){ $('#diWater').modal('show'); });
+  </script>
+{% endif %}
+
+{% endblock %}

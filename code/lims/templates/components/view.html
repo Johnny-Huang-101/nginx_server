@@ -1,0 +1,225 @@
+{% extends "view_template.html" %}
+
+{% block alerts %}
+{% endblock %}
+
+{% block buttons %}
+{% endblock %}
+
+{% block view %}
+{% endblock %}
+
+{% block accordion %}
+<div class="card">
+    <div class="card-header view-card-header" id="details" >
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#details-coll" aria-expanded="false" aria-controls="details">
+            <span><i class="fa-solid fa-chevron-down mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Component Details
+        </button>
+    </div>
+    <div id="details-coll" class="collapse show" aria-labelledby="details">
+        <div class="card-body">
+            <div class="my-3">
+                <table class="table table-hover table-striped details-table" style="width:100%">
+                    <tr>
+                        <th>Name</th>
+                        <td>{{item.name}}</td>
+                    </tr>
+                    <tr>
+                        <th>Drug Class</th>
+                        <td>
+                            <a href="{{ url_for('drug_classes.view', item_id=item.id) }}">
+                                {{item.drug_class.name}}
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Rank</th>
+                        <td>{{item.rank}}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="row">
+                {% for compound in kwargs['compounds'] %}
+                <div class="col" >
+                    <div align="center">
+                        <img src="../static/filesystem/structures/{{compound.id}}.png">
+                        <p><b>{{compound.name}}</b></p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header view-card-header">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#compounds-card-collapse" aria-expanded="false" aria-controls="compounds">
+            <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Compounds
+        </button>
+    </div>
+    <div id="compounds-card-collapse" class="collapse" aria-labelledby="compounds-heading">
+        <div class="card-body">
+            <a class="btn btn-secondary mb-3 export" href="#" name="compounds">Export</a>
+            <div class="table display">
+                <div class="table-responsive">
+                    <table class="display table-striped table-hover nowrap small view-table" style="width:100%;" id="compounds-table">
+                        <thead>
+                        <tr>
+                            <th>SFOCME Name</th>
+                            <th>Code</th>
+                            <th>Date Added</th>
+                            <th>Drug Class</th>
+                            <th>Monograph</th>
+                            <th>IUPAC Name</th>
+                            <th>CAS No.</th>
+                            <th>Molecular Formula</th>
+                            <th>Exact Mass</th>
+                            <th>InChIKey</th>
+                            <th>SMILES</th>
+                            <th>Created Date</th>
+                            <th>Created By</th>
+                            <th>Modify Date</th>
+                            <th>Modified By</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for compound in kwargs['compounds'] %}
+                            <tr>
+                                <td>
+                                    <a href="{{url_for('compounds.view', item_id=compound.id)}}">
+                                        {{compound.name}}
+                                    </a>
+                                </td>
+                                <td>{{compound.code}}</td>
+                                <td>
+                                    {% if compound.inventory_add_date %}
+                                    {{compound.inventory_add_date.strftime('%m/%d/%Y')}}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if compound.drug_class %}
+                                    <a href="{{ url_for('drug_classes.view', item_id=compound.drug_class.id) }}">
+                                        {{compound.drug_class.name}}
+                                    </a>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if compound.monograph %}
+                                    <a href="{{url_for('drug_monographs.view', item_id=compound.monograph.id)}}">
+                                        {{compound.monograph.name}}
+                                    </a>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if compound.inchikey %}
+                                    <a href="https://pubchem.ncbi.nlm.nih.gov/#query={{compound.inchikey}}" target="_blank">
+                                        {{compound.iupac}}
+                                    </a>
+                                    {% endif %}
+                                </td>
+                                <td>{{compound.cas_no}}</td>
+                                <td>{{compound.formula}}</td>
+                                <td>{{compound.mass}}</td>
+                                <td>{{compound.inchikey}}</td>
+                                <td>{{compound.smiles}}</td>
+                                <td>{{compound.create_date.strftime('%m/%d/%Y %H:%M')}}</td>
+                                <td>{{compound.created_by}}</td>
+                                <td>
+                                    {% if compound.modify_date %}
+                                    {{compound.modify_date.strftime('%m/%d/%Y %H:%M')}}
+                                    {% endif %}
+                                </td>
+                                <td>{{compound.modified_by}}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header view-card-header" id="scope-card">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#scope-card-collapse" aria-expanded="false" aria-controls="scope-card">
+            <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Scope
+        </button>
+    </div>
+    <div id="scope-card-collapse" class="collapse" aria-labelledby="scope-card-heading">
+        <div class="card-body">
+              <a class="btn btn-secondary mb-3 export" href="#" name="scope">Export</a>
+            <div class="table display">
+                <div class="table-responsive">
+                    <table class="display table-striped table-hover nowrap small view-table" style="width:100%;" id="scope-table">
+                        <thead>
+                        <tr>
+                            <th>Assay</th>
+                            <th>Component</th>
+                            <th>Limit of Detection</th>
+                            <th>Internal Standard?</th>
+                            <th>Internal Standard Conc.</th>
+                            <th>Units</th>
+                            <th>Validated</th>
+                            <th>Report Notes</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for scope in kwargs['scope'] %}
+                        <tr>
+                            <td>{{scope.assay.assay_name}}</td>
+                            <td>
+                                <a href="{{url_for('scope.view', item_id=scope.id)}}">
+                                    {{scope.component.name}}
+                                </a>
+                            </td>
+                            <td>{{scope.limit_of_detection}}</td>
+                            <td>{{scope.internal_standard}}</td>
+                            <td>{{scope.internal_standard_conc}}</td>
+                            <td>{{scope.unit.name}}</td>
+                            <td>{{scope.validated}}</td>
+                            <td>{{scope.report_notes}}</td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+   $(document).ready( function () {
+        $('#compounds-table').DataTable({
+            pageLength: -1,
+            scrollX: true,
+            scrollY: '50vh',
+            scrollCollapse: true,
+            lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+            order: [],
+        });
+    });
+</script>
+<script>
+   $(document).ready( function () {
+        $('#scope-table').DataTable({
+            pageLength: -1,
+            scrollX: true,
+            scrollY: '50vh',
+            scrollCollapse: true,
+            lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+            order: [],
+        });
+    });
+</script>
+{% endblock %}

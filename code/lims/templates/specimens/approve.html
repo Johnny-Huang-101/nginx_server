@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block content %}
+
+<body>
+THIS IS SPECIMEN APPROVAL VIEW
+</body>
+
+<button type="button" class="btn btn-primary mb-3" id="myBtn">
+        Test
+</button>
+
+<div id="myModal" class="modal">
+
+    <div class="modal-content">
+        <p style="text-align: center">The specimen is still in your possession, where are you storing it next?</p>
+        <select class="form-control selectpicker" name="custody" id="next_location_1" data-live-search="true">
+            <option value="Cooled Storage">Cooled Storage</option>
+            <option value="Benches">Benches</option>
+            <option value="Cabinets">Cabinets</option>
+            <option value="Hoods">Hoods</option>
+        </select>
+        <div class="col" id="storage">
+            <select class="form-control selectpicker" name="assay_storage_id" id="assay_storage_id" data-live-search="true">
+            </select>
+        </div>
+        <br>
+        <div style="text-align: center">
+            <button type="submit">Confirm</button>
+            <button type="submit" id="close">Close</button>
+        </div>
+
+    </div>
+
+</div>
+
+
+<style>
+
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+}
+
+/* The Close Button */
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+</style>
+
+<script type="text/javascript">
+$(function() {
+// Get the modal
+var modal = document.getElementById("myModal");
+
+// Get the button that opens the modal
+var btn = document.getElementById("myBtn");
+
+// Get the <span> element that closes the modal
+var span = document.getElementById("close");
+
+// When the user clicks on the button, open the modal
+btn.onclick = function() {
+  modal.style.display = "block";
+}
+
+// When the user clicks on <span> (x), close the modal
+span.onclick = function() {
+  modal.style.display = "none";
+}
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+
+      function handleLocationChange() {
+        var loc = document.getElementById("custody").value;
+        var storage_select = document.getElementById("assay_storage_id");
+        $.getJSON('/get_custody_locations/', {
+          custody: loc
+        }, function(data) {
+          var optionHTML = "";
+          for (var choice of data.choices) {
+            optionHTML += '<option value="' + choice.name + '">' + choice.name + '</option>';
+          }
+          updateHTMLAndSelectpicker(optionHTML);
+        });
+      }
+
+      $('#custody').on('change', handleLocationChange);
+
+      handleLocationChange();
+
+      function updateHTMLAndSelectpicker(optionHTML) {
+        $('#assay_storage_id').html(optionHTML);
+        $('#assay_storage_id').selectpicker('val', 0);
+        $('#assay_storage_id').selectpicker('refresh');
+        $('#assay_storage_id').selectpicker('render');
+      }
+});
+</script>
+
+{% endblock %}

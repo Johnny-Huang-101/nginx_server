@@ -1,0 +1,177 @@
+{% extends "form_template.html" %}
+
+<!-- ALERTS -->
+{% block alerts %}
+{% endblock %}
+
+<!-- HEADER -->
+{% block header %}
+{% endblock %}
+
+{% block form %}
+    <div class="row form-group mb-4">
+        <div class="col">
+            {{form.case_id.label}}
+            {{form.case_id}}
+        </div>
+        <div class="col">
+            {{form.user_id.label}}
+            {{form.user_id}}
+        </div>
+    </div>
+    <div class="row form-group mb-4">
+        <div class="col">
+            {{form.purpose_id.label}}
+            {{form.purpose_id}}
+        </div>
+        <div class="col">
+            {{form.type_id.label}}
+            {{form.type_id}}
+        </div>
+        <div class="col">
+            {{form.jurisdiction_id.label}}
+            {{form.jurisdiction_id}}
+        </div>
+    </div>
+    <div class="row form-group mb-4">
+        <div class="col-md-4">
+            {{form.format_id.label}}
+            {{form.format_id}}
+        </div>
+        <div class="col-md-4">
+            {{form.location.label}}
+            {{form.location}}
+        </div>
+    </div>
+    <div class="row form-group mb-4">
+        <div class="col">
+            {{form.agency_id.label}}
+            {{form.agency_id}}
+        </div>
+        <div class="col">
+            {{form.personnel_id.label}}
+            {{form.personnel_id}}
+        </div>
+        <div class="col">
+            {{form.personnelA2_id.label}}
+            {{form.personnelA2_id}}
+        </div>
+    </div>
+    <div class="row form-group mb-4">
+        <div class="col">
+            {{form.cross_examined.label}}
+            {{form.cross_examined}}
+        </div>
+        <div class="col">
+            {{form.personnelB1_id.label}}
+            {{form.personnelB1_id}}
+        </div>
+        <div class="col">
+            {{form.personnelB2_id.label}}
+            {{form.personnelB2_id}}
+        </div>
+    </div>
+    <div class="row form-group mb-4">
+        <div class="col">
+            {{form.others_present.label}}
+            {{form.others_present}}
+        </div>
+    </div>
+    <hr>
+    <div class="row form-group mb-4">
+        <div class="col">
+            {{form.change_id.label}}
+            {{form.change_id}}
+        </div>
+    </div>
+    <hr>
+   
+    <!--START_DATE(date) AND FINISH DATE (finish_datetime) FIELDS -->
+    <span>Enter times to the nearest 15 min mark. </span>
+    <div class="row form-group mb-4">
+        <div class="col">
+            {{form.date.label(style='font-weight: bold')}}
+            <span style="color:red; margin-left:3px">*</span>
+            {{ form.date(id='start_datetime') }}
+        </div>
+        <div class="col">
+            {{ form.finish_datetime.label}}
+            {{ form.finish_datetime(id='finish_datetime') }}
+        </div>
+        <div class="col">
+            {{form.drive_time.label(style='font-weight: bold')}}
+            {{form.drive_time(id='drive_duration')}}
+        </div>
+        <div class="col">
+            {{form.excluded_time.label(style='font-weight: bold')}}
+            <a href="#!" data-toggle="tooltip" title="i.e., overnight gap, lunch">
+                <i class="fa-solid fa-circle-question" ></i>
+            </a>
+            {{form.excluded_time(id='excluded_duration')}}
+        </div>
+        <div class="col">
+            {{form.waiting_time.label(style='font-weight: bold')}}
+            {{form.waiting_time(id='waiting_duration')}}
+        </div>
+    </div>
+
+    <hr>
+    <a href="#" id="calc_time" type="button">Calculate Time</a>
+        <a href="#!" data-toggle="tooltip"
+        title="Calculate <b>Total Active Time</b> and <b>Total Work Time</b>.
+                Fields will be recalculated on form submission.">
+            <i class="fa-solid fa-circle-question" ></i>
+    </a>
+       <div class="row form-group my-4">
+        <div class="col">
+            {{form.total_testifying_time.label(style='font-weight: bold')}}
+            <a href="#!" data-toggle="tooltip"
+               title="Finish - Start - (Drive Time + Excluded Time + Waiting Time)">
+                <i class="fa-solid fa-circle-question" ></i>
+            </a>
+            {{form.total_testifying_time(id='tt_duration')}}
+        </div>
+        <div class="col">
+            {{form.total_work_time.label(style='font-weight: bold')}}
+            <a href="#!" data-toggle="tooltip"
+               title="Finish - Start - Excluded Time">
+                <i class="fa-solid fa-circle-question" ></i>
+            </a>
+            {{form.total_work_time(id='tw_duration')}}
+        </div>
+    </div>
+    <hr>
+   
+    <h5>Contextual Information (note: typically used for OOP)</h5>
+    <div class="row form-group mb-4">
+        <div class="col">
+            {{form.information_provider.label}}
+            {{form.information_provider}}
+        </div>
+        <div class="col">
+            {{form.topics_discussed.label}}
+            {{form.topics_discussed}}
+        </div>
+    </div>
+    <div class="row form-group mb-4">
+        <div class="col">
+            {{form.narrative.label}}
+            {{form.narrative}}
+        </div>
+        <div class="col">
+            {{form.booking_comment.label}}
+            {{form.booking_comment}}
+        </div>
+    </div>
+    <hr>
+{% endblock %}
+
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="/static/js/bookings.js"></script>
+{% endblock %}
+
+

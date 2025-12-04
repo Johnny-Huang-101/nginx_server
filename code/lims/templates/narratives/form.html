@@ -1,0 +1,76 @@
+{% extends "form_template.html" %}
+
+{% block form %}
+    <div class="form-group">
+        {{form.narrative_type.label}}
+        {{form.narrative_type}}
+    </div>
+    <div>
+        <a href="#!" id="highlight">Highlight selected text</a> |
+        <a href="#!" id="unhighlight">Unhighlight selected text</a> |
+        <a href="#!" data-toggle="modal" data-target="#remove-highlighting-warning" >Remove all highlighting</a> |
+        <a href="#!" data-toggle="modal" data-target="#remove-changes-warning">Remove Track Changes</a>
+    </div>
+    <hr>
+    <div class="form-group">
+        {{form.narrative.label}}
+        <div id="narrative-text" style="height:60vh; overflow:scroll">
+            {{kwargs['narrative_text'] | safe}}
+        </div>
+    </div>
+    {{form.narrative}}
+{% endblock %}
+
+<!--Alerts-->
+{% block alerts %}
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+<div class="modal" tabindex="-1" role="dialog" id="remove-highlighting-warning">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Warning</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>You are about to remove all highlighting from the text. This process cannot be undone once the form is submitted.</p>
+                <p>Do you wish to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" id="unhighlight-all">OK</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" id="remove-changes-warning">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Warning</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>You are about to remove the formatting which highlights changes. This process cannot be undone once the form is submitted.</p>
+                <p>Do you wish to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" id="remove-changes">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+<script src="/static/js/narratives.js"></script>
+{% endblock %}

@@ -1,0 +1,844 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% set  standards = ["Mix Check", "ISTD", "LOD", "Calibrator", "QC (Quant)", "QC (Qual)", "Calibrator (SAMQ)", "QC (SAMQ)", "QC", "LOS"] %}
+{% set qual_stand = ['QC (Qual)', 'Mix Check', 'ISTD', 'LOD', 'LOS'] %}
+{% set samq = ['Calibrator (SAMQ)', 'QC (SAMQ)'] %}
+{% set quant_stand = ['Calibrator','QC (Quant)'] %}
+{% set part = ['part_a', 'part_b', 'part_c'] %}
+{% set part_title = ['Part A', 'Part B', 'Part C'] %}
+
+<style>
+    .btn-link {
+        font-size: 24px
+        }
+
+    #hide {
+        display: none;
+    }
+
+    #header {
+        position: static;
+
+        width: 100%;
+    }
+
+    #body{
+        width: 100%;
+        height: 900px;
+        overflow: auto;
+    }
+
+</style>
+<div id = "header">
+    <hr style="border-width:5px">
+    <h1 align="center">
+        {{item.lot}}
+    </h1>
+    <hr style="border-width:5px">
+</div>
+<div id="body">
+    {% if current_user.permissions in ['Admin', 'Owner', 'FLD-MethodDevelopment', 'FLD'] %}
+        <div>
+            {% if item.db_status == 'Pending' %}
+                <button class="btn btn-primary" data-toggle="modal" data-target="#submit_modal">Submit</button>
+                <a href="{{url_for(table_name~'.additional_information', item_id=item.id)}}" class="btn btn-primary">Add Additional Information</a>
+            {% endif %}
+            {% if item.authorized_date is none and current_user.permissions in ['Admin', 'Owner'] %}
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#approve_modal">Approve</button>
+                <a href="{{url_for(table_name~'.approve', item_id=item.id)}}">Approve Test</a>
+            {% endif %}
+            {% if not item.in_use %}
+                <a class="btn btn-primary" href="{{ url_for(table_name~'.update', item_id = item.id)}}" role="button">Update</a>
+            {% endif %}
+            {% if current_user.permissions in ['Admin', 'Owner'] %}
+                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del_modal">Delete</button>
+            {% endif %}
+            {% if item.type.name in standards %}
+                <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#series_modal">Add Series</button>
+            {% endif %}
+            <button type="button" class="btn btn-secondary" onclick="history.back()">Back</button>
+            <a class="btn btn-secondary" href="{{ url_for(table_name~'.attach', item_id=item.id) }}"><i class="fa-solid fa-paperclip"></i> Attach</a>
+            {% if item.type.name == 'Blank Matrix' or item.constituent.name == 'Volatile ISTD' or item.type.name == 'Reagent' or item.type.name == 'Calibrator (GCET)' or item.type.name == 'QC (GCET)'%}
+                <a href="{{url_for(table_name~'.print_labels', item_id=item.id)}}" class="btn btn-secondary printLabelBtn">Print Label</a>
+            {% else %}
+                <a href="{{url_for(table_name~'.print_labels', item_id=item.id)}}" class="btn btn-secondary printLabelBtn">Print Label</a>
+            {% endif %}
+            {% if item.remove_reason %}
+                {% if current_user.permissions in ['Admin', 'Owner'] %}
+                    {% if item.db_status == 'Removed' %}
+                        <a class="btn btn-secondary" href="{{ url_for(table_name~'.restore', item_id=item.id) }}">Restore</a>
+                    {% elif current_user.initials != item.modified_by %}
+                        <a class="btn btn-success" href="{{ url_for(table_name~'.approve_remove', item_id=item.id) }}">Approve Removal</a>
+                        <a class="btn btn-danger" href="{{ url_for(table_name~'.reject_remove', item_id=item.id) }}">Reject Removal</a>
+                    {% endif %}
+                {% endif %}
+            {% else %}
+                <a class="btn btn-danger" data-toggle="modal" data-target="#remove-modal">Remove</a>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <br>
+    {% if item.type.name in standards %}
+
+        <div class="card">
+            <div class="card-header" id="details_heading">
+                <h5>Standard Verification</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col" align="left">
+                        <table class="table-hover table-striped nowrap" style="width:100%" id="standard_verification">
+                            <tbody>
+                                <tr>
+                                    <th>Lot Number:</th>
+                                    <td>{{item.lot}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Prepared Date:</th>
+                                    {% if item.prepared_date == None %}
+                                        <td></td>
+                                    {% else %}
+                                        <td>{{item.prepared_date.strftime('%m/%d/%Y')}}</td>
+                                    {% endif %}
+                                </tr>
+                                <tr>
+                                    <th>Prepared By:</th>
+                                    <td>{{item.prep_by.initials}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Lot Retest Date:</th>
+                                    {% if item.retest_date == None %}
+                                        <td></td>
+                                    {% else %}
+                                        <td>
+                                            {{item.retest_date.strftime('%m/%d/%Y')}} {% if current_user.permissions in ['Admin', 'Owner'] %}<a href="" data-toggle="modal" data-target="#retest-modal">Update</a> {% endif %}
+                                        </td>
+                                    {% endif %}
+                                </tr>
+                                <tr>
+                                    <th>Authorized for Use Date:</th>
+                                    {% if item.authorized_date == None %}
+                                        <td></td>
+                                    {% else %}
+                                        <td>{{item.authorized_date.strftime('%m/%d/%Y')}}</td>
+                                    {% endif %}
+                                </tr>
+                                <tr>
+                                    <th>Parent Standard Lot:</th>
+                                    <td>{{item.parent_standard_lot}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Pipette Check Performed:</th>
+                                    <td>{{item.pipette_check}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Location:</th>
+                                    <td>{{location_display}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col" align="center">
+                        <table class="table-hover table-striped nowrap" style="width:100%">
+                            <tbody>
+                                <tr>
+                                    <th>Volume Prepared:</th>
+                                    <td>{{item.volume_prepared}} mL</td>
+                                </tr>
+                                <tr>
+                                    <th>Solvent Used:</th>
+                                    <td>{{item.solvent.name}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Solvent Lot:</th>
+                                    <td>{{item.solvent.lot}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Aliquot Volume:</th>
+                                    {% if item.aliquot_volume is none %}
+                                        <td>{{item.aliquot_volume}}</td>
+                                    {% else %}
+                                        <td>{{item.aliquot_volume}} µL</td>
+                                    {% endif %}
+                                </tr>
+                                <tr>
+                                    <th>Total Aliquots:</th>
+                                    <td>{{item.total_aliquots}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Concentration Multiplier:</th>
+                                    <td>{{item.concentrator_multiplier}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Log and Labels Verified By:</th>
+                                    <td>{{item.verif_by.initials}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col" align="right">
+                        <table class="table-hover table-striped nowrap" style="width:100%; margin:auto">
+                            <tbody>
+                                <tr>
+                                    <th>Equipment Used</th>
+                                    <td style="font-weight:bold">Equipment ID</td>
+                                </tr>
+                                {% if item.equipment_used == None %}
+                                    <tr></tr>
+                                {% else %}
+                                    {% if eq_ids %}
+                                        {% for x in eq_ids %}
+                                            <tr>
+                                                <th style="font-weight: normal;">
+                                                    {{cal.query.get(x).type.name}}
+                                                </th>
+                                                <td>
+                                                    <a href="{{url_for('calibrated_labware.view', item_id=x)}}">{{cal.query.get(x).equipment_id}}</a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if item.s_type in qual_stand %}
+            <div class="card">
+                 <div class="card-header">
+                    <h5>Qualitative Assessment</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col" align="left">
+                            <table class="table-hover table-striped nowrap" style="width:100%">
+                                <tbody>
+                                    <tr>
+                                        <th>Qualitative Comments:</th>
+                                        <td>{{item.qualitative_comments}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% elif item.s_type in quant_stand %}
+            {% if item.s_type == 'Calibrator' %}
+                <div class="card">
+                     <div class="card-header">
+                        <h5>Previous Lot Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col" align="left">
+                                <table class="table-hover table-striped nowrap" style="width:100%">
+                                    <tbody>
+                                        <tr>
+                                            <th>Previous Lot Number: </th>
+                                            <td>{{item.previous_lot}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Previous Lot Comments: </th>
+                                            <td>{{item.previous_lot_comments}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            <div class="card">
+                <div class="card-header">
+                    <h5>Batch ID(s) for Verification Samples</h5>
+                </div>
+                {% if item.verification_batches == None %}
+                    <div class="card-body">
+                        <div class="row">
+                            N/A
+                        </div>
+                    </div>
+                {% else %}
+                    {% for x in item.verification_batches %}
+                        <div class="card-body">
+                            <div class="row">
+                                {{x}}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h5>Quantitative Assessment</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col" align="left">
+                            <table class="table-hover table-striped nowrap" style="width:100%">
+                                <tbody>
+                                    <tr>
+                                        <th>Quantitative Comments:</th>
+                                        <td>{{item.quantitative_comments}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if item.s_type == 'Calibrator' %}
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Calibration Assessment</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col" align="left">
+                                <table class="table-hover table-striped nowrap" style="width:100%" id="cal_table">
+                                    <tbody>
+                                        <tr>
+                                            <th>Calibration Comments:</th>
+                                            <td>{{item.calibration_comments}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% elif item.s_type in samq %}
+            <div class="card">
+                <div class="card-header">
+                    <h5>Batch ID(s) for Verification Samples</h5>
+                </div>
+                {% if item.verification_batches == None %}
+                    <div class="card-body">
+                        <div class="row">
+                            N/A
+                        </div>
+                    </div>
+                {% else %}
+                    {% for x in item.verification_batches %}
+                        <div class="card-body">
+                            <div class="row">
+                                {{x}}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        {% endif %}
+        <div class="card">
+             <div class="card-header">
+                <h5>Additional Comments</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col" align="left">
+                        <table class="table-hover table-striped nowrap" style="width:100%" id="additional_comments">
+                            <tbody>
+                                <tr>
+                                    <th>Additional Comments:</th>
+                                    <td>{{item.additional_comments}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+                    <div class="card-header view-card-header" id="attachments">
+                        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#attachments-coll" aria-expanded="false" aria-controls="attachments">
+                            <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: '#FF0000'"></i></span>
+                            Attachments
+                        </button>
+                    </div>
+                    <div id="attachments-coll" class="collapse" aria-labelledby="attachments-heading">
+                        <div class="card-body">
+                            <div class="table display">
+                                <div class="table-responsive">
+                                    <table class="display table-striped table-hover nowrap small view-table" style="width:100%;" id="attachments-table">
+                                        <thead>
+                                        <tr>
+                                            <th>Delete</th>
+                                            <th>File Name</th>
+                                            <th>Save Name</th>
+                                            <th>Type</th>
+                                            <th>Source</th>
+                                            <th>Description</th>
+                                            <th>Added By</th>
+                                            <th>Add Date</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for attachment in attachments%}
+                                        <tr>
+                                            <td><a href="{{url_for('attachments.delete', item_id=attachment.id)}}" class="btn btn-danger btn-size"><i class="fa fa-trash-o btn-icon" style="font-size:10px"></i></a></td>
+                                            <td>
+                                                {% if attachment.name.split('.')[1] in ['pdf', 'jpg', 'png'] %}
+                                                <a href="../static/filesystem/attachments/{{item_name}}/{{item.id}}/{{attachment.save_name}}" target="_blank">{{attachment.name}}</a>
+                                                {% else %}
+                                                <a href="../static/filesystem/attachments/{{item_name}}/{{item.id}}/{{attachment.save_name}}" download>{{attachment.name}}</a>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{attachment.save_name}}</td>
+                                            <td>{{attachment.type.name}}</td>
+                                            <td>{{attachment.type.source}}</td>
+                                            <td>{{attachment.description}}</td>
+                                            <td>{{attachment.created_by}}</td>
+                                            <td>
+                                                {% if attachment.create_date %}
+                                                    {{attachment.create_date.strftime('%m/%d/%Y %H:%M')}}
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+    {% elif item.type.name == 'Blank Matrix' %}
+
+        <div class="card">
+            <div class="card-header">
+                <h5>Blank Matrix Verification</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col" align="left">
+                        <table class="table-hover table-striped nowrap" style="width:100%" id="blank_matrix_verification">
+                            <tbody>
+                                <tr>
+                                    <th>Case Number:</th>
+                                    <td><a href="{{url_for('cases.view', item_id=case_number) }}">{{item.lot}}</a></td>
+                                </tr>
+                                <tr>
+                                    <th>Negative Matrix Type</th>
+                                    <td>{{item.constituent.name}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Prepared Date:</th>
+                                    {% if item.prepared_date == None %}
+                                        <td></td>
+                                    {% else %}
+                                        <td>{{item.prepared_date.strftime('%m/%d/%Y')}}</td>
+                                    {% endif %}
+                                </tr>
+                                <tr>
+                                    <th>Prepared By:</th>
+                                    <td>{{item.prep_by.initials}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Log and Labels Verified By:</th>
+                                    <td>{{item.verif_by.initials}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Lot Expiry Date:</th>
+                                    {% if item.retest_date == None %}
+                                        <td></td>
+                                    {% else %}
+                                        <td>{{item.retest_date.strftime('%m/%d/%Y')}}</td> {% if current_user.permissions in ['Admin', 'Owner'] %}<a href="" data-toggle="modal" data-target="#retest-modal">Update</a> {% endif %}
+                                    {% endif %}
+                                </tr>
+                                <tr>
+                                    <th>Authorized for Use Date:</th>
+                                    {% if item.authorized_date == None %}
+                                        <td></td>
+                                    {% else %}
+                                        <td>{{item.authorized_date.strftime('%m/%d/%Y')}}</td>
+                                    {% endif %}
+                                </tr>
+                                <tr>
+                                    <th>Location:</th>
+                                    <td>{{location_display}}</td>
+                                    <th>Assays</th>
+                                    <td>
+                                        {% for assay in assays %}
+                                            {{assay}}
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col" align="center">
+                        <table class="table-hover table-striped nowrap" style="width:100%">
+                            <tbody>
+                                <tr>
+                                    <th>Volume Prepared:</th>
+                                    <td>{{item.volume_prepared}} mL</td>
+                                </tr>
+                                <tr>
+                                    <th>Aliquot?</th>
+                                    <td>
+                                        {% if item.total_aliquots is not none %}
+                                            Y
+                                        {% else %}
+                                            N
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Approximate Volume per Aliquot:</th>
+                                    {% if item.aliquot_volume is none %}
+                                        <td>{{item.aliquot_volume}}</td>
+                                    {% else %}
+                                        <td>{{item.aliquot_volume}} µL</td>
+                                    {% endif %}
+                                </tr>
+                                <tr>
+                                    <th>Total Aliquots:</th>
+                                    <td>{{item.total_aliquots}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Preservatives</th>
+                                    <td>{{item.preservative.name}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Location</th>
+                                    <td>{{item.location}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Approved By</th>
+                                    <td>
+                                        {% if item.approved_by %}
+                                            {{item.approved.initials}}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col" align="right">
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="card">
+            <div class="card-header">
+                <h5>Lot Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col" align="left">
+                        <table class="table-hover table-striped nowrap" style="width:100%">
+                            <tbody>
+                                <tr>
+                                    <th>Lot Number:</th>
+                                    <td>{{item.lot}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Prepared Date:</th>
+                                    {% if item.prepared_date == None %}
+                                        <td></td>
+                                    {% else %}
+                                        <td>{{item.prepared_date.strftime('%m/%d/%Y')}}</td>
+                                    {% endif %}
+                                </tr>
+                                <tr>
+                                    <th>Prepared By:</th>
+                                    <td>{{item.prep_by.initials}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Lot Retest Date:</th>
+                                    {% if item.retest_date == None %}
+                                        <td></td>
+                                    {% else %}
+                                        <td>{{item.retest_date.strftime('%m/%d/%Y')}}</td> {% if current_user.permissions in ['Admin', 'Owner'] %}<a href="" data-toggle="modal" data-target="#retest-modal">Update</a>{% endif %}
+                                    {% endif %}
+                                </tr>
+                                <tr>
+                                    <th>Location:</th>
+                                    <td>{{location_display}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+             <div class="card-header">
+                <h5>Composition</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col" align="left">
+                        <table class="table-hover table-striped nowrap" style="width:100%">
+                            <tbody>
+                                {% for y in part_title %}
+                                    {% if y == 'Part A' %}
+                                        {% set x = 0 %}
+                                    {% elif y == 'Part B' %}
+                                        {% set x = 1 %}
+                                    {% elif y == 'Part C' %}
+                                        {% set x = 2 %}
+                                    {% endif %}
+                                     <tr>
+                                        <th>{{y}}</th>
+                                        <td>
+                                            <table class="table-hover table-striped nowrap" style="width:100%">
+                                                <tbody>
+                                                <tr>
+                                                    <th>{{y}} Name</th>
+                                                    <td>{{item[part[x]]}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>{{y}} Lot</th>
+                                                    <td>{{item[part[x] ~ '_lot']}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>{{y}} Expiration</th>
+                                                    {% if item[part[x] ~ '_exp'] == None %}
+                                                        <td></td>
+                                                    {% else %}
+                                                        <td>{{item[part[x] ~ '_exp'].strftime('%m/%d/%Y')}}</td>
+                                                    {% endif %}
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                     </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+
+  <!-- Modal for Pop Up-->
+  {# https://getbootstrap.com/docs/4.1/components/modal/ #}
+  {# Notice how the link with the id to the button above! #}
+  <div class="modal" tabindex="-1" role="dialog" id="del_modal">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Delete {{item.name}}?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete <b>{{item.name}}</b>?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+
+          <form action="{{ url_for(table_name~'.delete', item_id= item.id) }}" method="POST">
+            <input class="btn btn-danger delete" type="submit" value="Delete">
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+ <!-- Modal for Series Addition-->
+  {# https://getbootstrap.com/docs/4.1/components/modal/ #}
+  {# Notice how the link with the id to the button above! #}
+  <div class="modal" tabindex="-1" role="dialog" id="series_modal">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">How many additional standards in the series do you wish to add?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form action="{{url_for(table_name~'.series', item_id=item.id)}}" method="POST" id="modal_form">
+            <div class="modal-body" style="text-align: center">
+                <input type="text" name="series_num" id="series_num">
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Confirm</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+<!-- Modal for approval (with date picker) -->
+<div class="modal" tabindex="-1" role="dialog" id="approve_modal">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form action="{{ url_for(table_name ~ '.approve_with_date', item_id=item.id) }}" method="POST">
+        {# If you use Flask-WTF and have a form object available, include CSRF: #}
+        {# {{ form.hidden_tag() }} #}
+        <div class="modal-header">
+          <h5 class="modal-title">Confirm approval</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body" style="text-align: left">
+          <p>By clicking <b>Approve</b>, you <b>({{ current_user.initials }})</b> authorize the following lot for use:</p>
+          <p><b>{{ item.lot }}</b></p>
+
+          <div class="form-group">
+            <label for="authorized_date"><b>Authorized Date</b></label>
+            <input
+              type="date"
+              class="form-control"
+              id="authorized_date"
+              name="authorized_date"
+              required
+              value="{{ datetime.utcnow().strftime('%Y-%m-%d') }}"
+            >
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Approve</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+ <!-- Modal for submitting-->
+  {# https://getbootstrap.com/docs/4.1/components/modal/ #}
+  {# Notice how the link with the id to the button above! #}
+  <div class="modal" tabindex="-1" role="dialog" id="submit_modal">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Submit for Approval</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+            <div class="modal-body" style="text-align: center">
+                <p>By clicking "Confirm", you <b>({{current_user.initials}})</b> are submitting the following for approval:</p>
+                <p><b>{{item.lot}}</b></p>
+            </div>
+            <div class="modal-footer">
+                <a href="{{url_for(table_name~'.submit', item_id=item.id)}}" class="btn btn-primary">Confirm</a>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            </div>
+      </div>
+    </div>
+  </div>
+
+<!-- Modal for Updating Retest Date-->
+  <div class="modal" tabindex="-1" role="dialog" id="retest-modal">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Update Retest Date</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+         <form method="POST">
+          {{form.hidden_tag()}}
+          <div class="form-group">
+            {{form.retest_date.label(class="form-label")}}
+            {{form.retest_date(class='form-control')}}
+          </div>
+          <div class="modal-footer" style="justify-content: center">
+            {{form.submit(class='btn btn-primary') }}
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal" tabindex="-1" role="dialog" id="remove-modal">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Remove {{alias}}?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="{{ url_for(table_name~'.remove', item_id=item.id) }}" method="POST">
+                <div class="modal-body">
+                    <p>Are you sure you want to remove <b>{{alias}}</b>?</p>
+                    <label>Please enter the reason for removal.</label>
+                    <div class="form-group">
+                        <textarea class="form-control" name="reason" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <input class="btn btn-danger" type="submit" value="Remove">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Get the input element
+    var seriesNumInput = document.getElementById('series_num');
+
+    // Add an event listener to the input element to detect changes
+    seriesNumInput.addEventListener('input', function() {
+        // Get the current value of the input element
+        var seriesNumValue = seriesNumInput.value;
+
+        // Get the form element
+        var form = document.getElementById('modal_form');
+
+        // Get the current action URL
+        var currentAction = form.getAttribute('action');
+
+        // Construct the new action URL with the updated series_num value
+        var newAction = currentAction.split('?')[0] + '?series_num=' + encodeURIComponent(seriesNumValue);
+
+        // Update the action attribute of the form with the new URL
+        form.setAttribute('action', newAction);
+
+        console.log(seriesNumValue);
+    });
+</script>
+
+<script type="text/javascript">
+    let tableName = "{{table_name}}"
+    let currentUser = "{{current_user.permissions}}"
+    </script>
+<script src="/static/js/remove-update.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#attachments-table').DataTable({
+            pageLength: 100,
+            scrollX: true,
+            scrollY: '50vh',
+            scrollCollapse: true,
+            lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+            order: [],
+        });
+    });
+</script>
+
+
+<script src = "../../static/js/label_printing.js" type="text/javascript" charset="UTF-8"> </script>
+
+
+{% endblock %}

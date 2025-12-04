@@ -1,0 +1,50 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+<i class="fa-brands fa-readme"></i>
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Case</th>
+    <th>Narrative Type</th>
+    <th>Narrative</th>
+    <th>Checked</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+        <td>
+            <a href="{{url_for('cases.view', item_id=item.case.id)}}">
+                {{item.case.case_number}}
+            </a>
+        </td>
+        <td>
+            <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+                {{item.narrative_type}}
+            </a>
+        </td>
+        <td>{{item.narrative[:100]}}...</td>
+        <td>{{item.checked}}</td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}
+
+

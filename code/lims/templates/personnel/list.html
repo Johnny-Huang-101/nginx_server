@@ -1,0 +1,67 @@
+{% extends "list_template.html" %}
+
+{% block icon %}
+    <i class="fa-solid fa-users"></i>
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Name</th>
+    <th>Job Title</th>
+    <th>Division</th>
+    <th>Agency</th>
+    <th>ID/Badge</th>
+    <th>Email</th>
+    <th>Phone</th>
+    <th>Cell</th>
+    <th>Submitter</th>
+    <th>Receives Report</th>
+    <th>Status</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+            {{item.full_name}}
+        </a>
+    </td>
+    <td>{{item.job_title}}</td>
+    <td>
+        {% if item.division %}
+            <a href="{{url_for('divisions.view', item_id=item.division.id) }}">
+                {{item.division.name}}
+            </a>
+        {% else %}
+            No Division
+        {% endif %}
+    </td>
+    <td>
+        {% if item.agency %}
+            <a href="{{url_for('agencies.view', item_id=item.agency.id) }}">
+                {{item.agency.name}}
+            </a>
+        {% endif %}
+    </td>
+    <td>{{item.id_number}}</td>
+    <td>
+        {% if item.email %}
+            <a href="mailto:{{item.email}}">{{item.email}}</a>
+        {% endif %}
+    </td>
+    <td>{{item.phone}}</td>
+    <td>{{item.cell}}</td>
+    <td>{{item.submitter}}</td>
+    <td>{{item.receives_report}}</td>
+    <td>{{item.status.name}}</td>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
+

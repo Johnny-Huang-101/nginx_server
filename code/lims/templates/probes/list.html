@@ -1,0 +1,143 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<div class="dropdown" style="display: inline-block;">
+    <button class="btn btn-secondary dropdown-toggle" type="button" id="batches-filter" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Filter
+    </button>
+    <div class="dropdown-menu" aria-labelledby="batches-filter">
+         <div class="dropdown-submenu dropright">
+            <a class="dropdown-item dropdown-toggle" href="#">Status</a>
+            <ul class="dropdown-menu">
+                 {% for status in kwargs['statuses'] %}
+                <li><a class="dropdown-item" href="{{url_for(table_name~'.view_list', query_type='status', query=status)}}">{{status}}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="dropdown-submenu dropright">
+            <a class="dropdown-item dropdown-toggle" href="#">Service Date</a>
+            <ul class="dropdown-menu">
+                 {% for option in kwargs['service_dates'] %}
+                <li><a class="dropdown-item" href="{{url_for(table_name~'.view_list', query_type='service-date', query=option)}}">{{option}}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Equipment ID</th>
+    <th>Status</th>
+    <th>Next Calibration</th>
+    <th>Location</th>
+    <th>Model</th>
+    <th>Serial Number</th>
+    <th>Glycol</th>
+    <th>SmartScan</th>
+    <th>Hub</th>
+    <th>Last Calibration</th>
+    <th>Provider</th>
+    <th>Date Acquired</th>
+    <th>Notes</th>
+
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+        {{item.equipment_id}}
+        </a>
+    </td>
+    <td class="item-status">{{item.status.name}}</td>
+    {% if item.due_service_date %}
+        {% if item.status_id != 4 and item.due_service_date <= today %}
+            <td style="background-color: #f8d7da">
+        {% elif item.status_id != 4 and today < item.due_service_date <= within30d %}
+            <td style="background-color: #fdf59a">
+        {% else %}
+            <td>
+        {% endif %}
+            {{item.due_service_date.strftime('%m/%d/%Y')}}</td>
+        {% else %}
+            <td></td>
+    {% endif %}
+    <td>
+        {% for x in kwargs['locations'] %}
+            {% if x.item_table == table_name %}
+                {% if x.item_id == item.id %}
+                    {% for cls in kwargs['models'] %}
+                        {% if x.location_table is none %}
+                        {% else %}
+                            {% if cls == kwargs['location_dict'][x.location_table]['table'] %}
+                                {% set alias = kwargs['location_dict'][x.location_table]['alias'] %}
+                                {% if alias is string %}
+                                    {{ cls.query.get(x.location_id) | getattr(alias) }}
+                                {% elif alias is iterable %}
+                                    {% for field in alias %}
+                                        {{ cls.query.get(x.location_id) | getattr(field) }}{% if not loop.last %} - {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    </td>
+    <td>{{item.model}}</td>
+    <td>{{item.serial_number}}</td>
+    <td>{{item.glycol}}</td>
+    <td>{{item.cims}}</td>
+    <td>
+        {% if item.hub.equipment_id %}
+            <a href="{{url_for('hubs.view', item_id=item.hub.id)}}">
+            {{item.hub.equipment_id}}
+            </a>
+        {% endif %}
+    </td>
+    <td>
+        {% if item.last_service_date %}
+            {{item.last_service_date.strftime('%m/%d/%Y')}}
+        {% endif %}
+    </td>
+    <td>
+        {% if item.vendor %}
+            {% if item.vendor.name != "Service" %}
+                {% if item.vendor.abbreviation %}
+                    {{item.vendor.abbreviation}}
+                {% else %}
+                    {{item.vendor.name}}
+                {% endif %}
+            {% else %}
+                {% if item.agency.abbreviation %}
+                    {{item.vendor.name}} [{{item.vendor.agency.abbreviation}}]
+                {% else %}
+                    {{item.vendor.name}} [{{item.vendor.agency.name}}]
+                {% endif %}
+            {% endif %}
+        {% endif %}
+    </td>
+    <td>
+        {% if item.acquired_date %}
+            {{item.acquired_date.strftime('%m/%d/%Y')}}
+        {% endif %}
+    </td>
+    <td>{{item.notes}}</td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+<script src="/static/js/row_color_by_status.js"></script>
+{% endblock %}

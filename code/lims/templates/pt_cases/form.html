@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+{% block content %}
+    <style>
+        /* Style for fixed section */
+        .fixed-section-1 {
+            position: fixed;
+            height: 10%;
+            width: 100%;
+            background-color: #f0f0f0;
+            padding: 15px
+        }
+        .fixed-section-2 {
+            position: fixed;
+            top: 10%;  /* Match height of fixed-section-1 */
+            height: 50%;
+            width: 90%;
+            background-color: #f0f0f0;
+            padding: 15px;
+        }
+        .fixed-section-3 {
+            position: fixed;
+            top: 60%;
+            height: 40%;
+            width: 90%;
+            background-color: #f0f0f0;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        /* Style for dynamic scrolling section - not in use*/
+        .dynamic-section {
+            padding-top: 35%; /* Adjust this margin to match the sum of heights of the fixed sections */
+            background-color: #fff;
+            width: 98%;
+        }
+    </style>
+<form method="POST" id="form" novalidate="novalidate">
+<div class="fixed-section-1">
+        <div style="background-color: #fff"><hr style="border-width:5px">
+             {% if item_dict is not none %}
+              <h1>{{function}} PT Internal Evaluation for <a href="{{url_for('cases.view',item_id=kwargs['case_id'])}}">{{kwargs['case_num']}}</a></h1>
+            {% else %}
+              <h1>Add PT Internal Evaluation for <a href="{{url_for('cases.view',item_id=kwargs['case_id'])}}">{{kwargs['case_num']}}</a></h1>
+            {% endif %}
+        </div>
+</div>
+<div class="fixed-section-2">
+                {{form.hidden_tag()}}
+        <div class="row form-group mb-4">
+            <div class="col-md-4">
+                {{form.notes.label}}
+                {{form.notes}}
+            </div>
+            <div class="col-md-4">
+                {{form.summary.label}}
+                {{form.summary}}
+            </div>
+        </div>
+      <div class="table-responsive">
+          <table class="display table-striped table-hover small nowrap" style="width:100%; padding:5px" id="pt_results">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Status</th>
+
+                  <th>Official</th>
+
+                  <th>Informal</th>
+                  <th>Specimen ID</th>
+
+                  <th>Component <br><i>__if diff</i></th>
+                  <th>Reported <br>Result</th>
+
+                  <th>ABFT</th>
+                  <th>ABFT flags</th>
+                  <th>FLD <br>Conclusion</th>
+
+                  <th>Batch</th>
+                  <th>Dil</th>
+
+                  <th>Mean // SD<br>(all)</th>
+                  <th>Mean // SD<br>(sub)</th>
+                  <th>Median | Target</th>
+                  <th>% from <br>Target</th>
+                  <th>% from Mean <br>(all)</th>
+                  <th>Z-score <br>(all)</th>
+                  <th>% from Mean <br>(sub)</th>
+                  <th>Z-score <br>(sub)</th>
+                  <th>PT Provider <br>Evaluation</th>
+                  <th>PT Provider <br>Criteria A</th>
+                  <th>PT Provider <br>Criteria B</th>
+                  <th>Manual <br>Min</th>
+                  <th>Manual <br>Max</th>
+                  <th>PT Reporting <br>Limit</th>
+                  <th>PT Participants</th>
+                  <th>Eval Notes</th>
+
+                  <th>Acc</th>
+                  <th>EA</th>
+                  <th>PA</th>
+                  <th>BR</th>
+                </tr>
+              </thead>
+              <tbody id="body">
+              {% for item in kwargs['items'] %}
+                   {% if item.result_official | int == item.id %}
+                       {% set fontweight = 'bold' %}
+                   {% else %}
+                       {% set fontweight = 'normal' %}
+                   {% endif %}
+                  {% if item.db_status == 'Pending' %}
+                    <tr class="table-warning" style="font-weight:{{fontweight}}">
+                  {% elif item.db_status == 'Deletion Pending' %}
+                    <tr class="table-danger" style="font-weight:{{fontweight}}">
+                  {% elif item.db_status == 'Removed' %}
+                    <tr class="table-secondary" style="font-weight:{{fontweight}}">
+                  {% elif item.eval_FLD_conclusion == 'Ignore' %}
+                    <tr class="table-default" style="font-weight:{{fontweight}}">
+                  {% elif item.eval_overall_conclusion == '0' %}
+                    <tr class="table-danger" style="font-weight:{{fontweight}}">
+                  {% else %}
+                    <tr class="table-default" style="font-weight:{{fontweight}}">
+                  {% endif %}
+                  <th scope="row">{{item.id}}</th>
+                  <td>{{item.db_status}}</td>
+
+                  <td>
+                      {% if item.result_official | int == 0 %}N/A
+                      {% else %}<a href="{{url_for('pt_results.update',item_id=item.result_official | int)}}">{{item.result_official}}</a>
+                      {% endif %}
+                  </td>
+
+                  <td>{{item.eval_informal}}</td>
+                  <td>{{item.result.test.specimen.accession_number}}</td>
+
+                  <td>{{item.result.component_name}}{% if item.pt_component_id != '' %}<br><i>__{{item.component.name}}</i>{% endif %}</td>
+                  <td>{{item.result.result}}<br>{% if item.pt_unit_id != '' %}<i>__{{item.unit.name}}</i>{% endif %}</td>
+
+                  <td>{{item.eval_ABFT_conclusion}}</td>
+                  {% if item.eval_ABFT_display is not none%}
+                    {% if item.eval_ABFT_display != 'OK' %}
+                        <td style="background-color: #ffb77b">{{item.eval_ABFT_display}}</td>
+                    {% else %}
+                        <td>{{item.eval_ABFT_display}}</td>
+                    {% endif %}
+                  {% else %}
+                    <td></td>
+                  {% endif %}
+                  <td>
+                        {% if item.result_official | int == item.id %}
+                            {{item.eval_FLD_conclusion}}
+                        {% endif %}
+                  </td>
+                  <td>
+                      <a href="{{url_for('batches.view',item_id=item.result.test.batch.id)}}">
+                      {{item.result.test.batch.batch_id}}
+                      </a>
+                  </td>
+                  <td>{{item.result.test.dilution}}</td>
+
+                  <td>{{item.mean_all}} // {{item.sd_all}}</td>
+                  <td>{{item.mean_sub}} // {{item.sd_sub}}</td>
+                  <td>{{item.median}} | {{item.target}}</td>
+                  <td>
+                      {% if item.target_percent is not none %}
+                        {{(item.target_percent*100) | round(1)}}%
+                      {% endif %}
+                  </td>
+                  {% if item.mean_all_percent is not none %}
+                      {% if item.mean_all_percent<-0.2 or item.mean_all_percent>0.2 %}
+                        <td style="background-color: #ffb77b">{{(item.mean_all_percent*100) | round(1)}}%</td>
+                      {% else %}
+                        <td>{{(item.mean_all_percent*100) | round(1)}}%</td>
+                      {% endif %}
+                  {% else %}
+                        <td></td>
+                  {% endif %}
+                  {% if item.z_all is not none %}
+                      {% if item.z_all<-2 or item.z_all>2 %}
+                      <td style="background-color: #ffb77b">{{item.z_all | round(2)}}</td>
+                      {% else %}
+                      <td>{{item.z_all | round(2)}}</td>
+                      {% endif %}
+                  {% else %}
+                        <td></td>
+                  {% endif %}
+                  {% if item.mean_sub_percent is not none %}
+                    <td>{{(item.mean_sub_percent*100) | round(1)}}%</td>
+                  {% else %}
+                    <td></td>
+                  {% endif %}
+                  <td>
+                      {% if item.z_sub %}
+                        {{item.z_sub | round(2)}}
+                      {% endif %}
+                  </td>
+                  <td>
+                        {% if item.eval_overall_conclusion != none %}
+                            {{item.eval_overall_conclusion}}
+                        {% endif %}
+                  </td>
+                  <td>{{item.eval_A_ref}}</td>
+                  <td>{{item.eval_B_ref}}</td>
+                  <td>{% if item.eval_manual_min is not none%}
+                        {% if item.eval_A_ref == 'Qualitative' %}
+                        {% else %}
+                          {{item.eval_manual_min}}
+                        {% endif %}
+                      {% endif %}
+                  </td>
+                  <td>{% if item.eval_manual_max is not none%}
+                        {% if item.eval_A_ref == 'Qualitative' %}
+                        {% else %}
+                          {{item.eval_manual_max}}
+                        {% endif %}
+                      {% endif %}
+                  </td>
+                  <td>{{item.pt_reporting_limit}}</td>
+                  <td>{{item.pt_participants}}</td>
+                  <td>{{item.notes}}</td>
+
+                  <td>{{item.result.test.specimen.accessioner.initials}}</td>
+                  <td>{{item.result.test.batch.extractor.initials}}</td>
+                  <td>{{item.result.test.batch.processor.initials}}</td>
+                  <td>{{item.result.test.batch.batch_reviewer.initials}}</td>
+              </tr>
+
+              {% endfor %}
+
+               </tbody>
+             </table>
+        </div>
+</div>
+<div class="fixed-section-3">
+<!--<div class="dynamic-section">-->
+    <div class="row form-group mb-4">
+        <div class="col-md-6">
+            {{form.good_qual_comment.label}}
+            {{form.good_qual_comment}}
+        </div>
+    </div>
+    <div class="row form-group mb-4">
+        <div class="col-md-6">
+            {{form.good_quant_comment.label}}
+            {{form.good_quant_comment}}
+        </div>
+    </div>
+    <div class="row form-group mb-4">
+        <div class="col-md-6">
+            {{form.bad_quant_comment.label}}
+            {{form.bad_quant_comment}}
+        </div>
+    </div>
+    <div class="row form-group mb-4">
+        <div class="col-md-6">
+            {{form.bad_FN_comment.label}}
+            {{form.bad_FN_comment}}
+        </div>
+    </div>
+    <div class="row form-group mb-4">
+        <div class="col-md-6">
+            {{form.bad_FP_comment.label}}
+            {{form.bad_FP_comment}}
+        </div>
+    </div>
+    <div class="row form-group mb-4">
+        <div class="col-md-6">
+            {{form.incidental_neutral_comment.label}}
+            {{form.incidental_neutral_comment}}
+        </div>
+    </div>
+    <div class="row form-group mb-4">
+        <div class="col-md-6">
+            {{form.beyondscope_good_comment.label}}
+            {{form.beyondscope_good_comment}}
+        </div>
+    </div>
+    <div class="row form-group mb-4">
+        <div class="col-md-6">
+            {{form.incidental_good_comment.label}}
+            {{form.incidental_good_comment}}
+        </div>
+    </div>
+    <div class="row form-group mb-4">
+        <div class="col-md-6">
+            {{form.incidental_bad_comment.label}}
+            {{form.incidental_bad_comment}}
+        </div>
+    </div>
+    <div class="row form-group mb-4">
+        <div class="col-md-6">
+            {{form.submit(class='btn btn-primary')}}
+           <a type="button" class="btn btn-secondary" href="{{url_for(table_name~'.view_list')}}">Exit</a>
+        </div>
+    </div>
+</div>
+</form>
+
+<script>
+$(document).ready(function () {
+    $('#pt_results').DataTable({
+     dom: 'rt',
+     scrollX: true,
+     scrollY: '28vh',
+     pageLength: -1,
+    });
+})
+
+
+</script>
+{% endblock %}
+

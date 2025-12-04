@@ -1,0 +1,495 @@
+{% extends "view_template.html" %}
+{% set default_header = True %}
+
+{% block style %}
+.remove-x-btn {
+    background: none;
+    border: none;
+    color: red;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+    padding: 0;
+    margin-right: 6px;
+    line-height: 1;
+}
+
+.remove-x-btn:hover {
+    transform: scale(1.4);
+}
+
+.fixed-header {
+    display: block !important;
+    font-size: 1.5rem;
+    font-weight: bold;
+    padding: 10px 0;
+}
+.specimens-hyperlink{
+    color: #007bff;
+}
+.specimens-hyperlink:hover{
+    text-decoration:underline
+}
+{% endblock %}
+
+{% block alerts %}
+{% endblock %}
+
+{% block buttons %}
+
+{% endblock %}
+
+{% block header %}
+{% if item.status %} | {{ item.status }}{% endif %}{% if kwargs.case_number_str %} | {{ kwargs.case_number_str }}{% endif %}
+{% endblock %}
+
+{% block view %}
+<div id="returns-pdf">
+    <div id="header-two">
+        <div id="body-two">
+            <div class="card">
+                <div class="card-header" id="details_heading"
+                     style="height:50px; padding:0px; display:flex; align-items:center;">
+                    <button aria-controls="details" aria-expanded="false"
+                            class="btn btn-link chevron-btn"
+                            data-target="#details" id="case_details_btn">
+                        Details
+                    </button>
+                </div>
+                <div class="collapse show" id="details">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <table class="table table-hover table-striped details-table table-md">
+                                    <tbody>
+                                        <tr>
+                                            <th> Returned Case(s)</th>
+                                              {% if item.legacy_case is none %}
+                                            <td>{{ kwargs.case_number_str }}</td>
+                                          {% else %}
+                                            <td>{{ item.legacy_case }}</td>
+                                          {% endif %}
+                                        </tr>
+                                        <tr>
+                                            <th>Returning Agency</th>
+                                            <td>{{ item.agency.name if item.agency else 'N/A' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Returning Division</th>
+                                            <td>{{ item.division.name if item.division else 'N/A' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Returning Personnel</th>
+                                            <td>{{ item.personnel.full_name if item.personnel else 'N/A' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Return Date</th>
+                                            <td>{{ item.return_date.strftime('%m/%d/%Y') if item.return_date else 'N/A' }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                   <!-- Second Table -->
+                    <div class="col-md-4">
+                    <!-- Display non-legacy table -->
+                     {% if not item.legacy_case %}
+                        <table class="table table-hover table-striped details-table table-md">
+                         <thead>
+                          <tr>
+                            {% if item.checker is none %}
+                            <th colspan="7">
+                                <a class="specimens-hyperlink" data-toggle="modal" data-target="#returned_specimens">
+                                  Collect Specimen
+                                </a>
+                            </th>
+                              {% endif %}
+                          </tr>
+                          <tr>
+                            <th style="width:30px">&nbsp;</th>  {# remove btn column #}
+                            <th>Case Number</th>
+                            <th>Type</th>
+                            <th>Accession Number</th>
+                            <th>Custody</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for specimen in kwargs.selected_specimens_list %}
+                          <tr id="specimen-row-{{ specimen.id }}">
+                           <td style="width: 30px;">
+                               <form method="POST"
+                                    action="{{ url_for('returns.remove_specimen', item_id=item.id) }}"
+                                    class="remove-specimen-form"
+                                    data-specimen-id="{{ specimen.id }}"
+                                    style="display:inline;">
+                                {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+                                <input type="hidden" name="specimen_id" value="{{ specimen.id }}">
+                                <button type="submit" title="Remove" class="remove-x-btn">×</button>
+                              </form>
+                            </td>      
+                            <td><a href="{{ url_for('cases.view', item_id=specimen.case.id) }}">{{ specimen.case.case_number if specimen.case else 'No Case' }}</a></td>
+                            <td>[{{ specimen.type.code if specimen.type and specimen.type.code else 'Unknown' }}]</td>
+                            <td>{{ specimen.accession_number }}</td>
+                            <td>{{ specimen.custody or 'Unknown' }}</td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                        </table>
+                      {% endif %}
+                      <!-- Display legacy specimens (stored as comma-separated strings) in a table with per-row remove buttons. -->
+                      {% if item.legacy_case %}
+                      <table class="table table-hover table-striped details-table table-md">
+                            <thead>
+                              <tr>
+                                <th colspan="7">
+                                  {% if item.checker is none %}
+                                  <a class="specimens-hyperlink" data-toggle="modal" data-target="#specimen_collect_legacy">
+                                    Collect Legacy Specimen
+                                  </a>
+                                {% endif %}                              
+                                </th>
+                              <tr>
+                                  <th></th>
+                                  <th>Case Number</th>
+                                  <th>Description</th>
+                                  <th>Accession Number</th>
+                                  <th>Date Collected
+                                    <a href="#!" data-toggle="tooltip"
+                                      title="The original collection date of the evidence.">
+                                      <i class="fa-solid fa-circle-question" style="font-size:16px; margin-left:8px;"></i>
+                                    </a>
+                                  </th>
+                                  <th>Received By
+                                    <a href="#!" data-toggle="tooltip"
+                                      title="The initials of the personnel who received the evidence.">
+                                      <i class="fa-solid fa-circle-question" style="font-size:16px; margin-left:8px;"></i>
+                                    </a>
+                                  </th>
+                                  <th>Checked By
+                                     <a href="#!" data-toggle="tooltip"
+                                      title="The initials of the personnel who verified the evidence at intake.">
+                                      <i class="fa-solid fa-circle-question" style="font-size:16px; margin-left:8px;"></i>
+                                    </a>
+                                  </th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                {% if item.legacy_accession_number %}
+                                  {% set codes = (item.legacy_code or '').split(',') %}
+                                  {% set accessions = (item.legacy_accession_number or '').split(',') %}
+                                  {% set dates = (item.legacy_date_created or '').split(',') %}
+                                  {% set created_bys = (item.legacy_created_by or '').split(',') %}
+                                  {% set checked_bys = (item.legacy_checked_by or '').split(',') %}
+
+                                  {% for i in range(accessions | length) %}
+                                  <tr id="legacy-specimen-row-{{ i }}">
+                                    <td style="width: 30px;">
+                                    <form method="POST"
+                                          action="{{ url_for('returns.remove_legacy_specimen', item_id=item.id) }}"
+                                          class="remove-legacy-form" data-legacy-index="{{ i }}" style="display:inline;">
+                                      {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+                                      <input type="hidden" name="legacy_index" value="{{ i }}">
+                                      {% if item.checker is none %}
+                                        <button type="submit" class="remove-x-btn" aria-label="Remove">&times;</button>
+                                      {% endif %}
+                                    </form>
+                                    </td>
+                                    <td>{{ item.legacy_case }}</td>
+                                    <td>{{ codes[i].strip() if codes | length > i else '' }}</td>
+                                    <td>{{ accessions[i].strip() }}</td>
+                                    <td>{{ dates[i].strip() if dates | length > i else '' }}</td>
+                                    <td>{{ created_bys[i].strip() if created_bys | length > i else '' }}</td>
+                                    <td>{{ checked_bys[i].strip() if checked_bys | length > i else '' }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                  {% else %}
+                                  <tr>
+                                    <td colspan="7" class="text-center text-muted">No legacy specimens added.</td>
+                                  </tr>
+                                {% endif %}
+                              </tbody>
+                      </table>
+                      {% endif %}
+                      </div>
+                    <!-- Third Table -->
+                              <div class="col-md-4">
+                                <table class="table table-hover table-striped details-table table-md">
+                                  <tbody>
+                                    <tr>
+                                      <th>Checker</th>
+                                      <td>
+                                        {% if item.checker is none %}
+                                        <a href="{{url_for('returns.verify_initials', item_id=item.id)}}">Verify</a>
+                                        {% else %}
+                                            {{item.checker_user.initials}} {{item.check_date.strftime('%m/%d/%Y %H:%M')}}
+                                        {% endif %}
+                                      </td>
+                                    </tr>
+                                     <th colspan="3">
+                                      {% if item.returned_specimens %}
+                                        <a class="specimens-hyperlink" data-toggle="modal" data-target="#stored_specimens">
+                                          Store Specimen
+                                        </a>
+                                      {% endif %}
+                                      </th>
+                                  </tbody>
+                                </table>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- Returned Specimen Modal -->
+
+<div class="modal fade" id="returned_specimens" tabindex="-1" role="dialog" aria-labelledby="returnedSpecimensLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+
+      <form method="POST"> 
+        {{ kwargs.returned_specimens.hidden_tag() }}
+
+        <div class="modal-header">
+          <h5 class="modal-title" id="returnedSpecimensLabel">Collect Specimen</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body" id="specimen-return-body">
+          {{ kwargs.returned_specimens.returned_specimens.label(class="form-label") }}
+          {{ kwargs.returned_specimens.returned_specimens(class="form-control selectpicker", multiple=True, data_live_search="true") }}
+        </div>
+        <div class="modal-footer" id ="submit_collector">
+          {{ kwargs.returned_specimens.submit(class="btn btn-primary") }} 
+        </div>
+      </form>
+      </div>
+    </div>
+  </div>
+
+<!-- Stored Specimen Modal -->
+{% if item.returned_specimens %}
+<div class="modal fade" id="stored_specimens" tabindex="-1" role="dialog" aria-labelledby="storedSpecimensLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <form method="POST">
+        {{ kwargs.stored_specimens.hidden_tag() }}
+
+        <div class="modal-header">
+          <h5 class="modal-title" id="storedSpecimensLabel">Stored Specimens</h5> 
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body" id="specimen-store-body">
+          <div class="form-group">
+            {{ kwargs.stored_specimens.stored_specimens.label(class="form-label") }}
+            {{ kwargs.stored_specimens.stored_specimens(class="form-control selectpicker", multiple=true, data_live_search="true") }}
+          </div>
+          <div class="form-group">
+            {{ kwargs.stored_specimens.custody_type.label(class="form-label") }}
+            {{ kwargs.stored_specimens.custody_type(id='stored_custody_type', class='form-control selectpicker') }}
+
+          </div>
+          <div class="form-group">
+            {{ kwargs.stored_specimens.custody.label(class="form-label") }}
+            {{ kwargs.stored_specimens.custody(id='stored_custody', class='form-control selectpicker') }}
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          {{ kwargs.stored_specimens.submit_stored(class="btn btn-primary") }}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+
+<!-- ADD LEGACY SPECIMENS -->
+
+<div class="modal" id="specimen_collect_legacy" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+              <div>
+                <h5 class="modal-title">Enter Legacy Specimen
+                  <a href="#!" data-toggle="tooltip"
+                    title="Use this form to record the return a legacy specimen. To verify that the release of the returning evidence was documented, reference the following, 1.logs (e.g., EVIDENCE LOG, YY-YY.xlsx) 2. requests module in CLIO. Submit only one evidence entry per form submission.">
+                    <i class="fa-solid fa-circle-question" style="font-size:16px; margin-left:8px;"></i>
+                  </a>
+                </h5>
+                <span style="font-weight:normal; color:#6c757d;">If no records for a field exists, enter 'No recorded data'.</span>
+              </div>
+              <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+            <div class="mb-3">
+                <form enctype="multipart/form-data" id="legacy_specimen_add_form" method="POST">
+                    {{ kwargs.legacy_specimen_add_form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ kwargs.legacy_specimen_add_form.legacy_code.label(class="form-label") }}
+                        <span style="font-weight:normal; color:#6c757d;">
+                          – i.e.,
+                          <a href="javascript:void(0);" onclick="insertLegacyCode('Bloodspot Envelope 2')">Bloodspot</a>,
+                          <a href="javascript:void(0);" onclick="insertLegacyCode('Hair Evidence:')">Hair</a>,
+                          <a href="javascript:void(0);" onclick="insertLegacyCode('Item Other Evidence:')">Other Evidence</a>
+                          (do not enter commas)
+                        </span>
+                        {{ kwargs.legacy_specimen_add_form.legacy_code(id='legacy_code', class="form-control w-100") }}
+                    </div>
+                    <div class="mb-3">
+                        {{kwargs.legacy_specimen_add_form.legacy_accession_number.label}}
+                        {{kwargs.legacy_specimen_add_form.legacy_accession_number (class="form-control w-100")}}
+                    </div>
+                    <div class="mb-3">
+                        {{kwargs.legacy_specimen_add_form.legacy_date_created.label}}
+                        <span style="font-weight:normal; color:#6c757d;"> – the original collection date of the evidence, if created by FLD enter the date prepared</span>
+                        {{kwargs.legacy_specimen_add_form.legacy_date_created (class="form-control w-100")}}
+                    </div>
+                    <div class="mb-3">
+                        {{kwargs.legacy_specimen_add_form.legacy_created_by.label}}
+                        <span style="font-weight:normal; color:#6c757d;"> – the initials of the personnel who received the evidence, if created by FLD enter initials of the preparer</span>
+                        {{kwargs.legacy_specimen_add_form.legacy_created_by (class="form-control w-100")}}
+                    </div>
+                    <div class="mb-3">
+                        {{kwargs.legacy_specimen_add_form.legacy_checked_by.label}}
+                        <span style="font-weight:normal; color:#6c757d;"> – the initials of the personnel who verified the evidence at intake,if evidence created by FLD enter initials of the checker</span>
+                        {{kwargs.legacy_specimen_add_form.legacy_checked_by (class="form-control w-100")}}
+                    </div>
+                    </div>
+                    <div id="selected-items" style="margin-top: 10px;"></div>
+                    <div class="modal-footer" style="justify-content: center">
+                        {{ kwargs.legacy_specimen_add_form.legacy_specimens_submit(class='btn btn-primary') }}
+                        <button class="btn btn-secondary" data-dismiss="modal" type="button">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+<!-- TO move to JS file-->
+{% block scripts %}
+<script>
+  console.log('✅ JS block loaded and running!');
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip();
+  });
+
+  function insertLegacyCode(value) {
+    const input = document.getElementById('legacy_code');
+    if (input) {
+        input.value = value;
+        input.focus();
+        }
+    }
+  //update custody based on type
+  $(document).on('changed.bs.select', '#stored_custody_type', function () {
+    console.log('📌 stored_custody_type changed via selectpicker');
+
+    var stored_custody_type = $(this).val();
+    console.log('Selected stored_custody_type:', stored_custody_type);
+
+    $.getJSON('/specimens/get_custody_locations/', {
+      custody_type: stored_custody_type
+    }, function (data) {
+      console.log('Received data:', data);
+
+      var options = '';
+      for (var item of data.choices) {
+        options += `<option value="${item.id}">${item.name}</option>`;
+      }
+
+      $('#stored_custody').html(options);
+      $('#stored_custody').selectpicker('refresh');
+      $('#stored_custody').selectpicker('render');
+      $('#stored_custody').selectpicker('val', data.default_choice);
+    });
+  });
+  //verifier initials
+  document.addEventListener('DOMContentLoaded', function () {
+    const checkbox = document.getElementById('verify-checkbox');
+    const initialsDisplay = document.getElementById('verifier-initials');
+
+    if (checkbox) {
+      const userInitials = checkbox.getAttribute('data-initials');
+
+      checkbox.addEventListener('change', function () {
+        if (checkbox.checked) {
+          initialsDisplay.textContent = userInitials;
+        } else {
+          initialsDisplay.textContent = '';
+        }
+      });
+    }
+  });
+
+//REFRESH PAGE AFTER EACH SUBMIT OF STORE MODAL
+  document.addEventListener("DOMContentLoaded", function () {
+    const storedForm = document.querySelector('#stored_specimens form');
+
+    storedForm?.addEventListener('submit', function () {
+      // Allow time for the server to respond
+      setTimeout(() => {
+        window.location.reload();
+      }, 100); // slightly delay so the request completes
+    });
+  });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const forms = document.querySelectorAll('.remove-specimen-form');
+    
+        forms.forEach(form => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();  // prevent normal form submit
+                const specimenId = this.dataset.specimenId;
+                const row = document.getElementById(`specimen-row-${specimenId}`);
+    
+                // Animate the row
+                row.style.transition = 'background-color 0.4s ease, opacity 0.6s ease';
+                row.style.backgroundColor = '#ffcccc';  // light red
+                row.style.opacity = '0.2';
+    
+                // Delay actual form submission so animation is visible
+                setTimeout(() => {
+                    this.submit();
+                }, 300);
+            });
+        });
+    });
+    </script>
+    
+<script>
+
+  // Legacy by index
+  document.querySelectorAll('.remove-legacy-form').forEach(form => {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const idx = this.dataset.legacyIndex || this.querySelector('[name="legacy_index"]')?.value;
+      const row = document.getElementById(`legacy-specimen-row-${idx}`);
+      if (row) {
+        row.style.transition = 'background-color .4s ease, opacity .6s ease';
+        row.style.backgroundColor = '#ffcccc';
+        row.style.opacity = '0.2';
+        setTimeout(() => this.submit(), 300);
+      } else { this.submit(); }
+    });
+  });
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+{% endblock %}
+
+<!--Custom Buttons-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% block buttons %}
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Name</th>
+
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+      <b>
+          <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+          {{item.name}}
+          </a>
+      </b>
+  </td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}
+

@@ -1,0 +1,31 @@
+{% extends "form_template.html" %}
+{% block form %}
+
+<!-- ALERTS -->
+{% block alerts %}
+{% endblock %}
+
+<!-- HEADER -->
+{% block header %}
+{% endblock %}
+
+<div class="form-group">
+    {{form.comment.label}}
+    {{form.comment}}
+</div>
+<div class="form-group">
+    {{form.comment_type.label}}
+    {{form.comment_type}}
+</div>
+<div class="form-group">
+    {{form.code.label}}
+    {{form.code}}
+</div>
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

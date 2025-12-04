@@ -1,0 +1,47 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+    <i class="fa-regular fa-image"></i>
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Name</th>
+    <th>File</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+      <b>
+          <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+          {{item.name}}
+          </a>
+      </b>
+  </td>
+  <td>
+      <a href="../static/filesystem/system_images/{{item.image_file}}" target="_blank">
+          {{item.image_file}}
+      </a>
+
+  </td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}

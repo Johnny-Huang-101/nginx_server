@@ -1,0 +1,113 @@
+{% extends "form_template.html" %}
+
+<!-- ALERTS -->
+{% block alerts %}
+{% endblock %}
+
+<!-- HEADER -->
+{% block header %}
+{% endblock %}
+
+
+{% block form %}
+    <div class="alert alert-secondary" role="alert">
+       Text enclosed in [  ] will be superscripted in the monograph's view page
+    </div>
+    <div class="form-group">
+        {{form.name.label}}
+        {{form.name}}
+    </div>
+    <div class="form-group">
+        {{form.formulation_tradename.label}}
+        {{form.formulation_tradename}}
+    </div>
+    <div class="form-group">
+        {{form.pharm_class.label}}
+        {{form.pharm_class}}
+    </div>
+    <div class="form-group">
+        {{form.intended_use.label}}
+        {{form.intended_use}}
+    </div>
+    <div class="form-group">
+        {{form.mech_of_action.label}}
+        {{form.mech_of_action}}
+    </div>
+    <div class="form-group">
+        {{form.impairment.label}}
+        {{form.impairment}}
+    </div>
+    <div class="form-group">
+        {{form.effects_and_tox.label}}
+        {{form.effects_and_tox}}
+    </div>
+    <div class="form-group">
+        {{form.half_life.label}}
+        {{form.half_life}}
+    </div>
+    <div class="form-group">
+        {{form.time_to_peak_conc.label}}
+        {{form.time_to_peak_conc}}
+    </div>
+    <div class="form-group">
+        {{form.am_nontox_blood_serum_conc.label}}
+        {{form.am_nontox_blood_serum_conc}}
+    </div>
+    <div class="form-group">
+        {{form.am_nontox_information.label}}
+        {{form.am_nontox_information}}
+    </div>
+    <div class="form-group">
+        {{form.pm_tox_blood_serum_conc.label}}
+        {{form.pm_tox_blood_serum_conc}}
+    </div>
+    <div class="form-group">
+        {{form.ampm_tox_lethal_coc_info.label}}
+        {{form.ampm_tox_lethal_coc_info}}
+    </div>
+    <div class="form-group">
+        {{form.blood_to_serum_ratio.label}}
+        {{form.blood_to_serum_ratio}}
+    </div>
+    <div class="form-group">
+        {{form.adme.label}}
+        {{form.adme}}
+    </div>
+    <div class="form-group">
+        {{form.pk_variability.label}}
+        {{form.pk_variability}}
+    </div>
+
+    <div class="form-group">
+        {{form.drug_interaction.label}}
+        {{form.drug_interaction}}
+    </div>
+    <div class="form-group">
+        {{form.drug_interaction_ref.label}}
+        {{form.drug_interaction_ref}}
+    </div>
+    <div class="form-group">
+        {{form.pm_redistribution.label}}
+        {{form.pm_redistribution}}
+    </div>
+    <div class="form-group">
+        {{form.pm_considerations.label}}
+        {{form.pm_considerations}}
+    </div>
+    <div class="form-group">
+        {{form.hp_considerations.label}}
+        {{form.hp_considerations}}
+    </div>
+    <div class="form-group">
+        {{form.references.label}}
+        {{form.references}}
+    </div>
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
+

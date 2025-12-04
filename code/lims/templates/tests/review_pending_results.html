@@ -1,0 +1,48 @@
+{% extends "form_template.html" %}
+
+{% block content %}
+<h1>Approve Pending Results - {{ test.test_name }}</h1>
+
+{% if pending_results %}
+<form method="POST">
+    <table class="table table-bordered table-sm">
+        <thead>
+            <tr>
+                <th>Result ID</th>
+                <th>Component</th>
+                <th>Result Status</th>
+                <th>Status Update Reason</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in pending_results %}
+            <tr>
+                <td>{{ entry.result.id }}</td>
+                <td>{{ entry.result.component_name }}</td>
+
+                <td {% if entry.status_changed %}style="background-color: #ffeeba;"{% endif %}>
+                    {{ entry.result.result_status }}
+                    {% if entry.status_changed %}<span class="text-warning ml-2"></span>{% endif %}
+                </td>
+
+                <td {% if entry.reason_changed %}style="background-color: #ffeeba;"{% endif %}>
+                    {{ entry.result.result_status_update_reason }}
+                    {% if entry.reason_changed %}<span class="text-warning ml-2"></span>{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="mt-3">
+    <button type="submit" name="action" value="approve" class="btn btn-success">Approve All</button>
+    <button type="submit" name="action" value="reject" class="btn btn-danger">Reject All</button>
+    <a href="{{ url_for('tests.view', item_id=test.id) }}" class="btn btn-secondary">Cancel</a>
+    </div>
+
+</form>
+{% else %}
+    <div class="alert alert-info">No pending results with changes found.</div>
+    <a href="{{ url_for('tests.view', item_id=test.id) }}" class="btn btn-primary">Back to Test</a>
+{% endif %}
+{% endblock %}

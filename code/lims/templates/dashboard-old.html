@@ -1,0 +1,902 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    .case-select {
+        width: 200px !important;
+    }
+
+    .tat-select {
+        width: 400px !important;
+    }
+
+    .btn-link {
+        font-size: 24px
+    }
+
+
+    .bgimg-overlay {
+      opacity: 0.4;
+      position: absolute;
+      left: 0;
+      top: 15%;
+      width: 100%;
+      max-width:100%;
+      vertical-align: middle;
+    }
+
+   .case-status-title {
+            color: #333;
+            font-size: 24px;
+            line-height: 1.4;
+            text-align: center;
+            margin-bottom: 20px;
+             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .case-status-title span {
+            color: #007bff;
+            font-weight: bold;
+        }
+        .case-status-title br {
+            display: none;
+        }
+        @media (min-width: 768px) {
+            .case-status-title br {
+                display: block;
+            }
+        }
+ .compact-table .table {
+            margin-bottom: 0; /* Removes bottom margin from the table */
+        }
+
+        .compact-table .table,
+        .compact-table .table th,
+        .compact-table .table td {
+            padding: 4px; /* Reduced padding for a more compact look */
+            border: 0; /* Remove borders for a cleaner look */
+        }
+
+        .compact-table .table thead th {
+            border-bottom: 2px solid #dee2e6; /* Adds a bottom border to header cells only */
+        }
+
+        .compact-box {
+            background-color: #d4edda;
+            padding: 4px;
+            margin: 0;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+        }
+
+        .compact-box a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .compact-box:hover {
+            background-color: #b1e6bd;
+        }
+
+        @media (min-width: 768px) {
+            .dropdown:hover .dropdown-menu {
+                display: block;
+            }
+        }
+
+        .dashboard-title {
+            margin-right: 10px; /* Adjust the space as needed */
+        }
+
+
+    .scrollable-table {
+        max-height: 50%;
+        overflow-y: auto;
+        display: block;
+    }
+      .case-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 90%;
+    }
+    .case-number {
+        flex-grow: 1;
+        text-align: center;
+    }
+
+    .no-arrow::after {
+    display: none !important; /* Removes the arrow */
+}
+.t-tip:hover {
+    text-decoration: none;
+}
+
+
+</style>
+<head>
+    <title>{{config['SYSTEM_NAME']}}/Dashboard</title>
+</head>
+<div class="bgimg-wrap" id="mock-login">
+    <!-- <img
+    class="bgimg"
+    src="{{url_for('static',filename='current_display/background.png')}}"
+    alt=""
+    >
+    -->
+    <img
+            alt=""
+            class="bgimg"
+            src="{{config['BACKGROUND_IMG']}}"
+    >
+    <img
+            alt=""
+            class="bgimg-overlay"
+            src="{{config['OVERLAY_IMG']}}"
+    >
+    <div class="bg-content">
+        <div class="vertical-center">
+            <div class="text-center">
+                <!--<img class="mt-5" src="{{url_for('static',filename='current_display/city_seal.png')}}" width="300" height="300">-->
+                <img class="mt-5" height="300" src="{{config['LOGO_IMG']}}" width="300">
+            </div>
+            <div class="text-center mt-3">
+                <!--<img src="{{url_for('static',filename='current_display/welcome_image.png')}}" width="300">-->
+                <img src="" width="300">
+            </div>
+            <div class="jumbotron mt-4">
+                <h1 class="text-center"> WELCOME <span class="text-decoration-hover" style="color:#007bff">{{current_user.first_name.upper()}}</span>!
+                </h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="dashboard-content">
+    <hr style="border-width:5px">
+    <div>
+        <div class="container-fluid pl-0" style="margin-top: 0px;">
+    <div class="d-flex align-items-center" style="padding-bottom: 1vh;">
+        <h1 class="mb-0">
+            Dashboard |
+            <div class="dropdown d-inline">
+                <a class="dropdown-toggle no-arrow t-tip" href="#" id="dropdownDiscipline" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="discipline-dropdown">
+                    {{current_user.dashboard_discipline}}
+                </a>
+                <div class="dropdown-menu" aria-labelledby="dropdownDiscipline">
+                    <form action="{{ url_for('dashboard.change_discipline', discipline='Toxicology') }}" method="POST">
+                        <button class="dropdown-item" type="submit">Toxicology</button>
+                    </form>
+                    <form action="{{ url_for('dashboard.change_discipline', discipline='Histology') }}" method="POST">
+                        <button class="dropdown-item" type="submit">Histology</button>
+                    </form>
+                    <form action="{{ url_for('dashboard.change_discipline', discipline='Biochemistry') }}" method="POST">
+                        <button class="dropdown-item" type="submit">Biochemistry</button>
+                    </form>
+                </div>
+            </div>
+        </h1>
+    </div>
+    <hr style="border-width:5px">
+    <div class="col-md-12">
+        <div class="compact-display" style="display: flex; flex-wrap: wrap; gap: 4px;">
+            {% for item, vals in pending_dict.items() %}
+            <span class="compact-box">
+        {% if vals['assay_name'] != 0 %}
+          <a class="assay-color" href="{{url_for('batches.add', assay_id=vals['assay_id'])}}">
+            {{vals['assay_name']}} : {{vals['counts']}}
+          </a>
+        {% else %}
+          {{vals['assay_name']}} : {{vals['counts']}}
+        {% endif %}
+      </span>
+            {% endfor %}
+        </div>
+    </div>
+
+        <div class="table-responsive"
+             style="padding-top: 10px; text-align: center; margin: 0 auto; padding-bottom: 6px;">
+            <table class="table table-striped" style="height: 50%;">
+                <thead style="background-color: white; color: Black;">
+                <tr>
+                    <th style="padding: 0px;">Special Projects</th>
+                    <th style="padding: 0px;">Percent Finished</th>
+                </tr>
+                </thead>
+            </table>
+            <div style="overflow-y: auto; max-height: 200px;"> <!-- Scrollable container for the table body -->
+                <table class="table table-striped">
+                    <tbody>
+                    {% for project in special_projects %}
+                    {% if project.remove_view != 'yes' %}  <!-- Hide if remove_view is 'yes' -->
+                    <tr>
+                        <td style="padding: 0px;">
+                            {{ project.special_project_name }}
+                            {% if current_user.permissions == 'Admin' or 'Owner' %}
+                            <!-- Show remove button only to admin users -->
+                            <a class="btn btn-link"
+                               href="{{ url_for('dashboard.remove_special_project', project_id=project.id) }}"
+                               style="font-size: 12px; color: #007BFF; padding-left: 1px;"><i
+                                    class="fa fa-check-square"></i></a>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 0px;">
+                            {% if project.num_items > 0 %}
+                            ({{ project.num_completed }}/{{ project.num_items }}) {{ ((project.num_completed /
+                            project.num_items) * 100) | round(2) }}%
+                            {% else %}
+                            0%
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <hr style="margin-top: 0px;">
+    <div style="text-align: center; justify-content: center">
+        <div class="form-group mt-3">
+            <form method="POST">
+                <div class="form-group" style="display:inline-block">
+                    {{form.start_date.label(class='form-group')}}
+                </div>
+                <div class="form-group" style="display:inline-block">
+                    {{form.start_date(class='form-control', type='date')}}
+                </div>
+                <div class="form-group ml-3" style="display:inline-block">
+                    {{form.end_date.label(class='form-group')}}
+                </div>
+                <div class="form-group" style="display:inline-block">
+                    {{form.end_date(class='form-control', type='date')}}
+                </div>
+                <div class="form-group ml-3" style="display:inline-block">
+                    {{form.date_by.label(class='form-group')}}
+                </div>
+                <div class="form-group" style="display:inline-block">
+                    {{form.date_by(class='form-control')}}
+                </div>
+                <div class="form-group ml-3" style="display:inline-block">
+                    {{form.case_type.label(class='form-group')}}
+                </div>
+                <div class="form-group mr-3" style="display:inline-block">
+                    <select class="form-control selectpicker case-select" data-live-search="true" filter="true"
+                            id="case_type" multiple name="case_type" title="All Case Types"
+                            value={{form.case_type.data}}>
+                        {% for option in form.case_type %}
+                        {{ option }}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group" style="display:inline-block">
+                    {{form.submit(class='btn btn-primary')}}
+                </div>
+            </form>
+        </div>
+
+        <div class="d-flex flex-wrap" style="width: 100%;"> <!-- Consider adjusting the width here -->
+            <div class="col-md-8" style="padding-right:0px;">
+                {{ testing_tally_board | safe }}
+                {{ tally_board | safe }}
+                {{ testing_html | safe }}
+            </div>
+            <div class="col-md-4" style="padding-top:5vh">
+                <div>
+<!--    <div class="table-responsive scrollable-table" style="height: 60vh;">-->
+<!--        <table class="table table-striped"  style="max-height: 50%;">-->
+<!--            <thead style="background-color: white; color: Black;">-->
+<!--                <tr style="padding:0px;">-->
+<!--                    <th colspan="2" style="text-align: center; padding: 0px;">Testing : {{ testing_case_count }}</th>-->
+<!--                    <th style="text-align: center; padding: 0px;">Drafting : {{ drafting_case_count }}</th>-->
+<!--                </tr>-->
+<!--            </thead>-->
+<!--            <tbody>-->
+<!--                <tr style="padding:0px;">-->
+<!--                    <td style="padding: 0px; text-align: center;">-->
+<!--                        {% for case in testing_cases[:testing_case_count // 2] %}-->
+<!--                        <div class="case-container">-->
+<!--                            <span class="case-number">{{ case.case_number }}</span>-->
+<!--                            <span class="case-type">{{ case.case_type }}</span>-->
+<!--                        </div>-->
+<!--                        {% endfor %}-->
+<!--                    </td>-->
+<!--                    <td style="padding: 0px; text-align: center;">-->
+<!--                        {% for case in testing_cases[testing_case_count // 2:] %}-->
+<!--                        <div class="case-container">-->
+<!--                            <span class="case-number">{{ case.case_number }}</span>-->
+<!--                            <span class="case-type">{{ case.case_type }}</span>-->
+<!--                        </div>-->
+<!--                        {% endfor %}-->
+<!--                    </td>-->
+<!--                    <td style="text-align: center; padding: 0px;">-->
+<!--                        {% for case in drafting_cases %}-->
+<!--                        <div class="case-container">-->
+<!--                            <span class="case-number">{{ case.case_number }}</span>-->
+<!--                            <span class="case-type">{{ case.case_type }}</span>-->
+<!--                        </div>-->
+<!--                        {% endfor %}-->
+
+<!--                        <div style="background-color: white; border: 1px solid lightgray; border-bottom: 1px solid lightgray;">-->
+<!--                            <strong>CR : {{cr_two_case_count + cr_one_case_count}}</strong></div>-->
+<!--                        {% for case in cr_one_cases %}-->
+<!--                        <div class="case-container">-->
+<!--                            <span class="case-number">{{ case.case_number }}</span>-->
+<!--                            <span class="case-type">{{ case.case_type }}</span>-->
+<!--                        </div>-->
+<!--                        {% endfor %}-->
+<!--                        {% for case in cr_two_cases %}-->
+<!--                        <div class="case-container">-->
+<!--                            <span class="case-number">{{ case.case_number }}</span>-->
+<!--                            <span class="case-type">{{ case.case_type }}</span>-->
+<!--                        </div>-->
+<!--                        {% endfor %}-->
+<!--                        <div style="background-color: white; border: 1px solid lightgray; border-bottom: 1px solid lightgray;">-->
+<!--                            <strong>DR : {{dr_case_count}}</strong>-->
+<!--                        </div>-->
+<!--                        {% for case in dr_cases %}-->
+<!--                        <span class="case-number">{{case.case_number}}</span>-->
+<!--                                                    <span class="case-type">{{ case.case_type }}</span>-->
+<!--                        {% endfor %}-->
+
+<!--                    </td>-->
+<!--                </tr>-->
+<!--            </tbody>-->
+<!--        </table>-->
+
+<div class="table-responsive scrollable-table" style="height: 60vh;">
+    <table class="table table-striped" style="max-height: 50%; width: 100%;">
+        <thead style="background-color: white; color: Black;">
+            <!-- First row for Testing and Drafting -->
+            <tr style="padding:0px;">
+                <th colspan="2" style="text-align: center; padding: 0px;">Testing : {{ testing_case_count }}</th>
+                <th style="text-align: center; padding: 0px;">Drafting : {{ drafting_case_count }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr style="padding:0px;">
+                <!-- Testing cases split into two columns -->
+                <td style="padding: 0px; text-align: center;">
+                    <!-- Testing cases, first half -->
+                    {% for case in testing_tally[:testing_case_count // 2] %}
+                    <div class="case-container">
+                        <span class="case-number">{{ case.case_number }}</span>
+                        <span class="case-days">{{ (current_date - case.tat_start_date).days }}</span>
+                    </div>
+                    {% endfor %}
+                </td>
+                <td style="padding: 0px; text-align: center;">
+                    <!-- Testing cases, second half -->
+                    {% for case in testing_tally[testing_case_count // 2:] %}
+                    <div class="case-container">
+                        <span class="case-number">{{ case.case_number }}</span>
+                        <span class="case-days">{{ (current_date - case.tat_start_date).days }}</span>
+                    </div>
+                    {% endfor %}
+                </td>
+
+                <!-- Drafting, CR, and DR stacked in one column -->
+                <td style="text-align: center; padding: 0px;">
+                    <!-- Drafting cases -->
+                    {% for case in drafting_cases %}
+                    <div class="case-container">
+                        <span class="case-number">{{ case.case_number }}</span>
+                        <span class="case-days">{{ (current_date - case.tat_start_date).days }}</span>
+                    </div>
+                    {% endfor %}
+
+                    <!-- CR cases stacked below Drafting -->
+                    <div style="background-color: white; border: 1px solid lightgray; margin-top: 10px;">
+                        <strong>CR : {{ cr_cases_count }}</strong>
+                    </div>
+                    {% for case in cr_cases %}
+                    <div class="case-container">
+                        <span class="case-number">{{ case.case_number }}</span>
+                    </div>
+                    {% endfor %}
+
+                    <!-- DR cases stacked below CR -->
+                    <div style="background-color: white; border: 1px solid lightgray; margin-top: 10px;">
+                        <strong>DR : {{ dr_case_count }}</strong>
+                    </div>
+                    {% for case in dr_cases %}
+                    <div class="case-container">
+                    </div>
+                    {% endfor %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+
+                    <!-- New table structure for Special Projects and Percent Finished -->
+
+                </div>
+            </div>
+
+
+            <!-- <div class="col-md-3" style="padding-top:6vh;">-->
+            <!--  <div class="table-responsive compact-table">-->
+            <!--    <table class="table table-striped">-->
+            <!--      <tbody>-->
+            <!--        {% for item, vals in pending_dict.items() %}-->
+            <!--        <tr class="{{ 'table-success' if vals['ready'] else '' }}">-->
+            <!--          <td>-->
+            <!--            &lt;!&ndash; Assay Name &ndash;&gt;-->
+            <!--            {% if vals['assay_name'] != 0 %}-->
+            <!--            <a href="{{url_for('batches.add', assay_id=vals['assay_id'])}}">-->
+            <!--              {{vals['assay_name']}}-->
+            <!--            </a>-->
+            <!--            {% else %}-->
+            <!--            {{vals['assay_name']}}-->
+            <!--            {% endif %}-->
+            <!--          </td>-->
+            <!--        </tr>-->
+            <!--        <tr class="{{ 'table-success' if vals['ready'] else '' }}">-->
+            <!--          <td>-->
+            <!--            &lt;!&ndash; Pending Tests Count &ndash;&gt;-->
+            <!--            {{vals['counts']}}-->
+            <!--          </td>-->
+            <!--        </tr>-->
+            <!--        {% endfor %}-->
+            <!--      </tbody>-->
+            <!--    </table>-->
+            <!--  </div>-->
+            <!--</div>-->
+</div>
+<div style="text-align: center;">
+            <hr style="width: 100 rem;">
+
+        <h2>
+            Turnaround Times for <span style="color:#007bff">{{case_type_str}}</span> cases submitted between<br>
+            {{start_date.strftime('%m/%d/%Y')}}-{{end_date.strftime('%m/%d/%Y')}}
+        </h2>
+    <div style="padding-right: 14.7vw;">
+        {{tat|safe}}
+    </div>
+
+            {{scatter_html|safe}}
+
+                <div class="card">
+                    <div class="card-header" id="data_table_heading" style="text-align: left">
+                        <h5 class="mb-0">
+                            <button aria-controls="data_table" aria-expanded="false" class="btn btn-link chevron-btn"
+                                    data-target="#data_table" data-toggle="collapse">
+                                <span><i class="fa-solid fa-chevron-right mr-2 chevron"
+                                         style="border: #FF0000"></i></span>
+                                Turnaround Time Data
+                            </button>
+                        </h5>
+                    </div>
+                    <div aria-labelledby="data_table_heading" class="collapse" id="data_table">
+                        <div class="card-body">
+                            <div class="table display">
+                                <div class="table-responsive">
+                                    <table class="display table-hover table-striped small display nowrap"
+                                           id="tat" style="width:100%">
+                                        <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Date</th>
+                                            <th>Submitted</th>
+                                            <th>Open</th>
+                                            <th>Closed</th>
+                                            <th>Avg Turnaround Time</th>
+                                            <th>Median Turnaround Time</th>
+                                            <th><15d</th>
+                                            <th><15d (%)</th>
+                                            <th><30d</th>
+                                            <th><30d (%)</th>
+                                            <th><45d</th>
+                                            <th><45d (%)</th>
+                                            <th><60d</th>
+                                            <th><60d (%)</th>
+                                            <th><90d</th>
+                                            <th><90d (%)</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for item, cols in counts_dict.items() %}
+                                        {% if item in ['Total', 'Average', 'Median', 'Min', 'Max'] %}
+                                        {% set weight = 'bold' %}
+                                        {% else %}
+                                        {% set weight = 'normal' %}
+                                        {% endif %}
+                                        <tr>
+                                            <td style="font-weight:{{weight}}">{{loop.index}}</td>
+                                            <td style="font-weight:{{weight}}">{{item}}</td>
+                                            <td style="font-weight:{{weight}}">{{cols['Submitted']}}</td>
+                                            <td style="font-weight:{{weight}}">{{cols['Open']}}</td>
+                                            <td style="font-weight:{{weight}}">{{cols['Closed']}}</td>
+                                            {% if item == 'Total' %}
+                                            <td></td>
+                                            {% else %}
+                                            <td style="font-weight:{{weight}}">{{cols['Avg TAT']}}</td>
+                                            {% endif %}
+                                            {% if item == 'Total' %}
+                                            <td></td>
+                                            {% else %}
+                                            <td style="font-weight:{{weight}}">{{cols['Median TAT']}}</td>
+                                            {% endif %}
+                                            <td style="font-weight:{{weight}}">{{cols['<15']}}</td>
+                                            {% if item == 'Total' %}
+                                            <td></td>
+                                            {% else %}
+                                            <td style="font-weight:{{weight}}">{{cols['<15 (%)']}}</td>
+                                            {% endif %}
+                                            <td style="font-weight:{{weight}}">{{cols['<30']}}</td>
+                                            {% if item == 'Total' %}
+                                            <td style="font-weight:{{weight}}"></td>
+                                            {% else %}
+                                            <td style="font-weight:{{weight}}">{{cols['<30 (%)']}}</td>
+                                            {% endif %}
+                                            <td style="font-weight:{{weight}}">{{cols['<45']}}</td>
+                                            {% if item == 'Total' %}
+                                            <td></td>
+                                            {% else %}
+                                            <td style="font-weight:{{weight}}">{{cols['<45 (%)']}}</td>
+                                            {% endif %}
+                                            <td style="font-weight:{{weight}}">{{cols['<60']}}</td>
+                                            {% if item == 'Total' %}
+                                            <td></td>
+                                            {% else %}
+                                            <td style="font-weight:{{weight}}">{{cols['<60 (%)']}}</td>
+                                            {% endif %}
+                                            <td style="font-weight:{{weight}}">{{cols['<90']}}</td>
+                                            {% if item == 'Total' %}
+                                            <td></td>
+                                            {% else %}
+                                            <td style="font-weight:{{weight}}">{{cols['<90 (%)']}}</td>
+                                            {% endif %}
+                                        </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            <hr>
+            <h2>
+                Number of <span style="color:#007bff">{{case_type_str}}</span> cases submitted between<br>
+                {{start_date.strftime('%m/%d/%Y')}}-{{end_date.strftime('%m/%d/%Y')}}
+            </h2>
+            {{ submitted_bar_html | safe }}
+            <div>
+
+
+                <div>
+
+                    <hr>
+                    <h2 style="text-align: center">
+                        Number of open cases for <span style="color:#007bff">{{case_type_str}}</span> cases submitted
+                        between<br>
+                        {{start_date.strftime('%m/%d/%Y')}}-{{end_date.strftime('%m/%d/%Y')}}
+                    </h2>
+
+                    <div style="padding-right: 13vw;">
+                                                            {{ bar_html | safe }}
+                    </div>
+                                                {{ open_bar_html | safe }}
+                    <div>
+
+                        <div class="card">
+                            <div class="card-header" id="open_cases_heading" style="text-align: left">
+                                <h5 class="mb-0">
+                                    <button aria-controls="open_cases" aria-expanded="false"
+                                            class="btn btn-link chevron-btn" data-target="#open_cases"
+                                            data-toggle="collapse">
+                                        <span><i class="fa-solid fa-chevron-right mr-2 chevron"
+                                                 style="border: #FF0000"></i></span>
+                                        Open Cases
+                                    </button>
+                                </h5>
+                            </div>
+                            <div aria-labelledby="open_cases_heading" class="collapse" id="open_cases">
+                                <div class="card-body">
+                                    <div class="table display" style="text-align: left">
+                                        <div class="table-responsive" style="max-height: 50vh; overflow-y: auto;">
+                                            <table class="display table-hover table-striped small display nowrap"
+                                                   id="open_cases_table" style="width:100%">
+                                                <thead>
+                                                <tr>
+                                                    <th style="width:100px">Case Number</th>
+                                                    <th>Case Type</th>
+                                                    <th>Case Status</th>
+                                                    <th>Start Date</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                {% for item in open_cases %}
+                                                <tr>
+                                                    <th>
+                                                        <a href="{{ url_for('cases.view', item_id=item.id) }}">
+                                                            {{item.case_number}}
+                                                        </a>
+                                                    </th>
+                                                    <td>{{item.type.code}}</td>
+                                                    <td>{{item.case_status}}</td>
+                                                    {% if item.tat_start_date %}
+                                                    <td>{{item.tat_start_date.strftime("%m/%d/%Y") }}</td>
+                                                    {% endif %}
+                                                </tr>
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="card">
+                        <div class="card-header" id="submitted_table_heading" style="text-align: left">
+                            <h5 class="mb-0">
+                                <button aria-controls="submitted_table" aria-expanded="false"
+                                        class="btn btn-link chevron-btn" data-target="#submitted_table"
+                                        data-toggle="collapse">
+                                    <span><i class="fa-solid fa-chevron-right mr-2 chevron" style="border: #FF0000"></i></span>
+                                    Submitted Case Types
+                                </button>
+                            </h5>
+                        </div>
+                        <div aria-labelledby="submitted_table_heading" class="collapse" id="submitted_table">
+                            <div class="card-body">
+                                <div class="table display">
+                                    <div class="table-responsive">
+                                        <table class="display table-hover table-striped small display"
+                                               id="case_type_table" style="width:100%">
+                                            <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Date</th>
+                                                {% for item in case_type_headings %}
+                                                <th>{{item}}</th>
+                                                {% endfor %}
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for item, cols in submitted_cases_dict.items() %}
+                                            {% if item in ['Total', 'Average', 'Median', 'Min', 'Max'] %}
+                                            {% set weight = 'bold' %}
+                                            {% else %}
+                                            {% set weight = 'normal' %}
+                                            {% endif %}
+                                            <tr>
+                                                <td style="font-weight:{{weight}}">{{loop.index}}</td>
+                                                <th>{{item}}</th>
+                                                {% for col in cols.values() %}
+                                                <td style="font-weight:{{weight}}">{{col}}</td>
+                                                {% endfor %}
+                                            </tr>
+                                            {% endfor %}
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            <hr>
+        </div>
+    </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
+    <!--    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>-->
+    <script>
+        setInterval(function() {
+         $('#mock-login').fadeOut('fast', function() {
+                $('#dashboard-content').fadeIn('fast', function() {
+                });
+            });
+    }, 1000);
+    $(document).ready(function() {
+                // This code makes the dropdown work on hover for larger screens
+                // For smaller screens, it will still require a click (which is a better practice for touch devices)
+                $('.dropdown').hover(function() {
+                    $('.dropdown-toggle', this).trigger('click');
+                }, function() {
+                    $('.dropdown-toggle', this).trigger('click').blur();
+                });
+            });
+
+    </script>
+    <script>
+        // Force a window resize event after the page has fully loaded
+        $(window).on('load', function() {
+            // Delay the trigger slightly to ensure all elements are loaded
+            setTimeout(function() {
+                // Trigger window resize to force graphs to adjust
+                window.dispatchEvent(new Event('resize'));
+            }, 500); // Adjust the timeout as needed
+        });
+    </script>
+
+    <script>
+                      console.log('??')
+        $('.collapse').on('shown.bs.collapse', function () {
+           $($.fn.dataTable.tables(true)).DataTable()
+              .columns.adjust();
+            console.log('collapse shown')
+        });
+
+    </script>
+
+    <script>
+      $(document).ready(function () {
+
+                var buttons = []
+
+                buttons.push({
+                    extend: 'csvHtml5',
+                    className: 'btn btn-secondary mb-3',
+                    text: 'Export',
+                    autoFilter: true,
+                    title: '{{item_name}}_'+moment().format('YYYYMMDDHHmmss'),
+                    sheetName: 'export'
+                    })
+
+                var tat_table = $('#tat').DataTable({
+                    dom: 'rt',
+                    scrollY: "50vh",
+                    scrollX: true,
+                    orderCellsTop: true,
+                    fixedHeader: true,
+                    scrollCollapse: true,
+                    buttons: buttons,
+                    order: [],
+                    pageLength: 100
+                });
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+           var buttons = []
+
+           buttons.push({
+               extend: 'csvHtml5',
+               className: 'btn btn-secondary mb-3',
+               text: 'Export',
+               autoFilter: true,
+               title: '{{item_name}}_'+moment().format('YYYYMMDDHHmmss'),
+               sheetName: 'export'
+               })
+
+            var case_type_table = $('#case_type_table').DataTable({
+               dom: 'rt',
+               scrollX: true,
+               scrollY: "50vh",
+               orderCellsTop: true,
+               fixedHeader: true,
+               scrollCollapse: true,
+               buttons: buttons,
+               order: [],
+               pageLength: 100
+           });
+       });
+    </script>
+
+    <script>
+        $(document).ready(function () {
+        // Setup - add a text input to each footer cell
+
+        $('#open_cases_table thead tr')
+            .clone(true)
+            .addClass('filters')
+            .appendTo('#open_cases_table thead');
+
+        var table = $('#open_cases_table').DataTable({
+            pageLength: 100,
+            lengthMenu: [ [10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+            dom: 'blrtip',
+            scrollX: true,
+            scrollY: "40vh",
+            order: [],
+            orderCellsTop: true,
+            fixedHeader: true,
+            initComplete: function () {
+
+                var api = this.api();
+
+                // For each column
+                api
+                    .columns()
+                    .eq(0)
+                    .each(function (colIdx) {
+                        // Set the header cell to contain the input element
+                        var cell = $('.filters th').eq(
+                            $(api.column(colIdx).header()).index()
+                        );
+                        var title = $(cell).text();
+                        $(cell).html('<input type="text" placeholder="' + title + '" style="width:105%; border: 1px solid lightgray; border-radius: 5px;  "/>');
+
+                        // On every keypress in this input
+                        $(
+                            'input',
+                            $('.filters th').eq($(api.column(colIdx).header()).index())
+                        )
+                            .off('keyup change')
+                            .on('change', function (e) {
+                                // Get the search value
+                                $(this).attr('title', $(this).val());
+                                var regexr = '({search})'; //$(this).parents('th').find('select').val();
+
+                                var cursorPosition = this.selectionStart;
+                                // Search the column for that value
+                                api
+                                    .column(colIdx)
+                                    .search(
+                                        this.value != ''
+                                            ? regexr.replace('{search}', '(((' + this.value + ')))')
+                                            : '',
+                                        this.value != '',
+                                        this.value == ''
+                                    )
+                                    .draw();
+                            })
+                            .on('keyup', function (e) {
+                                e.stopPropagation();
+
+                                $(this).trigger('change');
+                                $(this)
+                                    .focus()[0]
+                                    .setSelectionRange(cursorPosition, cursorPosition);
+                            });
+                    });
+            },
+        });
+    });
+
+            // Adjust DataTable columns on collapse show
+    $('.collapse').on('shown.bs.collapse', function () {
+        $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+
+    });
+
+    // Collapse behavior fix: ensure collapse can close properly
+    $('.collapse').on('hide.bs.collapse', function () {
+        // If necessary, perform actions when collapse is hidden
+        // e.g., reset or adjust DataTables or content
+                console.log('Collapse Hidden')
+    });
+
+    // Initialize DataTables for each table
+    var tat_table = $('#tat').DataTable({
+        dom: 'rt',
+        scrollY: "50vh",
+        scrollX: true,
+        orderCellsTop: true,
+        fixedHeader: true,
+        scrollCollapse: true,
+        buttons: buttons,
+        order: [],
+        pageLength: 100
+    });
+
+    var case_type_table = $('#case_type_table').DataTable({
+        dom: 'rt',
+        scrollX: true,
+        scrollY: "50vh",
+        orderCellsTop: true,
+        fixedHeader: true,
+        scrollCollapse: true,
+        buttons: buttons,
+        order: [],
+        pageLength: 100
+    });
+});
+    </script>
+    {% endblock %}

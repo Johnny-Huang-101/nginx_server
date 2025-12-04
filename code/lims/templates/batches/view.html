@@ -1,0 +1,3160 @@
+{% extends "view_template.html" %}
+
+{% block style %}
+
+    <style>
+
+        .submit-anchor {
+            color: #007bff; /* Default link color (blue) */
+            cursor: pointer; /* Change cursor to pointer on hover */
+            border: none; /* Remove button border */
+            background: none; /* Remove button background */
+            padding: 0; /* Remove button padding */
+            font: inherit; /* Inherit font styles */
+            margin-left: 8%
+        }
+
+        .submit-anchor:hover {
+            text-decoration: underline; /* Underline text */
+        }
+
+        .disabled-link {
+            pointer-events: none;
+            color: gray; /* Optional: style it to look disabled */
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -1%;
+            right: -5%;
+            padding: 2.5% 5%;
+            border-radius: 50%;
+            background-color: white;
+            border: 0.5mm solid black;
+            color: blue;
+            font-size: 8px;
+            font-weight: bold;
+        }
+
+        .dropdown-submenu {
+            position: relative;
+        }
+
+        .dropdown-submenu .dropdown-menu {
+            top: 0;
+            left: 100%;
+            margin-top: -1px;
+            display: none;
+            position: absolute;
+        }
+
+        .dropdown-submenu:hover .dropdown-menu {
+            display: block;
+        }
+
+ @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+         .spinner {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #007bff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Modal styles */
+        #loading-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #loading-modal p {
+            color: white;
+            margin-top: 10px;
+        }
+    </style>
+{% endblock %}
+
+{% block alerts %}
+{% endblock %}
+
+{% block buttons %}
+{% if current_user.permissions not in ['FLD-Administrative', 'Developer', 'ADM-Management'] %}
+    {% if item.batch_status == 'Cancelled' and current_user.permissions in ['Admin', 'Owner'] %}
+                <a class="btn btn-secondary" href="#" data-toggle="modal" data-target="#reinstate-batch">Reinstate Batch</a>
+    {% else %}
+        <div class="dropdown" style="display:inline-block">
+            {% if item.batch_status != 'Finalized' %}
+            {% if current_user.id == kwargs['current_extractor'] %}
+                {% if (kwargs['need_collect_len'] or kwargs['need_return_len']) > 0 %}
+                    <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Extraction
+                    </button>
+                    <span class="badge badge-dark notification-badge">!</span>
+                {% else %}
+                    <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Extraction
+                    </button>
+                {% endif %}
+            {% else %}
+                <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Extraction
+                </button>
+            {% endif %}
+            {% endif %}
+            <div class="dropdown-menu">
+                {% if current_user.id == kwargs['current_extractor'] %}
+                    {% if item.assay.assay_name in ['LCCI-BL'] %}
+                        <a class="dropdown-item" href="{{ url_for('batches.tandem', item_id = item.id)}}">Assign Tandem Batch</a>
+                    {% endif %}
+                    {% if kwargs['need_collect_len'] > 0 %}
+                        <a class="dropdown-item" href="{{ url_for('batches.collect', item_id=item.id) }}">Collect Specimens <span class="badge badge-primary">{{kwargs['need_collect_len']}}</span></a>
+                    {% else %}
+                        <a class="dropdown-item" href="{{ url_for('batches.collect', item_id=item.id) }}">Collect Specimens</a>
+                    {% endif %}
+                    {% if kwargs['need_return_len'] > 0 %}
+                        <a class="dropdown-item" href="{{ url_for('batches.return_specimen', item_id=item.id) }}">Return Specimens <span class="badge badge-primary">{{kwargs['need_return_len']}}</span></a>
+                    {% else %}
+                        <a class="dropdown-item" href="{{ url_for('batches.return_specimen', item_id=item.id) }}">Return Specimens</a>
+                    {% endif %}
+                    {% if 'REF' in item.assay.assay_name %}
+                        <a class="dropdown-item" href="{{ url_for('batches.requisition_check', item_id=item.id) }}">Requisition Assignment</a>
+                        <a class="dropdown-item" href="{{ url_for('batches.barcode_check', item_id=item.id) }}">Barcode Source Check</a>
+                        <a class="dropdown-item" href="{{ url_for('batches.all_tests', item_id=item.id) }}">All Tests</a>
+                    {% else %}
+                        {% if 'GCET' in item.assay.assay_name %}
+                        {% else %}
+                            <a class="dropdown-item" href="{{ url_for('batches.generate_worklist', item_id=item.id, technique='Hamilton')}}">Generate Hamilton Worklist</a>
+                        {% endif %}
+                            <a class="dropdown-item" href="{{ url_for('batches.generate_worklist', item_id=item.id, technique='Non-Hamilton')}}">Generate Non-Hamilton Worklist</a>
+                        {% if 'SAMQ' in item.assay.assay_name %}
+                            <a class="dropdown-item" href="{{url_for('batches.create_samq_tests', item_id=item.id)}}">Create SAMQ Tests</a>
+                        {% endif %}
+                        <a class="dropdown-item printLabelBtn" href="{{ url_for('batches.print_labels', item_id=item.id)}}">Print Extraction Labels</a>
+                        <a class="dropdown-item" href="{{ url_for('batches.barcode_check', item_id=item.id) }}">Barcode Source Check</a>
+                        <a class="dropdown-item" href="{{ url_for('batches.all_tests', item_id=item.id) }}">All Tests</a>
+                        {% if item.technique == 'Hamilton' %}
+                            <a class="dropdown-item" href="{{ url_for('batches.hamilton_samples', item_id=item.id) }}">Hamilton Load Check</a>
+                            <a class="dropdown-item" href="{{ url_for('batches.hamilton_check', item_id=item.id) }}">Hamilton Vials Transfer Check</a>
+                        {% else %}
+                            {% if 'GCET' not in item.assay.assay_name %}
+                                <a class="dropdown-item" href="{{ url_for('batches.manual_transfer_check', item_id=item.id) }}">Transfer Check</a>
+                            {% endif %}
+                        {% endif %}
+                        <a class="dropdown-item" href="{{ url_for('batches.sequence_check', item_id=item.id, is_first=true) }}">Sequence Check</a>
+                    {% endif %}
+                {% else %}
+                    {% if item.assay.assay_name in ['LCCI-BL'] %}
+                        <a class="btn btn-primary disabled-link" href="{{ url_for('batches.tandem', item_id = item.id)}}">Assign Tandem Batch</a>
+                    {% endif %}
+                    <a class="dropdown-item disabled-link" href="{{ url_for('batches.collect', item_id=item.id) }}">Collect Specimens</a>
+                    <a class="dropdown-item disabled-link" href="{{ url_for('batches.return_specimen', item_id=item.id) }}">Return Specimens</a>
+                    {% if 'REF' in item.assay.assay_name %}
+                        <a class="dropdown-item" href="{{ url_for('batches.requisition_check', item_id=item.id) }}">Requisition Assignment</a>
+                        <a class="dropdown-item disabled-link" href="{{ url_for('batches.barcode_check', item_id=item.id) }}">Barcode Source Check</a>
+                        <a class="dropdown-item" href="{{ url_for('batches.all_tests', item_id=item.id) }}">All Tests</a>
+                    {% else %}
+                        {% if item.technique == 'Hamilton' %}
+                            <a class="dropdown-item disabled-link" href="{{ url_for('batches.generate_worklist', item_id=item.id, technique='Hamilton')}}">Generate Hamilton Worklist</a>
+                        {% else %}
+                            <a class="dropdown-item disabled-link" href="{{ url_for('batches.generate_worklist', item_id=item.id, technique='Non-Hamilton')}}">Generate Non-Hamilton Worklist</a>
+                        {% endif %}
+                        <a class="dropdown-item disabled-link" href="{{ url_for('batches.print_labels', item_id=item.id)}}">Print Extraction Labels</a>
+                        <a class="dropdown-item disabled-link" href="{{ url_for('batches.barcode_check', item_id=item.id) }}">Barcode Source Check</a>
+                        <a class="dropdown-item" href="{{ url_for('batches.read_only', item_id=item.id, process='all_tests') }}">All Tests</a>
+                        {% if item.technique == 'Hamilton' %}
+                            <a class="dropdown-item" href="{{ url_for('batches.read_only', item_id=item.id, process='hamilton_load') }}">Hamilton Load Check</a>
+                            <a class="dropdown-item" href="{{ url_for('batches.read_only', item_id=item.id, process='hamilton_transfer') }}">Hamilton Vials Transfer Check</a>
+                        {% else %}
+                            {% if 'GCET' not in item.assay.assay_name %}
+                                <a class="dropdown-item disabled-link" href="{{ url_for('batches.read_only', item_id=item.id, process='transfer') }}">Transfer Check</a>
+                            {% endif %}
+                        {% endif %}
+                        {% if 'GCET' in item.assay.assay_name %}
+                            <a class="dropdown-item" href="{{ url_for('batches.read_only', item_id=item.id, process='gcet_sequence', is_first=true) }}">Sequence Check</a>
+                        {% else %}
+                            <a class="dropdown-item" href="{{ url_for('batches.read_only', item_id=item.id, process='sequence') }}">Sequence Check</a>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+    {% endif %}
+    {% if item.batch_status == 'Processing' %}
+        <a class="btn btn-primary" href="{{ url_for('batches.batches_pdf', item_id=item.id)}}" target="_blank">Print Specimen Collection</a>
+    {% endif %}
+    {% if item.batch_status == 'Finalized' %}
+        <a class="btn btn-primary" href="{{ url_for('batch_records.export_records', item_id = item.id)}}">Export Batch Records</a>
+    {% endif %}
+    {% if current_user.permissions in ['Admin', 'Owner'] %}
+        <div class="dropdown" style="display: inline-block;">
+            <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownAdminMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Admin
+            </button>
+            <div class="dropdown-menu dropright" aria-labelledby="dropdownAdminMenu">
+                <!-- Submenu for Extracting Analyst -->
+                <div class="dropdown-submenu">
+                    <a class="dropdown-item dropdown-toggle" href="#">Extracting Analyst</a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#extracting_analyst">Change EA</a></li>
+                        <li><a class="dropdown-item" href="{{url_for('batches.clear', item_id=item.id, to_clear='extracting')}}">Remove Completion Time</a></li>
+                        <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#admin_extraction">Admin Complete</a></li>
+                    </ul>
+                </div>
+
+                <!-- Submenu for Processing Analyst -->
+                <div class="dropdown-submenu">
+                    <a class="dropdown-item dropdown-toggle" href="#">Processing Analyst</a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#processing_analyst">Change PA</a></li>
+                        <li><a class="dropdown-item" href="{{url_for('batches.clear', item_id=item.id, to_clear='processing')}}">Remove Completion Time</a></li>
+                        <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#admin_processing">Admin Complete</a></li>
+                    </ul>
+                </div>
+
+                <!-- Submenu for Batch Reviewer -->
+                <div class="dropdown-submenu">
+                    <a class="dropdown-item dropdown-toggle" href="#">Batch Reviewer</a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#batch_reviewer">Change BR</a></li>
+                        <li><a class="dropdown-item" href="{{url_for('batches.clear', item_id=item.id, to_clear='review')}}">Remove Completion Time</a></li>
+                        <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#admin_review">Admin Complete</a></li>
+                    </ul>
+                </div>
+            </div>
+            {% if item.batch_status == 'Finalized' %}
+            <a class="btn btn-primary" href="{{url_for('results.import_results', batch_id=item.id)}}">Upload Batch Results</a>
+            {% if current_user.permissions in ['Admin', 'Owner']%}
+            <a class="btn btn-primary" href="{{ url_for('batch_records.add', item_id = item.id, redirect_url=url_for('batches.view', item_id=item.id))}}">Upload Batch Records</a>
+            <a class="btn btn-secondary" href="{{ url_for('comment_instances.add', comment_item_type='Batches', comment_item_id = item.id, redirect_url=url_for('batches.view', item_id=item.id))}}">Add Comment</a>
+            {% endif %}
+            <a class="btn btn-danger" href="#" data-toggle="modal" data-target="#delete-batch-results">Delete Batch Results</a>
+            {% endif %}
+        </div>
+    {% endif %}
+{% if item.batch_status != 'Finalized' %}
+    {% if current_user.id in [item.processed_by_id, kwargs['current_extractor']] or current_user.permissions in ['Admin', 'Owner'] %}
+        <a class="btn btn-secondary" href="{{ url_for('comment_instances.add', comment_item_type='Batches', comment_item_id = item.id, redirect_url=url_for('batches.view', item_id=item.id))}}">Add Comment</a>
+    {% else %}
+    {% endif %}
+    {% if current_user.id == item.processed_by_id or current_user.permissions in ['Admin', 'Owner'] or 'REF' in item.assay.assay_name %}
+        <a class="btn btn-primary" href="{{ url_for('batch_records.add', item_id = item.id, redirect_url=url_for('batches.view', item_id=item.id))}}">Upload Batch Records</a>
+    {% endif %}
+    {% if current_user.id == item.processed_by_id or current_user.permissions in ['Admin', 'Owner'] %}
+        {% if 'REF' not in item.assay.assay_name %}
+            <a class="btn btn-primary" href="{{url_for('results.import_results', redirect_url=url_for('batches.view', item_id=item.id), batch_id=item.id)}}">Upload Batch Results</a>
+        {% endif %}
+    {% endif %}
+    <a class="btn btn-primary" href="{{ url_for('batch_records.export_records', item_id = item.id)}}">Export Batch Records</a>
+    {% if item.batch_status != 'Cancelled' and current_user.permissions in ['Admin', 'Owner'] %}
+        <a class="btn btn-danger" href="#" data-toggle="modal" data-target="#cancel-batch">Cancel Batch</a>
+    {% endif %}
+    {% if item.batch_status == 'Cancelled' %}
+         <a class="btn btn-secondary" href="{{url_for(table_name~'.duplicate_tests', item_id=item.id)}}">Duplicate Tests</a>
+    {% endif %}
+    {% if item.batch_status == 'Cancelled' and current_user.permissions in ['Admin', 'Owner'] %}
+        <a class="btn btn-secondary" href="#" data-toggle="modal" data-target="#reinstate-batch">Reinstate Batch</a>
+    {% endif %}
+    <a class="btn btn-danger" href="#" data-toggle="modal" data-target="#delete-batch-results">Delete Batch Results</a>
+
+{% endif %}
+{% endif %}
+{% if current_user.permissions in ['Admin', 'Owner'] %}
+    <a href="" data-target="#update_status" data-toggle="modal" class="btn btn-primary">Withdraw Results</a>
+{% endif %}
+{% endblock %}
+
+{% block view %}
+{% endblock %}
+
+{% block accordion %}
+    <div class="card">
+        <div class="card-header view-card-header" id="details">
+            <button class="btn btn-link chevron-btn view" data-toggle="collapse" data-target="#details-coll" aria-expanded="false" aria-controls="details">
+                <span><i class="fa-solid fa-chevron-down mr-2 chevron" style="border: '#FF0000'"></i></span>
+                Batch Details
+            </button>
+        </div>
+        <div id="details-coll" class="collapse show" aria-labelledby="details">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col">
+                        <table class="table-hover table-striped nowrap" style="width: 100%">
+                            <tbody>
+                                <tr>
+                                    <th>Assay</th>
+                                    <td>{{item.assay.assay_name}}</td>
+                                </tr>
+                                {% if 'GCDP' in item.assay.assay_name %}
+                                    <tr>
+                                        <th>GCDP Variant</th>
+                                        <td>
+                                            {% if item.gcdp_assay_id is not none %}
+                                                {{item.gcdp_assay.assay_name}}
+                                            {% else %}
+                                                <a href="" data-toggle="modal" data-target="#gcdp-variant">Select</a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                                <tr>
+                                    <th>Test Count</th>
+                                    <td>{{item.test_count}}</td>
+                                </tr>
+                                {% if 'REF' in item.assay.assay_name %}
+                                {% else %}
+                                    <tr>
+                                        <th>Instrument</th>
+                                        <td>
+                                            {% if item.instrument is none %}
+                                                <a href="" data-toggle="modal" data-target="#set_instrument" style="margin-left: 20%">Set</a>
+                                            {% elif item.batch_status == 'Finalized' and current_user.permissions not in ['Admin', 'Owner'] %}
+                                                {{item.instrument.instrument_id}}
+                                            {% else %}
+                                                {{item.instrument.instrument_id}}
+                                                <a href="" data-toggle="modal" data-target="#set_instrument" style="margin-left: 20%">Change</a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                                {% if 'COHB' in item.assay.assay_name or 'PRIM' in item.assay.assay_name or 'REF' in item.assay.assay_name %}
+                                {% else %}
+                                    <tr>
+                                        <th>Batch Template</th>
+                                        <td>
+                                            {% if item.batch_template is none %}
+                                                <a href="" data-toggle="modal" data-target="#batch_template" style="margin-left: 9%">Set</a>
+                                            {% elif item.batch_status == 'Finalized' and current_user.permissions not in ['Admin', 'Owner'] %}
+                                                {% if 'QTON' in item.assay.assay_name %}
+                                                    {{item.batch_template.name[:7]}}
+                                                {% else %}
+                                                    {{item.batch_template.name}}
+                                                {% endif %}
+                                            {% elif 'QTON' in item.assay.assay_name %}
+                                                {{item.batch_template.name[:7]}}
+                                                <a href="" data-toggle="modal" data-target="#batch_template" style="margin-left: 9%">Change</a>
+                                            {% else %}
+                                                {{item.batch_template.name}}
+                                                <a href="" data-toggle="modal" data-target="#batch_template" style="margin-left: 9%">Change</a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Sequence File</th>
+                                        <td>
+                                            <div style="display: flex">
+                                                <a href="../static/batch_sequences/{{item.batch_id}}.csv" target="_blank">
+                                                    View Sequence
+                                                </a>
+                                                {% if 'SAMQ' in item.assay.assay_name and not kwargs['seq'] %}
+                                                    <a href="#!" data-toggle="modal" data-target="#samq_const" style="margin-left: 9%">Create</a>
+                                                {% elif item.batch_status == 'Finalized' and current_user.permissions not in ['Admin', 'Owner'] %}
+                                                {% elif 'SAMQ' in item.assay.assay_name and kwargs['seq'] %}
+                                                    <a href="#!" data-toggle="modal" data-target="#create_sequence" style="margin-left: 9%">Import</a>
+                                                {% else %}
+                                                    {% if kwargs['seq'] %}
+                                                        <a href="#!" data-toggle="modal" data-target="#create_sequence" style="margin-left: 9%">Initialize Constituents/Import</a>
+                                                    {% else %}
+                                                        <form method="POST" enctype="multipart/form-data" id="seq_form" style="margin-left: 9%">
+                                                            {{kwargs['seq_form'].hidden_tag()}}
+                                                            {{kwargs['seq_form'].submit_seq(class='submit-anchor')}}
+                                                        </form>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Technique</th>
+                                        <td>{{item.technique}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Tandem Batch</th>
+                                        {% if item.tandem_id is none %}
+                                            <td>N/A</td>
+                                        {% elif item.tandem_id == 0 %}
+                                            <td>N/A</td>
+                                        {% else %}
+                                            {% for batch in kwargs['tandem'] %}
+                                                <td>
+                                                    <a href="{{ url_for('batches.view', item_id=batch.id) }}">{{batch.batch_id}}</a>
+                                                </td>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                     <div class="col">
+                        <table class="table-hover table-striped nowrap" style="width: 100%">
+                            <tbody>
+                                <tr>
+                                    <th>Extracting Analyst</th>
+                                    <td>
+                                        {% if item.extractor is none %}
+                                            <a href="" data-toggle="modal" data-target="#extracting_analyst" style="margin-left: 20%">Start</a>
+                                        {% else %}
+                                            {{item.extractor.initials}}
+                                            {% if item.extraction_date is not none %}
+                                                : Start {{item.extraction_date.strftime('%Y-%m-%d  %H:%M')}}
+                                                {% if item.extraction_finish_date is not none %}
+                                                    ; Finish {{item.extraction_finish_date.strftime('%Y-%m-%d  %H:%M')}}
+                                                {% elif current_user.id == item.extracted_by_id %}
+                                                    {% if (kwargs['need_return_len'] or kwargs['need_collect_len']) > 0 %}
+                                                            <a href="" data-toggle="modal" data-target="#extracting_analyst" style="padding-right: 2%; padding-left: 2%">Update</a>
+                                                            <a style="padding-right: 5%"></a>
+                                                            <a href="" data-target="#specimen_warning" data-toggle="modal">Complete</a>
+                                                        {% else %}
+                                                            <a href="" data-toggle="modal" data-target="#extracting_analyst" style="padding-right: 2%; padding-left: 2%">Update</a>
+                                                            <a style="padding-right: 5%"></a>
+                                                            <a href="" data-target="#admin_extraction" data-toggle="modal">Complete</a>
+                                                        {% endif %}
+                                                {% endif %}
+                                            {% endif %}
+                                            {% if item.extractor_2 is not none %}
+                                                | {{item.extractor_2.initials}}
+                                                {% if item.extraction_date_2 is not none %}
+                                                    : Start {{item.extraction_date_2.strftime('%Y-%m-%d  %H:%M')}}
+                                                    {% if item.extraction_finish_date_2 is not none %}
+                                                        ; Finish {{item.extraction_finish_date_2.strftime('%Y-%m-%d  %H:%M')}}
+                                                    {% elif current_user.id == item.extracted_by_2_id %}
+                                                        {% if (kwargs['need_return_len'] or kwargs['need_collect_len']) > 0 %}
+                                                            <a href="" data-toggle="modal" data-target="#extracting_analyst" style="padding-right: 2%; padding-left: 2%">Update</a>
+                                                            <a style="padding-right: 5%"></a>
+                                                            <a href="" data-target="#specimen_warning" data-toggle="modal">Complete</a>
+                                                        {% else %}
+                                                            <a href="" data-toggle="modal" data-target="#extracting_analyst" style="padding-right: 2%; padding-left: 2%">Update</a>
+                                                            <a style="padding-right: 5%"></a>
+                                                            <a href="" data-target="#admin_extraction" data-toggle="modal">Complete</a>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                {% endif %}
+                                                {% if item.extractor_3 is not none %}
+                                                    | {{item.extractor_3.initials}}
+                                                    {% if item.extraction_date_3 is not none %}
+                                                        : Start {{item.extraction_date_3.strftime('%Y-%m-%d  %H:%M')}}
+                                                        {% if item.extraction_finish_date_3 is not none %}
+                                                            ; Finish {{item.extraction_finish_date_3.strftime('%Y-%m-%d  %H:%M')}}
+                                                        {% elif current_user.id == item.extracted_by_3_id %}
+                                                            {% if (kwargs['need_return_len'] or kwargs['need_collect_len']) > 0 %}
+                                                                <a style="padding-right: 5%"></a>
+                                                                <a href="" data-target="#specimen_warning" data-toggle="modal">Complete</a>
+                                                            {% else %}
+                                                                <a style="padding-right: 5%"></a>
+                                                                <a href="" data-target="#admin_extraction" data-toggle="modal">Complete</a>
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endif %}
+                                            
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Source Check</th>
+                                    {% if kwargs['batch_specimen_check'] %}
+                                        <td>Completed</td>
+                                    {% else %}
+                                        <td>Incomplete</td>
+                                    {% endif %}
+                                </tr>
+                                {% if 'GCET' in item.assay.assay_name %}
+                                {% else %}
+                                    {% if item.technique == 'Hamilton' %}
+                                        <tr>
+                                            <th>Hamilton Load Check</th>
+                                            {% if kwargs['batch_load_check'] %}
+                                                <td>Completed</td>
+                                            {% else %}
+                                                <td>Incomplete</td>
+                                            {% endif %}
+                                        </tr>
+                                        <tr>
+                                            <th>Hamilton Transfer Check</th>
+                                            {% if kwargs['batch_transfer_check'] %}
+                                                <td>Completed</td>
+                                            {% else %}
+                                                <td>Incomplete</td>
+                                            {% endif %}
+                                        </tr>
+                                    {% else %}
+                                        {% if 'REF' in item.assay.assay_name %}
+                                            <tr>
+                                                <th>Transcription Check</th>
+                                                    <td>
+                                                        {% if item.transfer_check %}
+                                                        {{item.specimen_checker.initials}} | {{item.checked_date.strftime('%Y-%m-%d  %H:%M')}}
+                                                        {% endif %}
+                                                        <a data-target="#transcribe-check" data-toggle="modal" href="">Update</a>
+                                                    </td>
+                                            </tr>
+                                        {% elif 'GCET' not in item.assay.assay_name and 'PRIM' not in item.assay.assay_name and 'COHB' not in item.assay.assay_name and item.assay.assay_name not in ['GCVO-ZZ', 'GCNO-ZZ'] and item.gcdp_assay.assay_name not in ['GCVO-ZZ', 'GCNO-ZZ'] %}
+                                            <tr>
+                                                <th>Transfer Check</th>
+                                                {% if kwargs['batch_transfer_check'] %}
+                                                    <td>Completed</td>
+                                                {% else %}
+                                                    <td>Incomplete</td>
+                                                {% endif %}
+                                            </tr>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endif %}
+                                {% if 'REF' in item.assay.assay_name or 'PRIM' in item.assay.assay_name or 'COHB' in item.assay.assay_name %}
+                                {% else %}
+                                    <tr>
+                                        <th>Sequence Check</th>
+                                        {% if kwargs['batch_sequence'] %}
+                                            <td>Completed</td>
+                                        {% else %}
+                                            <td>Incomplete</td>
+                                        {% endif %}
+                                    </tr>
+                                {% endif %}
+
+                                <tr>
+                                    <th>Pipettes</th>
+                                    <td>
+                                        <!-- Display comma-separated pipette names -->
+                                        {% if kwargs['selected_pipettes'] %}
+                                        {{ kwargs['selected_pipettes'] |join(', ', attribute='equipment_id') }},
+                                        {% endif %}
+                                        {% if item.batch_status != 'Finalized' %}
+                                            <!-- Add Button -->
+                                            {% if kwargs['selected_pipettes'] is none %}
+                                            <a data-target="#pipettes" data-toggle="modal" href="">Add</a>
+                                            {% else %}
+                                            <a data-target="#pipettes" data-toggle="modal" href="">Change</a>
+                                            <a data-target="#delete-pipettes" data-toggle="modal" href="">Remove</a>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Instrument Check</th>
+                                    <td>
+                                        {% if item.batch_status == 'Finalized' and current_user.permissions not in ['Admin', 'Owner'] %}
+                                            {% if item.instrument_check is not none %}
+                                                {{item.instrument_check}} | {{item.inst_check.initials}} {{item.instrument_check_date.strftime('%Y-%m-%d  %H:%M')}}
+                                            {% endif %}
+                                        {% else %}
+                                            {% if item.instrument_check is not none %}
+                                                {{item.instrument_check}} | {{item.inst_check.initials}} {{item.instrument_check_date.strftime('%Y-%m-%d  %H:%M')}}
+                                            {% endif %}
+                                            <a data-target="#instrument-check" data-toggle="modal" href="">Update</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Extraction Check</th>
+                                    <td>
+                                        {% if item.batch_status == 'Finalized' and current_user.permissions not in ['Admin', 'Owner'] %}
+                                            {% if item.extraction_check is not none %}
+                                                {{item.extraction_check}} | {{item.ext_check.initials}} {{item.extraction_check_date.strftime('%Y-%m-%d  %H:%M')}}
+                                            {% endif %}
+                                        {% else %}
+                                            {% if item.extraction_check is not none %}
+                                                {{item.extraction_check}} | {{item.ext_check.initials}} {{item.extraction_check_date.strftime('%Y-%m-%d  %H:%M')}}
+                                            {% endif %}
+                                            <a data-target="#extraction-check" data-toggle="modal" href="">Update</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Processing Analyst</th>
+                                    <td>
+                                        {% if item.processor is none %}
+                                            <a href="" data-toggle="modal" data-target="#processing_analyst" style="margin-left: 20%">Start</a>
+                                        {% else %}
+                                            {{item.processor.initials}}
+                                            {% if item.process_date is not none %}
+                                                : Start {{item.process_date.strftime('%Y-%m-%d  %H:%M')}}
+                                                {% if item.process_finish_date is not none %}
+                                                    ; Finish {{item.process_finish_date.strftime('%Y-%m-%d  %H:%M')}}
+                                                {% else %}
+                                                    {% if current_user.id == item.processed_by_id %}
+                                                        <a href="" data-toggle="modal" data-target="#processing_analyst" style="padding-right: 2%; padding-left: 2%">Update</a>
+                                                        <a href="" style="padding-right: 5%"></a>
+                                                        {% if kwargs["in_use"] %}
+                                                            <a href="" data-toggle="modal" data-target="#confirm_processing">Complete</a>
+                                                        {% else %}
+                                                            <a href="" title="There is at least one constituent not in use" data-toggle="tooltip" style="color: gray">Complete</a>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endif %}
+                                            {% if item.processor_2 is not none %}
+                                                | {{item.processor_2.initials}}
+                                                {% if item.process_date_2 is not none %}
+                                                    : Start {{item.process_date_2.strftime('%Y-%m-%d  %H:%M')}}
+                                                    {% if item.process_finish_date_2 is not none %}
+                                                        ; Finish {{item.process_finish_date_2.strftime('%Y-%m-%d  %H:%M')}}
+                                                    {% else %}
+                                                        {% if current_user.id == item.processed_by_2_id %}
+                                                            <a href="" data-toggle="modal" data-target="#processing_analyst" style="padding-right: 2%; padding-left: 2%">Update</a>
+                                                            <a href="" style="padding-right: 5%"></a>
+                                                            {% if kwargs["in_use"] %}
+                                                                <a href="" data-toggle="modal" data-target="#confirm_processing">Complete</a>
+                                                            {% else %}
+                                                                <a href="" title="There is at least one constituent not in use" data-toggle="tooltip" style="color: gray">Complete</a>
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    {% endif %}
+                                                {% endif %}
+                                                {% if item.processor_3 is not none %}
+                                                    | {{item.processor_3.initials}}
+                                                    {% if item.process_date_3 is not none %}
+                                                        : Start {{item.process_date_3.strftime('%Y-%m-%d  %H:%M')}}
+                                                        {% if item.process_finish_date_3 is not none %}
+                                                            ; Finish {{item.process_finish_date_3.strftime('%Y-%m-%d  %H:%M')}}
+                                                        {% else %}
+                                                            {% if current_user.id == item.processed_by_3_id %}
+                                                                <a href="" data-toggle="modal" data-target="#processing_analyst" style="padding-right: 2%; padding-left: 2%">Update</a>
+                                                                <a href="" style="padding-right: 5%"></a>
+                                                                {% if kwargs["in_use"] %}
+                                                                    <a href="" data-toggle="modal" data-target="#confirm_processing">Complete</a>
+                                                                {% else %}
+                                                                    <a href="" title="There is at least one constituent not in use" data-toggle="tooltip" style="color: gray">Complete</a>
+                                                                {% endif %}
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endif %}
+                                            
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Batch Reviewer</th>
+                                    <td>
+                                        {% if item.batch_reviewer is none %}
+                                            <a href="" data-toggle="modal" data-target="#batch_reviewer" style="margin-left: 20%">Start</a>
+                                        {% else %}
+                                            {{item.batch_reviewer.initials}}
+                                            {% if item.review_date is not none %}
+                                                : Start {{item.review_date.strftime('%Y-%m-%d  %H:%M')}}
+                                                {% if item.review_finish_date is not none %}
+                                                    ; Finish {{item.review_finish_date.strftime('%Y-%m-%d  %H:%M')}}
+                                                {% else %}
+                                                    {% if current_user.id == item.reviewed_by_id %}
+                                                        <a href="" data-toggle="modal" data-target="#batch_reviewer" style="padding-right: 2%; padding-left: 2%">Update</a>
+                                                        <a href="" style="padding-right: 5%"></a>
+                                                        <a href="" data-toggle="modal" data-target="#confirm_review">Complete</a>
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endif %}
+                                            {% if item.batch_reviewer_2 is not none %}
+                                                | {{item.batch_reviewer_2.initials}}
+                                                {% if item.review_date_2 is not none %}
+                                                    : Start {{item.review_date_2.strftime('%Y-%m-%d  %H:%M')}}
+                                                    {% if item.review_finish_date_2 is not none %}
+                                                        ; Finish {{item.review_finish_date_2.strftime('%Y-%m-%d  %H:%M')}}
+                                                    {% else %}
+                                                        {% if current_user.id == item.reviewed_by_2_id %}
+                                                            <a href="" data-toggle="modal" data-target="#batch_reviewer" style="padding-right: 2%; padding-left: 2%">Update</a>
+                                                            <a href="" style="padding-right: 5%"></a>
+                                                            <a href="" data-toggle="modal" data-target="#confirm_review">Complete</a>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                {% endif %}
+                                                {% if item.batch_reviewer_3 is not none %}
+                                                    | {{item.batch_reviewer_3.initials}}
+                                                    {% if item.review_date_3 is not none %}
+                                                        : Start {{item.review_date_3.strftime('%Y-%m-%d  %H:%M')}}
+                                                        {% if item.review_finish_date_3 is not none %}
+                                                            ; Finish {{item.review_finish_date_3.strftime('%Y-%m-%d  %H:%M')}}
+                                                        {% else %}
+                                                            {% if current_user.id == item.reviewed_by_3_id %}
+                                                                <a href="" data-toggle="modal" data-target="#batch_reviewer" style="padding-right: 2%; padding-left: 2%">Update</a>
+                                                                <a href="" style="padding-right: 5%"></a>
+                                                                <a href="" data-toggle="modal" data-target="#confirm_review">Complete</a>
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+        {% if 'REF' not in item.assay.assay_name %}
+        <div class="card">
+            <div class="card-header view-card-header">
+                <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#constituents-collapse" aria-expanded="false" aria-controls="constituents">
+                    <span><i class="fa-solid fa-chevron-down mr-2 chevron" style="border: '#FF0000'"></i></span>
+                    Batch Constituents
+                </button>
+            </div>
+            <div id="constituents-collapse" class="collapse show" aria-labelledby="constituents-heading">
+                <div class="card-body">
+                    <div class="mb-2">
+                        {% if item.batch_status == 'Finalized' and current_user.permissions not in ['Admin', 'Owner'] %}
+                        {% else %}
+                            {% if item.technique == 'Hamilton' and 'COHB' not in item.assay.assay_name and 'SAMQ' not in item.assay.assay_name %}
+                                {% if not kwargs['sequence_const'] %}
+                                    <a href="{{url_for(table_name~'.populate_constituents', item_id=item.id, method='automated')}}" class="btn btn-primary">Populate Constituents</a>
+                                {% else %}
+                                    <a class="btn btn-primary" data-toggle="modal" data-target="#confirm_automated_const">Populate Constituents</a>
+                                {% endif %}
+                            {% elif item.technique == 'Non-Hamilton' and 'COHB' not in item.assay.assay_name and 'SAMQ' not in item.assay.assay_name %}
+                                {% if not kwargs['sequence_const'] %}
+                                    <a href="{{url_for(table_name~'.populate_constituents', item_id=item.id, method='automated')}}" class="btn btn-primary">Populate Constituents</a>
+                                {% else %}
+                                    <a class="btn btn-primary" data-toggle="modal" data-target="#confirm_manual_const">Populate Constituents</a>
+                                {% endif %}
+                            {% endif %}
+                            <a href="{{url_for(table_name~'.populate_constituents', item_id=item.id, method='default')}}" class="btn btn-primary">Add Default Constituents</a>
+                            {% if kwargs['constituents'].all()|length == 0 %}
+                                {% if 'GCDP-ZZ' in item.assay.assay_name %}
+                                    <button class="btn btn-outline-secondary" disabled>Add Standard</button>
+                                {% else %}
+                                    <button class="btn btn-outline-secondary" disabled>Add Iteration</button>
+                                {% endif %}
+                            {% elif 'SAMQ' in item.assay.assay_name %}
+                            {% else %}
+                                {% if 'GCDP-ZZ' in item.assay.assay_name and 'GCNO' in item.gcdp_assay.assay_name %}
+                                    <a href="" data-toggle="modal" data-target="#manual_constituent" class="btn btn-primary">Add Standard</a>
+                                {% else %}
+                                    <a href="" data-toggle="modal" data-target="#manual_constituent" class="btn btn-primary">Add Iteration</a>
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                    <div class="my-2">
+                        {% if item.batch_status == 'Finalized' and current_user.permissions not in ['Admin', 'Owner'] %}
+                        {% else %}
+                            <form class="needs-validation" method="POST" enctype="multipart/form-data" id="const_form">
+                                {{kwargs['form'].hidden_tag()}}
+                                <div class="row">
+                                    <div class="col-3">{{kwargs['form'].constituent_scan(class='form-control')}}</div>
+                                    <div class="col">{{kwargs['form'].submit(class='btn btn-primary')}}</div>
+                                </div>
+                                <span id="error-message" style="color: red;"></span>
+                            </form>
+                        {% endif %}
+                    </div>
+                    <a class="btn btn-secondary mb-3 export" href="#" name="batch-constituents">Export</a>
+                    <div class="table display">
+                        <div class="table-responsive">
+                            <table class="table-striped table-hover small display nowrap" style="width:100%" id="batch_constituents_table">
+                                <thead>
+                                    <tr>
+                                        <th class="click-show"></th>
+                                        {% if 'SAMQ' not in item.assay.assay_name %}
+                                            <th>Vial Position</th>
+                                        {% endif %}
+                                        <th>Name</th>
+                                        <th>Standard/Solution Lot</th>
+                                        <th>Populated From</th>
+                                        <th>
+                                            Include Checks?<br>
+                                            {% if item.batch_status == 'Finalized' and current_user.permissions not in ['Admin', 'Owner'] %}
+                                            {% else %}
+                                                <a href="" data-toggle="modal" data-target="#switch_all">Switch all checks</a>
+                                            {% endif %}
+                                        </th>
+                                        <th>In Use</th>
+                                        <th>Authorized Date</th>
+                                        <th>Expiration Date</th>
+                                        <th>Source Check</th>
+                                        {% if 'COHB' in item.assay.assay_name or 'PRIM' in item.assay.assay_name or 'REF' in item.assay.assay_name %}
+                                            <th></th>
+                                            <th></th>
+                                        {% else %}
+                                            {% if 'GCET' in item.assay.assay_name or item.assay.assay_name in ['GCVO-ZZ', 'GCNO-ZZ'] or item.gcdp_assay.assay_name in ['GCVO-ZZ', 'GCNO-ZZ'] %}
+                                            {% else %}
+                                                <th>Transfer Check</th>
+                                            {% endif %}
+                                            <th>Sequence Check</th>
+                                        {% endif %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for constituent in kwargs['constituents'] %}
+                                        <tr>
+                                            <td><a href="{{url_for('batch_constituents.delete', item_id=constituent.id)}}"><i class="fa fa-trash" aria-hidden="true" style="color: black"></i></a></td>
+                                            {% if 'SAMQ' not in constituent.batch.assay.assay_name %}
+                                                {% if constituent.vial_position is not none %}
+                                                    <td>{{constituent.vial_position}} <a class="printLabelBtn" href="{{url_for('batch_constituents.print_ex_label', item_id=constituent.id)}}"><i class="fa fa-print" aria-hidden="true"></i></a></td>
+                                                {% else %}
+                                                    <td>
+                                                        {% if kwargs['constituent_vials'][constituent.constituent_type] is not none %}
+                                                            {{kwargs['constituent_vials'][constituent.constituent_type]}}
+                                                        {% endif %}
+                                                    </td>
+                                                {% endif %}
+                                            {% endif %}
+                                            <td>
+                                                {{constituent.constituent_type}}
+                                            </td>
+                                            {% if constituent.constituent is not none %}
+                                                <td>
+                                                    <a href="{{url_for('standards_and_solutions.view', item_id=constituent.constituent_id)}}">{{constituent.constituent.lot}}</a>
+                                                    {% if item.batch_status == 'Finalized' and current_user.permissions in ['Admin', 'Owner']%}
+                                                        <a href="{{url_for(table_name~'.clear_constituent', item_id=constituent.id)}}" style="color: red;">Clear</a>
+                                                    {% elif item.batch_status != 'Finalized' and current_user.id == kwargs['current_extractor'] %}
+                                                        <a href="{{url_for(table_name~'.clear_constituent', item_id=constituent.id)}}" style="color: red;">Clear</a>
+                                                    {% else %}
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {{constituent.populated_from}}
+                                                </td>
+                                                <td style="text-align: center">
+                                                    {% if item.batch_status == 'Finalized' and current_user.permissions not in ['Admin', 'Owner'] %}
+                                                        {% if constituent.include_checks %}
+                                                            <i class="fa fa-check-square-o" aria-hidden="true" style="color: #007bFF"></i>
+                                                        {% else %}
+                                                            <i class="fa fa-square-o" aria-hidden="tru   " style="color: #007bFF"></i>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        {% if constituent.include_checks %}
+                                                            <a href="{{url_for(table_name~'.checkbox_change', item_id=constituent.id)}}"><i class="fa fa-check-square-o" aria-hidden="true"></i></a>
+                                                        {% else %}
+                                                            <a href="{{url_for(table_name~'.checkbox_change', item_id=constituent.id)}}"><i class="fa fa-square-o" aria-hidden="true"></i></a>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                </td>
+                                                {% if constituent.constituent.in_use is false %}
+                                                    <td style="background-color: #f8d7da">
+                                                        {{constituent.constituent.in_use}}
+                                                    </td>
+                                                {% else %}
+                                                    <td>
+                                                        {{constituent.constituent.in_use}}
+                                                    </td>
+                                                {% endif %}
+                                                    <td>
+                                                        {% if constituent.constituent.authorized_date is not none %}
+                                                            {{constituent.constituent.authorized_date.strftime('%Y-%m-%d')}}
+                                                        {% else %}
+                                                        HOLD
+                                                        {% endif %}
+                                                    </td>
+                                                {% if item.extraction_finish_date is not none %}
+                                                    {% if (constituent.constituent.retest_date - item.extraction_date).days > 0 %}
+                                                        <td>
+                                                            {% if constituent.constituent.retest_date is not none%}
+                                                                {{constituent.constituent.retest_date.strftime('%Y-%m-%d')}}
+                                                            {% else %}
+                                                            {% endif %}
+                                                        </td>
+                                                    {% else %}
+                                                        <td style="background-color: #f8d7da">
+                                                            {% if constituent.constituent.retest_date is not none%}
+                                                                {{constituent.constituent.retest_date.strftime('%Y-%m-%d')}}
+                                                            {% else %}
+                                                            {% endif %}
+                                                        </td>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <td>
+                                                        {% if constituent.constituent.retest_date is not none%}
+                                                            {{constituent.constituent.retest_date.strftime('%Y-%m-%d')}}
+                                                        {% else %}
+                                                        {% endif %}
+                                                    </td>
+                                                {% endif %}
+                                            {% elif constituent.reagent is not none %}
+                                               <td>
+                                                    <a href="{{url_for('solvents_and_reagents.view', item_id=constituent.reagent_id)}}">{{constituent.reagent.lot}}</a>
+                                                    {% if item.batch_status == 'Finalized' and current_user.permissions in ['Admin', 'Owner']%}
+                                                         <a href="{{url_for(table_name~'.clear_constituent', item_id=constituent.id)}}" style="color: red;">Clear</a>
+                                                    {% elif item.batch_status != 'Finalized' and current_user.id == kwargs['current_extractor'] %}
+                                                        <a href="{{url_for(table_name~'.clear_constituent', item_id=constituent.id)}}" style="color: red;">Clear</a>
+                                                    {% else %}
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {{constituent.populated_from}}
+                                                </td>
+                                                <td style="text-align: center">
+                                                    {% if item.batch_status == 'Finalized' and current_user.permissions not in ['Admin', 'Owner'] %}
+                                                        {% if constituent.include_checks %}
+                                                            <i class="fa fa-check-square-o" aria-hidden="true" style="color: #007bFF"></i>
+                                                        {% else %}
+                                                            <i class="fa fa-square-o" aria-hidden="tru   " style="color: #007bFF"></i>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        {% if constituent.include_checks %}
+                                                            <a href="{{url_for(table_name~'.checkbox_change', item_id=constituent.id)}}"><i class="fa fa-check-square-o" aria-hidden="true"></i></a>
+                                                        {% else %}
+                                                            <a href="{{url_for(table_name~'.checkbox_change', item_id=constituent.id)}}"><i class="fa fa-square-o" aria-hidden="true"></i></a>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                </td>
+                                                 {% if constituent.reagent.in_use is false %}
+                                                    <td style="background-color: #f8d7da">
+                                                        {{constituent.reagent.in_use}}
+                                                    </td>
+                                                {% else %}
+                                                    <td>
+                                                        {{constituent.reagent.in_use}}
+                                                    </td>
+                                                {% endif %}
+                                                <td>
+                                                    N/A <!-- Authorized date is not applicable to reagents -->
+                                                </td>
+                                                {% if constituent.reagent.exp_date is not none %}
+                                                    {% if item.extraction_date is not none %}
+                                                        {% if (constituent.reagent.exp_date - kwargs['date']).days < 1 %}
+                                                            <td style="background-color: #f8d7da">
+                                                                {% if constituent.reagent.exp_date is not none %}
+                                                                    {{constituent.reagent.exp_date.strftime('%Y-%m-%d')}}
+                                                                {% else %}
+                                                                {% endif %}
+                                                            </td>
+                                                        {% else %}
+                                                            <td>
+                                                                {% if constituent.reagent.exp_date is not none %}
+                                                                    {{constituent.reagent.exp_date.strftime('%Y-%m-%d')}}
+                                                                {% else %}
+                                                                {% endif %}
+                                                            </td>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <td>
+                                                            {% if constituent.reagent.exp_date is not none %}
+                                                                {{constituent.reagent.exp_date.strftime('%Y-%m-%d')}}
+                                                            {% else %}
+                                                            {% endif %}
+                                                        </td>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <td></td>
+                                                {% endif %}
+                                            {% else %}
+                                                <td></td>
+                                                <td>
+                                                    {{constituent.populated_from}}
+                                                </td>
+                                                <td style="text-align: center">
+                                                    {% if item.batch_status == 'Finalized' and current_user.permissions not in ['Admin', 'Owner'] %}
+                                                        {% if constituent.include_checks %}
+                                                            <i class="fa fa-check-square-o" aria-hidden="true" style="color: #007bFF"></i>
+                                                        {% else %}
+                                                            <i class="fa fa-square-o" aria-hidden="tru   " style="color: #007bFF"></i>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        {% if constituent.include_checks %}
+                                                            <a href="{{url_for(table_name~'.checkbox_change', item_id=constituent.id)}}"><i class="fa fa-check-square-o" aria-hidden="true"></i></a>
+                                                        {% else %}
+                                                            <a href="{{url_for(table_name~'.checkbox_change', item_id=constituent.id)}}"><i class="fa fa-square-o" aria-hidden="true"></i></a>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                </td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                            {% endif %}
+                                            {% if constituent.specimen_check is not none %}
+                                                {% if current_user.id == kwargs['current_extractor'] and item.batch_status != 'Finalized' %}
+                                                    <td style="background-color: #d4edda">
+                                                        <a class="trigger-modal"
+                                                            href="{{url_for(table_name~'.single_check', item_id=constituent.id, ref_table='batch_constituents', check_name='source')}}">
+                                                            {{constituent.specimen_check}} <br>{{constituent.specimen_checker.initials}}
+                                                            {% if constituent.specimen_check_date is not none %}
+                                                                {{constituent.specimen_check_date.strftime('%Y-%m-%d %H:%M')}}
+                                                            {% else %}
+                                                            {% endif %}
+                                                        </a>
+                                                    </td>
+                                                {% else %}
+                                                <td style="background-color: #d4edda">
+                                                            {{constituent.specimen_check}} <br>{{constituent.specimen_checker.initials}}
+                                                            {% if constituent.specimen_check_date is not none %}
+                                                                {{constituent.specimen_check_date.strftime('%Y-%m-%d %H:%M')}}
+                                                            {% else %}
+                                                            {% endif %}
+                                                    </td>
+                                                {% endif %}
+                                            {% elif current_user.id == kwargs['current_extractor'] and (constituent.vial_position is not none or constituent.constituent_id is not none) %}
+                                                {% if constituent.vial_position is not none %}
+                                                    <td>
+                                                        <a class="trigger-check-modal" data-toggle="modal" data-target="#manual_check" href="" data-value="{{constituent.vial_position}}" aria-valuetext="{{url_for('batches.manual_check', item_id=constituent.id, test='false', check='source')}}">
+                                                            Manual Check
+                                                        </a>
+                                                    </td>
+                                                {% elif constituent.constituent_id is not none %}
+                                                    <td>
+                                                        <a class="trigger-check-modal" data-toggle="modal" data-target="#manual_check" href="" data-value="{{kwargs['constituent_vials'][constituent.constituent_type]}}" aria-valuetext="{{url_for('batches.manual_check', item_id=constituent.id, test='false', check='source')}}">
+                                                            Manual Check
+                                                        </a>
+                                                    </td>
+                                                {% endif %}
+                                            {% else %}
+                                                <td></td>
+                                            {% endif %}
+                                            {% if 'GCET' in item.assay.assay_name or item.assay.assay_name in ['GCVO-ZZ', 'GCNO-ZZ'] or item.gcdp_assay.assay_name in ['GCVO-ZZ', 'GCNO-ZZ'] %}
+                                            {% else %}
+                                                {% if constituent.transfer_check is not none and constituent.transfer_check != 'N/A' and item.batch_status != 'Finalized' %}
+                                                    <td style="background-color: #d4edda">
+                                                        <a class="trigger-modal"
+                                                            href="{{url_for(table_name~'.single_check', item_id=constituent.id, ref_table='batch_constituents', check_name='transfer')}}">
+                                                            {% if constituent.transfer_check == 'N/A' %}
+                                                                {{constituent.transfer_check}}
+                                                            {% elif constituent.transfer_check is not none %}
+                                                                {{constituent.transfer_check}} <br>{{constituent.transfer_checker.initials}}
+                                                            {% if constituent.transfer_check_date %}
+                                                                {{constituent.transfer_check_date.strftime('%Y-%m-%d %H:%M')}}
+                                                            {% endif %}
+                                                            {% else %}
+                                                            {% endif %}
+                                                        </a>
+                                                    </td>
+                                                {% elif constituent.transfer_check is not none and constituent.transfer_check != 'N/A' and item.batch_status == 'Finalized' %}
+                                                    <td style="background-color: #d4edda">
+                                                        {% if constituent.transfer_check == 'N/A' %}
+                                                            {{constituent.transfer_check}}
+                                                        {% elif constituent.transfer_check is not none %}
+                                                            {{constituent.transfer_check}} <br>{{constituent.transfer_checker.initials}}
+                                                        {% if constituent.transfer_check_date %}
+                                                            {{constituent.transfer_check_date.strftime('%Y-%m-%d %H:%M')}}
+                                                        {% endif %}
+                                                        {% else %}
+                                                        {% endif %}
+                                                    </td>
+                                                {% elif current_user.id == kwargs['current_extractor'] and constituent.vial_position is not none and constituent.transfer_check is none and constituent.transfer_check != 'N/A' %}
+                                                    <td>
+                                                        <a class="trigger-check-modal" data-toggle="modal" data-target="#manual_check" href="" data-value="{{constituent.vial_position}}" aria-valuetext="{{url_for('batches.manual_check', item_id=constituent.id, test='false', check='transfer')}}">
+                                                            Manual Check
+                                                        </a>
+                                                    </td>
+                                                {% else %}
+                                                    <td>
+                                                        {% if constituent.transfer_check == 'N/A' %}
+                                                            {{constituent.transfer_check}}
+                                                        {% else %}
+                                                            <a class="trigger-modal"
+                                                            href="{{url_for(table_name~'.single_check', item_id=constituent.id, ref_table='batch_constituents', check_name='transfer')}}">
+                                                                {{constituent.transfer_check}}
+                                                            </a>
+                                                        {% endif %}
+                                                    </td>
+                                                {% endif %}
+                                            {% endif %}
+                                            {% if constituent.sequence_check is not none and constituent.sequence_check != 'N/A' and item.batch_status != 'Finalized' %}
+                                                <td style="background-color: #d4edda">
+                                                    <a class="trigger-modal"
+                                                        href="{{url_for(table_name~'.single_check', item_id=constituent.id, ref_table='batch_constituents', check_name='sequence')}}">
+                                                        {% if constituent.sequence_check == 'N/A' %}
+                                                            {{constituent.sequence_check}}
+                                                        {% elif constituent.sequence_check is not none %}
+                                                            {{constituent.sequence_check}} <br>{{constituent.sequence_checker.initials}} {{constituent.sequence_check_date.strftime('%Y-%m-%d %H:%M')}}
+                                                        {% else %}
+                                                        {% endif %}
+                                                    </a>
+                                                </td>
+                                            {% elif constituent.sequence_check is not none and constituent.sequence_check != 'N/A' and item.batch_status == 'Finalized' %}
+                                                <td style="background-color: #d4edda">
+                                                    {% if constituent.sequence_check == 'N/A' %}
+                                                        {{constituent.sequence_check}}
+                                                    {% elif constituent.sequence_check is not none %}
+                                                        {{constituent.sequence_check}} <br>{{constituent.sequence_checker.initials}} {{constituent.sequence_check_date.strftime('%Y-%m-%d %H:%M')}}
+                                                    {% else %}
+                                                    {% endif %}
+                                                </td>
+                                            {% elif current_user.id == kwargs['current_extractor'] and constituent.vial_position is not none and constituent.sequence_check is none and constituent.sequence_check != 'N/A' %}
+                                                <td>
+                                                    <a class="trigger-check-modal" data-toggle="modal" data-target="#manual_check" href="" data-value="{{constituent.vial_position}}" aria-valuetext="{{url_for('batches.manual_check', item_id=constituent.id, test='false', check='sequence')}}">
+                                                        Manual Check
+                                                    </a>
+                                                </td>
+                                            {% else %}
+                                                <td>
+                                                    {% if constituent.sequence_check == 'N/A' %}
+                                                        {{constituent.sequence_check}}
+                                                    {% else %}
+                                                        <a class="trigger-modal"
+                                                            href="{{url_for(table_name~'.single_check', item_id=constituent.id, ref_table='batch_constituents', check_name='sequence')}}">
+                                                            {{constituent.sequence_check}}
+                                                        </a>
+                                                    {% endif %}
+                                                </td>
+                                            {% endif %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+<div class="card">
+    <div class="card-header view-card-header">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#batch-tests-collapse" aria-expanded="false" aria-controls="tests">
+            <span><i class="fa-solid fa-chevron-down mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Tests
+        </button>
+    </div>
+    <div id="batch-tests-collapse" class="collapse show" aria-labelledby="tests-heading">
+        <div class="card-body">
+            <a class="btn btn-secondary mb-3 export" href="#" name="tests">Export</a>
+            <div class="table display">
+                <div class="table-responsive">
+                    <table class="display table-striped table-hover nowrap small view-table" style="width:100%;" id="tests-table">
+                        <thead>
+                            <tr>
+                                <th class="click"></th>
+                                <th style="display: none" id="tests-ids">ID</th>
+                                <th></th>
+                                {% if current_user.permissions in ['Admin', 'Owner'] %}
+                                    <th></th>
+                                {% endif %}
+                                <th>Test Name</th>
+                                {% if 'REF' in item.assay.assay_name %}
+                                    <th></th>
+                                    <th></th>
+                                {% else %}
+                                    <th>Vial<br>Position</th>
+                                {% endif %}
+                                <th>Directives</th>
+                                <th>Dil.</th>
+                                <th>Conditions</th>
+                                <th>Current<br>Amount</th>
+                                <th>Test Comment</th>
+                                <th>Source Check</th>
+                                {% if 'COHB' in item.assay.assay_name or 'PRIM' in item.assay.assay_name or 'REF' in item.assay.assay_name %}
+                                {% else %}
+                                    {% if item.technique == 'Hamilton' %}
+                                        <th>Hamilton Load Check</th>
+                                    {% endif %}
+                                    {% if 'GCET' in item.assay.assay_name or item.assay.assay_name in ['GCVO-ZZ', 'GCNO-ZZ'] or item.gcdp_assay.assay_name in ['GCVO-ZZ', 'GCNO-ZZ'] %}
+                                    {% else %}
+                                        <th>Transfer Check Status</th>
+                                    {% endif %}
+                                    <th>Sequence Check Status</th>
+                                {% endif %}
+                                <th>PA Check</th>
+                                <th>Current Location</th>
+                                <th>Test Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set x = 0 %}
+                            {% for item in kwargs['tests'] %}
+                                <tr>
+                                    <td style="display: none"></td>
+                                    <td style="display: none">{{item.id}}</td>
+                                    <td>
+                                        <a href="{{url_for('cases.view', item_id=item.case_id, view_only=True)}}" target="_blank">
+                                            <i class="fa-solid fa-briefcase fa-lg pr-1"></i>
+                                        </a>
+                                    </td>
+                                    {% if current_user.permissions in ['Admin', 'Owner'] %}
+                                        <td>
+                                            {% if item.test_status == 'Cancelled' %}
+                                                <span data-toggle="tooltip" data-html="true" data-placement="bottom" title="Reinstate Test">
+                                                    <a href="" data-toggle="modal" data-target="#reinstate_test" data-item-id="{{item.id}}" data-item-name="{item.test_id}" class="text-decoration-none">
+                                                        <i class="fa fa-check-circle-o" aria-hidden="true"></i>
+                                                    </a>
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                    {% endif %}
+                                    <td>
+                                        <a href="{{url_for('tests.view', item_id=item.id)}}">
+                                            {{item.test_name}}
+                                        </a>
+                                    </td>
+                                    {% if 'REF' in item.assay.assay_name %}
+                                        <td>
+                                            <a href="" data-toggle="modal" data-target="#ref-result-fin" data-value="{{item.id}}" class="trigger-modal">Mark Finalized</a>
+                                        </td>
+                                        {% if 'NMS' in item.assay.assay_name %}
+                                            <td>
+                                                <a href="{{url_for('results.add', case_id=item.case_id, test_id=item.id)}}">Add Result</a>
+                                            </td>
+                                        {% else %}
+                                            <td>
+                                                <a href="{{url_for('results.add_external_result', test_id=item.id)}}">Add Result</a>
+                                            </td>
+                                        {% endif %}
+                                    {% else %}
+                                        <td>{{item.vial_position}} <a class="printLabelBtn" href="{{url_for('tests.print_ex_label', item_id=item.id)}}"><i class="fa fa-print" aria-hidden="true"></i></a></td>
+                                    {% endif %}
+                                    <td>{{item.directives}}</td>
+                                    <td>
+                                        {% if item.dilution != '1' %}
+                                            {{item.dilution}}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{item.specimen.condition}}</td>
+                                    <td>{{item.specimen.current_sample_amount}}</td>
+                                    <td>
+                                        {% if kwargs['test_comment_dict'][item.id] %}
+                                            {% set tooltip = kwargs['test_comment_dict'][item.id] %}
+                                            {% if current_user.id in kwargs['users']%}
+                                                <a href="{{url_for('tests.view_comments', item_id=item.id)}}" class="text-decoration-none t-tip" data-html="true" data-toggle="tooltip" data-placement="bottom"
+                                                   title="{{tooltip}}">
+                                                    Add Comment
+                                                </a>
+                                            {% else %}
+                                                <a href="#" class="text-decoration-none t-tip" data-html="true" data-toggle="tooltip" data-placement="bottom"
+                                                   title="{{tooltip}}">
+                                                    Comments
+                                                </a>
+                                            {% endif %}
+                                        {% else %}
+                                            {% if current_user.id in kwargs['users'] %}
+                                                <a href="{{url_for('tests.view_comments', item_id=item.id)}}">
+                                                    Add Comment
+                                                </a>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if item.specimen_check %}
+                                            {% if item.specimen_check != 'N/A' %}
+                                                {% if current_user.id == kwargs['current_extractor'] and item.batch.batch_status != 'Finalized' %}
+                                                    <a class="trigger-modal"
+                                                        href="{{url_for(table_name~'.single_check', item_id=item.id, ref_table='tests', check_name='source')}}">
+                                                        {{item.specimen_check}}<br>{{item.specimen_checker.initials}} {{item.checked_date.strftime('%m/%d/%Y %H:%M')}}
+                                                    </a>
+                                                {% else %}
+                                                    {{item.specimen_check}}<br>{{item.specimen_checker.initials}} {{item.checked_date.strftime('%m/%d/%Y %H:%M')}}
+                                                {% endif %}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        {% elif 'REF' in item.assay.assay_name %}
+                                            <a href="{{url_for(table_name~'.mark_na', item_id=item.id, check_name='source')}}" data-toggle="tooltip" title="Ensure a batch comment is added to explain why this is marked as Not Applicable.">Mark Not Applicable</a>
+                                        {% endif %}
+                                    </td>
+                                    {% if 'COHB' in item.assay.assay_name or 'PRIM' in item.assay.assay_name or 'REF' in item.assay.assay_name %}
+                                    {% else %}
+                                        {% if item.batch.technique == 'Hamilton' %}
+                                            {% if item.load_check %}
+                                                <td>
+                                                    {% if current_user.id == kwargs['current_extractor'] and item.batch.batch_status != 'Finalized' %}
+                                                        <a class="trigger-modal"
+                                                            href="{{url_for(table_name~'.single_check', item_id=item.id, ref_table='tests', check_name='load')}}">
+                                                            {{item.load_check}}<br>{{item.load_checker.initials}} {{item.load_checked_date.strftime('%m/%d/%Y %H:%M')}}
+                                                        </a>
+                                                    {% else %}
+                                                    
+                                                        {{item.load_check}}<br>{{item.load_checker.initials}} {% if item.load_checked_date %}{{item.load_checked_date.strftime('%m/%d/%Y %H:%M')}} {% endif %}
+                                                    {% endif %}
+                                                </td>
+                                            {% elif current_user.id == kwargs['current_extractor'] and 'LCCI' not in item.batch.assay.assay_name %}
+                                                <td>
+                                                    <a class="trigger-check-modal" data-toggle="modal" data-target="#manual_check" href="" data-value="{{item.vial_position}}" aria-valuetext="{{url_for('batches.manual_check', item_id=item.id, test='true', check='load')}}">
+                                                        Manual Check
+                                                    </a>
+                                                </td>
+                                            {% else %}
+                                                <td></td>
+                                            {% endif %}
+                                        {% endif %}
+                                        {% if 'GCET' in item.assay.assay_name or item.assay.assay_name in ['GCVO-ZZ', 'GCNO-ZZ'] or item.batch.gcdp_assay.assay_name in ['GCVO-ZZ', 'GCNO-ZZ'] %}
+                                        {% else %}
+                                            {% if item.transfer_check is not none and item.transfer_check != 'N/A'%}
+                                                <td>
+                                                    {% if current_user.id == kwargs['current_extractor'] and item.batch.batch_status != 'Finalized' %}
+                                                        <a class="trigger-modal"
+                                                            href="{{url_for(table_name~'.single_check', item_id=item.id, ref_table='tests', check_name='transfer')}}">
+                                                            {{item.transfer_check}}<br>{{item.transfer_checker.initials}} {{item.transfer_check_date.strftime('%m/%d/%Y %H:%M')}}
+                                                        </a>
+                                                    {% else %}
+                                                        {{item.transfer_check}}<br>{{item.transfer_checker.initials}} {{item.transfer_check_date.strftime('%m/%d/%Y %H:%M')}}
+                                                    {% endif %}
+                                                </td>
+                                            {% elif item.transfer_check == 'N/A' %}
+                                                <td>
+                                                    N/A
+                                                </td>
+                                            {% elif current_user.id == kwargs['current_extractor'] and 'LCCI' not in item.batch.assay.assay_name %}
+                                                <td>
+                                                    <a class="trigger-check-modal" data-toggle="modal" data-target="#manual_check" href="" data-value="{{item.vial_position}}" aria-valuetext="{{url_for('batches.manual_check', item_id=item.id, test='true', check='transfer')}}">
+                                                        Manual Check
+                                                    </a>
+                                                </td>
+                                            {% else %}
+                                                <td></td>
+                                            {% endif %}
+                                        {% endif %}
+                                        {% if item.sequence_check %}
+                                            <td>
+                                                {% if current_user.id == kwargs['current_extractor'] and item.batch.batch_status != 'Finalized' %}
+                                                    <a class="trigger-modal"
+                                                        href="{{url_for(table_name~'.single_check', item_id=item.id, ref_table='tests', check_name='sequence')}}">
+                                                        {{item.sequence_check}}<br>{{item.sequence_checker.initials}} {{item.sequence_check_date.strftime('%m/%d/%Y %H:%M')}}
+                                                    </a>
+                                                {% else %}
+                                                    {{item.sequence_check}}<br>{{item.sequence_checker.initials}} {% if item.sequence_check_date %}{{item.sequence_check_date.strftime('%m/%d/%Y %H:%M')}} {% endif %}
+                                                {% endif %}
+                                            </td>
+                                        {% elif current_user.id == kwargs['current_extractor'] %}
+                                            <td>
+                                                <a class="trigger-check-modal" data-toggle="modal" data-target="#manual_check" href="" data-value="{{item.vial_position}}" aria-valuetext="{{url_for('batches.manual_check', item_id=item.id, test='true', check='sequence')}}">
+                                                    Manual Check
+                                                </a>
+                                            </td>
+                                        {% else %}
+                                            <td></td>
+                                        {% endif %}
+                                    {% endif %}
+                                    <td>
+                                        {% if item.batch_status != 'Finalized' and current_user.permissions not in ['Admin', 'Owner'] %}
+                                            {% if item.sequence_check_2 is not none %}
+                                                {{item.sequence_check_2}}
+                                            {% endif %}
+                                        {% else %}
+                                            {% if item.sequence_check_2 is not none %}
+                                                <a href="" data-toggle="modal" data-target="#confirm-clear" data-value="{{item.id}}" class="trigger-modal">{{item.sequence_check_2}}</a>
+                                            {% else %}
+                                                <a href="" data-toggle="modal" data-target="#pa-check" data-value="{{item.id}}" class="trigger-modal">Mark NT</a>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{item.specimen.custody}}</td>
+                                    <td>{{item.test_status}}</td>
+                                    <td>
+                                        {% if item.batch_status != 'Finalized' and current_user.permissions not in ['Admin', 'Owner'] %}
+                                        {% else %}
+                                            <span data-toggle="tooltip" data-html="true" data-placement="bottom" title="Cancel Test">
+                                                <a href="" data-toggle="modal" data-target="#cancel_test" data-item-id="{{item.id}}" data-item-name="{{item.test_id}}">
+                                                    <i class="fa fa-ban" aria-hidden="true"></i>
+                                                </a>
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% if 'SAMQ' in item.assay.assay_name %}
+
+    <table id="samqData">
+        <thead>
+        <tr>
+            <th>ListWS_Ref</th>
+            <th>Test</th>
+            <th>Worksheet_Ref</th>
+            <th>Case Number</th>
+            <th>Sample Number</th>
+            <th>Sample Type</th>
+            <th>Result</th>
+            <th>Descriptor(s)</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for test in kwargs['tests'] %}
+                <tr>
+                    <td>{{item.batch_id}}</td>
+                    <td>{{item.assay.assay_name}}</td>
+                    <td>{{item.batch_id}}</td>
+                    <td>{{test.case.case_number}}</td>
+                    {% if test.specimen_id is not none %}
+                        <td>{{test.specimen.accession_number}} [{{test.specimen.type.code}}]_{{test.test_name[-2:]}}</td>
+                        <td>[{{test.specimen.type.code}}]_{{test.test_name[-2:]}}</td>
+                    {% else %}
+                        <td></td>
+                        <td></td>
+                    {% endif %}
+                    <td>{{test.directives}}</td>
+                    <td>{{test.specimen.condition}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endif %}
+<div class="card">
+    <div class="card-header view-card-header">
+        <button class="btn btn-link chevron-btn" style="font-size:20px" data-toggle="collapse" data-target="#results-collapse" aria-expanded="false" aria-controls="results">
+            <span><i class="fa-solid fa-chevron-down mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Results
+        </button>
+    </div>
+    <div id="results-collapse" class="collapse show" aria-labelledby="results-heading">
+        <div class="card-body">
+            <div>
+                <div class="form-group" align="center">
+                    <a href="#" id="previous-case"><i class="bi bi-chevron-left"></i></a>
+                    <select class="form-control selectpicker col-sm-2" id="case-select">
+                            <option value="0">All Cases</option>
+                        {% for case in kwargs['cases'] %}
+                            <option value="{{case}}">{{case}}</option>
+                        {% endfor %}
+                    </select>
+                    <a href="#" id="next-case"><i class="bi bi-chevron-right"></i></a>
+                </div>
+            </div>
+            <a class="btn btn-secondary mb-3 export" href="#" name="results">Export</a>
+            <div class="table display">
+                <div class="table-responsive">
+                    <table class="display table-striped table-hover nowrap small view-table" style="width:100%;" id="results-table">
+                        <thead>
+                        <tr>
+                            <th class="click"></th>
+                            {% if current_user.permissions in ['Admin', 'Owner'] %}
+                            <th></th>
+                            {% endif %}
+                            <th>Test</th>
+                            <th>Accession Number</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Result Status</th>
+                            <th>Result Type</th>
+                            <th>Drug Class</th>
+                            <th>Component Name</th>
+                            <th>Result</th>
+                            <th>Supplementary Result</th>
+                            <th>Qualitative</th>
+                            <th>Report Reason</th>
+                            <th>Comments</th>
+                            <th>REF Result By</th>
+                            <th>DB STATUS</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in kwargs['results'] %}
+                                {% if item.db_status != 'Removed' %}
+                                    {% if item.unit %}
+                                        {% set unit = item.unit.name %}
+                                    {% endif %}
+                                    <tr>
+                                        <td style="display: none"></td>
+                                        {% if current_user.permissions in ['Admin', 'Owner'] %}
+                                        <td><a href="{{url_for('results.view', item_id=item.id)}}"><i class="fas fa-edit"></i></a></td>
+                                        {% endif %}
+                                        <td id="test-name">{{item.test.test_name}}</td>
+                                        <td>{{item.test.specimen.accession_number}}</td>
+                                        <td>[{{item.test.specimen.type.code}}]</td>
+                                        <td>{{item.test.specimen.type.name}}</td>
+                                        <td id="result-status">{{item.result_status}}
+                                            {% if item.result_status_updated == 'Y' %}
+                                            <span style="color: #007bff;" data-toggle="tooltip" title="{{ item.result_status_update_reason }}">
+                                                (Updated)
+                                            </span>
+                                        {% endif %}
+                                        </td>
+                                        <td>{{item.result_type}}
+                                            {% if item.result_type_updated == 'Y' %}
+                                                <span style="color: #007bff;" data-toggle="tooltip" title="{{ item.result_type_update_reason }}">
+                                                    (Updated)
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if item.component %}
+                                                {{item.component.drug_class.name}}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if 'See Attached Report' in item.component_name %}
+                                            <a href="{{url_for('results.view', item_id=item.id) }}">
+                                                {{item.component.name}}
+                                            </a>
+                                            {% elif item.component %}
+                                            <a href="{{url_for('components.view', item_id=item.component_id) }}">
+                                                {{item.component.name}}
+                                            </a>
+                                            {% else %}
+                                                {{item.component_name}}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{item.result}}
+                                            {% if item.result_type != 'Not Detected' %}
+                                            {{unit}}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if item.supplementary_result %}
+                                            {{item.supplementary_result}}
+                                            {% if item.supplementary_result %}
+                                            {{unit}}
+                                            {% endif %}
+                                            {% endif %}
+                                        </td>
+                                        <td>{{item.qualitative_reason}}</td>
+                                        <td>{{item.report_reason}}</td>
+                                        <td>
+                                            {% if item.id in kwargs['result_comment_dict'].keys() %}
+                                            <a href="#!" data-toggle="tooltip" title="{{kwargs['result_comment_dict'][item.id]}}">View comments</a>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if 'REF' in item.test.assay.assay_name%}
+                                                {{item.created_by}}
+                                            {% endif %}
+                                        </td>
+                                        <td>{{item.db_status}}</td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header view-card-header">
+        <button class="btn btn-link chevron-btn" style="font-size:20px" data-toggle="collapse" data-target="#batch-files-collapse" aria-expanded="false" aria-controls="batch-files">
+            <span><i class="fa-solid fa-chevron-down mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Batch Files
+        </button>
+    </div>
+    <div id="batch-files-collapse" class="collapse show" aria-labelledby="batch-files-heading">
+        <div class="card-body">
+            <a class="btn btn-secondary mb-3 export" href="#" name="batch-files">Export</a>
+            <div class="table display">
+                <div class="table-responsive">
+                    <table class="display table-striped table-hover nowrap small view-table" style="width:100%;" id="batch-files-table">
+                        <thead>
+                        <tr>
+                            <th class="click"></th>
+                            <th>Delete</th>
+                            <th>File Name</th>
+                            <th>Title</th>
+                            <th>File Type</th>
+                            <th>Date Created</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in kwargs['batch_records'] %}
+                                <tr>
+                                    <td style="display: none"></td>
+                                    <td>
+                                        {% if item.batch.batch_status == 'Finalized' %}
+                                            <a href=""
+                                                class="btn btn-danger btn-size"
+                                                data-toggle="modal"
+                                                data-target="#confirm-delete-file"
+                                                data-href="{{ url_for('batch_records.delete', item_id=item.id) }}"
+                                                data-file-name="{{ item.file_name }}">
+                                                <i class="fa fa-trash-o btn-icon" style="font-size:10px"></i>
+                                            </a>
+
+                                        {% else %}
+                                            <a href="{{url_for('batch_records.delete', item_id=item.id)}}" class="btn btn-danger btn-size"><i class="fa fa-trash-o btn-icon" style="font-size:10px"></i></a>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+
+                                        {% if item.file_type == 'Sequence' %}
+                                           <a href="../static/batch_sequences/{{item.file_name}}" target="_blank">{{item.file_name}}</a>
+
+                                        {% elif item.file_type == 'Worklist' %}
+                                            <a href="../static/batch_records/{{item.file_name}}" target="_blank">{{item.file_name}}</a>
+                                        {% else %}
+                                            <a href="../static/filesystem/batch_records/{{item.batch.batch_id}}/{{item.file_name}}" target="_blank">{{item.file_name}}</a>
+
+                                        {% endif %}
+                                    </td>
+                                    <td>{{item.title}}</td>
+                                    <td>{{item.file_type}}</td>
+                                    <td>{{item.create_date.strftime('%Y-%m-%d %H:%M')}}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header view-card-header">
+        <button class="btn btn-link chevron-btn" style="font-size:20px" data-toggle="collapse" data-target="#batch-comments-collapse" aria-expanded="false" aria-controls="batch-comments">
+            <span><i class="fa-solid fa-chevron-down mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Batch Comments
+        </button>
+    </div>
+    <div id="batch-comments-collapse" class="collapse show" aria-labelledby="batch-comments-heading">
+        <div class="card-body">
+            <a class="btn btn-secondary mb-3 export" href="#" name="batch-comments">Export</a>
+            <div class="table display">
+                <div class="table-responsive">
+                    <table class="display table-striped table-hover nowrap small view-table" style="width:100%;" id="batch-comments-table">
+                        <thead>
+                            <tr>
+                                <th class="click"></th>
+                                <th>Delete</th>
+                                <th>Comment ID</th>
+                                <th>Comment Type</th>
+                                <th>Comment</th>
+                                <th>Include in Report?</th>
+                                <th>Created By</th>
+                                <th>Create Date</th>
+                                <th>Modified By</th>
+                                <th>Modify Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for comment in comments %}
+                                <tr>
+                                    <td style="display: none"></td>
+                                    <td><a href="{{url_for('comment_instances.delete', item_id=comment.id)}}" class="btn btn-danger btn-size"><i class="fa fa-trash-o btn-icon" style="font-size:10px"></i></a></td>
+                                    <td>
+                                        {% if comment.comment %}
+                                        {{comment.comment.code}}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{comment.comment_type}}</td>
+                                    {% if current_user.permissions in ['Admin', 'Owner'] %}
+                                    <td>
+                                        <a href="{{url_for('comment_instances.update', item_id=comment.id, comment_item_id=item.id, comment_item_type=comment.comment_item_type, redirect_url=redirect_url)}}">
+                                            {% if comment.comment %}
+                                            {{comment.comment.comment}}
+                                            {% else %}
+                                            {{comment.comment_text}}
+                                            {% endif %}
+                                        </a>
+                                    </td>
+                                    {% else %}
+                                    <td>
+                                        {% if comment.comment %}
+                                        {{comment.comment.comment}}
+                                        {% else %}
+                                        {{comment.comment_text}}
+                                        {% endif %}
+                                    </td>
+                                    {% endif %}
+                                    <td>
+                                        {% if comment.include_in_report %}
+                                        Y
+                                        {% endif %}
+                                    </td>
+                                    <td>{{comment.created_by}}</td>
+                                    <td>{{comment.create_date.strftime('%m/%d/%Y %H:%M')}}</td>
+                                    <td>
+                                        {% if comment.modified_by %}
+                                        {{comment.modified_by}}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if comment.modify_date %}
+                                        {{comment.modify_date.strftime('%m/%d/%Y %H:%M')}}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block modals %}
+<!--Confirm populate constituent modal-->
+<div class="modal" tabindex="-1" role="dialog" id="confirm_manual_const">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Populate Constituent</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Confirm you would like to delete and repopulate sequence constituents
+                </p>
+            </div>
+            <div class="modal-footer">
+                <a href="{{url_for(table_name~'.populate_constituents', item_id=item.id, method='manual')}}" class="btn btn-primary">Confirm</a>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Confirm populate constituent modal-->
+<div class="modal" tabindex="-1" role="dialog" id="confirm_automated_const">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Populate Constituent</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Confirm you would like to delete and repopulate sequence constituents
+                </p>
+            </div>
+            <div class="modal-footer">
+                <a href="{{url_for(table_name~'.populate_constituents', item_id=item.id, method='automated')}}" class="btn btn-primary">Confirm</a>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Set GCDP vairant modal-->
+<div class="modal" tabindex="-1" role="dialog" id="gcdp-variant">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select GCDP Variant</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" enctype="multipart/form-data" id="gcdp_form">
+                    {{kwargs['gcdp_form'].hidden_tag()}}
+                    <b>{{kwargs['gcdp_form'].gcdp_assay_id.label}}</b>
+                    {{kwargs['gcdp_form'].gcdp_assay_id(class='form-control')}}
+                    <div class="modal-footer">
+                        {{kwargs['gcdp_form'].submit_gcdp(class='btn btn-primary')}}
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Delete batch result modal-->
+<div class="modal" tabindex="-1" role="dialog" id="delete-batch-results">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirm batch result deletion</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete all results for <b>{{item.batch_id}}</b>?</p>
+        {% if kwargs['packets']|length > 0 %}
+            <p>
+                The following cases are in this batch and have had packets prepared:
+                <ul>
+                    {% for case_num in kwargs['packets'] %}
+                        <li>{{case_num}}</li>
+                    {% endfor %}
+                </ul>
+            </p>
+        {% endif %}
+      </div>
+          <div class="modal-footer">
+             <a class="btn btn-danger" href="{{url_for(table_name~'.delete_results', item_id=item.id)}}">Confirm</a>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+    </div>
+  </div>
+</div>
+<!--Cancel batch modal-->
+<div class="modal" tabindex="-1" role="dialog" id="cancel-batch">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirm cancellation</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <p>By cancelling the batch you will put all <b>({{kwargs['tests'].count()}})</b> test(s) back into circulation.</p>
+          <p>Are you sure you want to cancel <b>{{item.batch_id}}</b>?</p>
+      </div>
+          <div class="modal-footer">
+            <a href="{{ url_for(table_name~'.cancel', item_id=item.id) }}" class="btn btn-primary">Confirm</a>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+    </div>
+  </div>
+</div>
+<!--Reinstate batch modal-->
+<div class="modal" tabindex="-1" role="dialog" id="reinstate-batch">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirm reinstatement</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" style="text-align: center">
+          <p>Are you sure you want to reinstate <b>{{item.batch_id}}</b>?</p>
+          <p>Tests automatically created when the batch was cancelled will remain<br>and <b>need</b> to be cancelled manually if you wish to cancel them.</p>
+      </div>
+          <div class="modal-footer">
+            <a href="{{ url_for(table_name~'.reinstate', item_id=item.id) }}" class="btn btn-primary">Confirm</a>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+    </div>
+  </div>
+</div>
+<!--Duplicate tests modal-->
+<!--<div class="modal" tabindex="-1" role="dialog" id="duplicate-tests">-->
+<!--  <div class="modal-dialog" role="document">-->
+<!--    <div class="modal-content">-->
+<!--      <div class="modal-header">-->
+<!--        <h5 class="modal-title">Duplicate Test(s)</h5>-->
+<!--        <button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
+<!--          <span aria-hidden="true">&times;</span>-->
+<!--        </button>-->
+<!--      </div>-->
+<!--      <div class="modal-body">-->
+<!--          <p>Please confirm that you wish to duplicate all the tests in <b>{{item.batch_id}}</b></p>-->
+<!--          <div class="modal-footer">-->
+<!--            <a href="{{ url_for(table_name~'.duplicate_tests', item_id=item.id) }}" class="btn btn-primary">Confirm</a>-->
+<!--            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>-->
+<!--          </div>-->
+<!--       </div>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
+<!--Specimen check warning modal-->
+<div class="modal" tabindex="-1" role="dialog" id="check_specimens">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Source Check</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <p style="text-align:center">Please confirm that you are starting the source check <br> and you are taking custody of the specimen requiring check</p>
+          <div class="modal-footer">
+            <a href="{{ url_for('batches.check', item_id=item.id) }}" class="btn btn-primary">Confirm</a>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+       </div>
+    </div>
+  </div>
+</div>
+<!--Set EA modal-->
+<div class="modal" tabindex="-1" role="dialog" id="extracting_analyst">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Select EA</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+           <form method="POST" enctype="multipart/form-data" id="ea_form">
+                {{kwargs['ea_form'].hidden_tag()}}
+                {{kwargs['ea_form'].extracted_by_id.label(style='margin-right: 10%')}}
+                {{kwargs['ea_form'].extracted_by_id(class='form-control')}}
+                  <div class="modal-footer" style="justify-content: center">
+                    {{kwargs['ea_form'].submit(class='btn btn-primary')}}
+                    <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#extracting_analyst">Cancel</button>
+                  </div>
+           </form>
+       </div>
+    </div>
+  </div>
+</div>
+<!--Set PA modal-->
+<div class="modal" tabindex="-1" role="dialog" id="processing_analyst">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Start Processing</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+           <form method="POST" enctype="multipart/form-data" id="pa_form">
+                {{kwargs['pa_form'].hidden_tag()}}
+                {{kwargs['pa_form'].processed_by_id.label}}
+                {{kwargs['pa_form'].processed_by_id(class='form-control')}}
+                  <div class="modal-footer" style="justify-content: center">
+                    {{kwargs['pa_form'].submit_pa(class='btn btn-primary')}}
+                    <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#processing_analyst">Cancel</button>
+                  </div>
+           </form>
+       </div>
+    </div>
+  </div>
+</div>
+<!--Set BR modal-->
+<div class="modal" tabindex="-1" role="dialog" id="batch_reviewer">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Select BR</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+           <form method="POST" enctype="multipart/form-data" id="br_form">
+                {{kwargs['br_form'].hidden_tag()}}
+                {{kwargs['br_form'].reviewed_by_id.label(style='margin-right: 10%')}}
+                {{kwargs['br_form'].reviewed_by_id(class='form-control')}}
+                  <div class="modal-footer" style="justify-content: center">
+                    {{kwargs['br_form'].submit_br(class='btn btn-primary')}}
+                    <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#batch_reviewer">Cancel</button>
+                  </div>
+           </form>
+       </div>
+    </div>
+  </div>
+</div>
+<!--Set instrument modal-->
+<div class="modal" tabindex="-1" role="dialog" id="set_instrument">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Select Instrument</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+           <form method="POST" enctype="multipart/form-data" id="inst_form">
+                {{kwargs['inst_form'].hidden_tag()}}
+                {{kwargs['inst_form'].instrument_id.label(style='margin-right: 10%')}}
+                {{kwargs['inst_form'].instrument_id(class='form-control')}}
+                  <div class="modal-footer" style="justify-content: center">
+                    {{kwargs['inst_form'].inst_submit(class='btn btn-primary')}}
+                    <button type="button" form="inst_form" class="btn btn-secondary" data-toggle="modal" data-target="#set_instrument">Cancel</button>
+                  </div>
+           </form>
+       </div>
+    </div>
+  </div>
+</div>
+<!--Set batch template modal-->
+<div class="modal" tabindex="-1" role="dialog" id="batch_template">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Select Batch Template</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+           <form method="POST" enctype="multipart/form-data" id="batch_form">
+                {{kwargs['batch_form'].hidden_tag()}}
+                {{kwargs['batch_form'].batch_template_id.label(style='margin-right: 10%')}}
+                {{kwargs['batch_form'].batch_template_id(class='form-control')}}
+                  <div class="modal-footer" style="justify-content: center">
+                    {{kwargs['batch_form'].submit(class='btn btn-primary')}}
+                    <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#batch_template">Cancel</button>
+                  </div>
+           </form>
+       </div>
+    </div>
+  </div>
+</div>
+<!--Create sequence modal-->
+<div class="modal" tabindex="-1" role="dialog" id="create_sequence">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Create or import Sequence</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="text-align:center">Would you like to create a new sequence or import a sequence?</p>
+      </div>
+      <div class="modal-footer">
+        {% if 'SAMQ' not in item.assay.assay_name %}
+          <div class="col-4">
+              <form method="POST" enctype="multipart/form-data" id="seq_form">
+                {{kwargs['seq_form'].hidden_tag()}}
+                {{kwargs['seq_form'].submit_seq(class='btn btn-primary', value='Initialize Constituents')}}
+              </form>
+          </div>
+        {% endif %}
+          <div class="col-4">
+            <a href="{{url_for('batches.import_sequence', item_id=item.id)}}" class="btn btn-primary">Import</a>
+          </div>
+          <div class="col-3">
+            <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#create_sequence">Cancel</button>
+          </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--Batch constituent warning modal-->
+<div class="modal" tabindex="-1" role="dialog" id="warning">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Constituent Warning</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <p align="center">One or more of the selected constituents are either<br>not approved for use or expired</p>
+      </div>
+        <div class="modal-footer" style="justify-content: center">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Ok</button>
+        </div>
+    </div>
+  </div>
+</div>
+<!--Cancel Test modal-->
+<div class="modal" tabindex="-1" role="dialog" id="cancel_test">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cancel Test</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <p align="left">Confirm you want to cancel test <span id="modal_item_id"></span></p>
+      </div>
+        <form method="POST" id="cancel_form" action="{{url_for('tests.cancel')}}" enctype="multipart/form-data">
+            {{kwargs['cancel_form'].hidden_tag()}}
+            {{kwargs['cancel_form'].test_status}}
+            {{kwargs['cancel_form'].test_id}}
+            <div class="modal-body">
+                {{kwargs['cancel_form'].test_comment.label}}
+                {{kwargs['cancel_form'].test_comment(class='form-control')}}
+            </div>
+            <div class="modal-footer" style="justify-content: center">
+                {{kwargs['cancel_form'].submit_cancel(class='btn btn-primary')}}
+            </div>
+        </form>
+    </div>
+  </div>
+</div>
+<!--Reinstate test modal-->
+<div class="modal" tabindex="-1" role="dialog" id="reinstate_test">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Reinstate Test</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <p align="left">Confirm you want to reinstate test <span id="reinstate_item_id"></span></p>
+      </div>
+        <form method="POST" id="reinstate_form" action="{{url_for('tests.reinstate')}}" enctype="multipart/form-data">
+            {{kwargs['reinstate_form'].hidden_tag()}}
+            {{kwargs['reinstate_form'].test_status}}
+            {{kwargs['reinstate_form'].test_id}}
+            {{kwargs['reinstate_form'].test_comment(class='form-control')}}
+            <div class="modal-footer" style="justify-content: center">
+                {{kwargs['reinstate_form'].submit_reinstate(class='btn btn-primary')}}
+            </div>
+        </form>
+    </div>
+  </div>
+</div>
+<!--Manual batch constituent modal-->
+<div class="modal" tabindex="-1" role="dialog" id="manual_constituent">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add constituent</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" style="text-align: center">
+          <p>Select the batch constituent you would like to add</p>
+          <form method="POST" id="manual_constituent_form">
+            {{kwargs['manual_constituent'].hidden_tag()}}
+            {{kwargs['manual_constituent'].batch_id(hidden=True)}}
+            {{kwargs['manual_constituent'].constituent_type(class='form-control')}}
+            <div class="modal-footer" style="justify-content: center">
+                {{kwargs['manual_constituent'].const_submit(class='btn btn-primary')}}
+            </div>
+          </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!--Checks will be cleared warning modal-->
+<div class="modal" id="confirmModal" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Checks Will Be Cleared</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <p>The relevant checks will be cleared and you will be redirected to the relevant check form</p>
+                <p>Are you sure you would like to continue?</p>
+            </div>
+            <div class="modal-footer d-flex justify-content-center">
+                <button class="btn btn-primary" id="confirmButton" type="button">Yes</button>
+                <button class="btn btn-secondary" data-dismiss="modal" type="button">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Confirm extraction finish time update modal-->
+<div class="modal" id="confirm_extraction" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Overwrite Extraction Finish Date/Time</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <p>The extraction finish date/time will be overwritten</p>
+            </div>
+            <div class="modal-footer d-flex justify-content-center">
+                <a href="{{ url_for('batches.set_datetime', item_id=item.id, to_set='extract', iteration=kwargs['iterations']['ea'])}}" class="btn btn-primary">Confirm</a>
+                <button class="btn btn-secondary" data-dismiss="modal" type="button">Exit</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Confirm processing finish time update modal-->
+<div class="modal" id="confirm_processing" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Overwrite Processing Finish Date/Time</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <p>The processing finish date/time will be overwritten</p>
+            </div>
+            <div class="modal-footer d-flex justify-content-center">
+                <a href="{{ url_for('batches.set_datetime', item_id=item.id, to_set='process', iteration=kwargs['iterations']['pa'])}}" class="btn btn-primary">Confirm</a>
+                <button class="btn btn-secondary" data-dismiss="modal" type="button">Exit</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Confirm review finish time update modal-->
+<div class="modal" id="confirm_review" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Overwrite Review Finish Date/Time</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <p>The review finish date/time will be overwritten</p>
+            </div>
+            <div class="modal-footer d-flex justify-content-center">
+                <a href="{{ url_for('batches.set_datetime', item_id=item.id, to_set='review', iteration=kwargs['iterations']['br'])}}" class="btn btn-primary">Confirm</a>
+                <button class="btn btn-secondary" data-dismiss="modal" type="button">Exit</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Specimen Warning Modal-->
+<div class="modal" id="specimen_warning" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Action Required</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                {% if 'LCCI' in item.assay.assay_name %}
+                    {% if kwargs['not_extracted'] > 0 and item.tandem_id is not none %}
+                        <p>Items not complete for <a href="{{ url_for('batches.view', item_id=item.tandem_id) }}">Tandem Batch</a></p>
+                    {% endif %}
+                {% elif kwargs['not_extracted'] == 1 %}
+                    <p>There is {{kwargs['not_extracted']}} specimen missing required check(s)</p>
+                {% elif kwargs['not_extracted'] > 1 %}
+                    <p>There are {{kwargs['not_extracted']}} specimens missing required check(s)</p>
+                {% endif %}
+                {% if 'LCCI' not in item.assay.assay_name %}
+                    {% if kwargs['need_collect_len'] == 1 %}
+                        <p>There is {{kwargs['need_collect_len']}} specimen that has not yet been collected</p>
+                    {% elif kwargs['need_collect_len'] > 1 %}
+                        <p>There are {{kwargs['need_collect_len']}} specimens that have not yet been collected</p>
+                    {% endif %}
+                    {% if kwargs['need_return_len'] == 1 %}
+                        <p>There is {{kwargs['need_return_len']}} specimen in your custody</p>
+                    {% elif kwargs['need_return_len'] > 1 %}
+                        <p>There are {{kwargs['need_return_len']}} specimens in your custody</p>
+                    {% endif %}
+                {% endif %}
+            </div>
+            <div class="modal-footer d-flex justify-content-center">
+                <button class="btn btn-secondary" data-dismiss="modal" type="button">Ok</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Confirm extraction admin complete modal-->
+<div class="modal" id="admin_extraction" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Admin Complete</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                {% if 'LCCI' in item.assay.assay_name %}
+                    {% if kwargs['not_extracted'] == 1 %}
+                        <p>Items not complete for tandem batch</p>
+                    {% endif %}
+                {% elif kwargs['not_extracted'] == 1 %}
+                    <p>There is <b>{{kwargs['not_extracted']}}</b> specimen/test missing required check(s)</p>
+                {% elif kwargs['not_extracted'] > 1 %}
+                    <p>There are <b>{{kwargs['not_extracted']}}</b> specimens/tests missing required check(s)</p>
+                {% endif %}
+                {% if kwargs['need_collect_len'] == 1 %}
+                    <p>There is <b>{{kwargs['need_collect_len']}}</b> specimen that has not yet been collected</p>
+                {% elif kwargs['need_collect_len'] > 1 %}
+                    <p>There are <b>{{kwargs['need_collect_len']}}</b> specimens that have not yet been collected</p>
+                {% endif %}
+                {% if kwargs['need_return_len'] == 1 %}
+                    <p>There is <b>{{kwargs['need_return_len']}}</b> specimen in EA's custody</p>
+                {% elif kwargs['need_return_len'] > 1 %}
+                    <p>There are <b>{{kwargs['need_return_len']}}</b> specimens in EA's custody</p>
+                {% endif %}
+                <p>Please confirm you would like to complete extraction for this batch</p>
+            </div>
+            <div class="modal-footer d-flex justify-content-center">
+                <a href="{{ url_for('batches.set_datetime', item_id=item.id, to_set='extract', iteration=kwargs['iterations']['ea'])}}" class="btn btn-primary">Confirm</a>
+                <button class="btn btn-secondary" data-dismiss="modal" type="button">Exit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Confirm processing admin complete modal-->
+<div class="modal" id="admin_processing" role="dialog" tabindex="-1">
+    <div cclass="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Admin Complete</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <p>Please confirm PA is complete.</p>
+            </div>
+            <div class="modal-footer d-flex justify-content-center">
+                <a href="{{ url_for('batches.set_datetime', item_id=item.id, to_set='process', iteration=kwargs['iterations']['pa'])}}" class="btn btn-primary">Confirm</a>
+                <button class="btn btn-secondary" data-dismiss="modal" type="button">Exit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Confirm review admin complete modal-->
+<div class="modal" id="admin_review" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Admin Complete</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <p>Please confirm BR is complete. <br>For Quantitative batches, ensure LabLink PDF has been uploaded to Batch Records.</p>
+            </div>
+            <div class="modal-footer d-flex justify-content-center">
+                <a href="{{ url_for('batches.set_datetime', item_id=item.id, to_set='review', iteration=kwargs['iterations']['br'], admin=True)}}" class="btn btn-primary admin-complete-btn">Confirm</a>
+                <button class="btn btn-secondary" data-dismiss="modal" type="button">Exit</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Select SAMQ Constituents modal-->
+<div class="modal" id="samq_const" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Constituents</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post">
+                {{kwargs['samq_form'].hidden_tag()}}
+                <div class="modal-body" style="text-align: center">
+                    <p>Please select the constituents for each case</p>
+                    {% for field in kwargs['samq_form'] %}
+                        {% for test in kwargs['tests'] %}
+                            {% if test.id|string in field.name %}
+                                <div class="row">
+                                    {{test.test_name}}
+                                    {{field(class='selectpicker')}}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+                <div class="modal-footer d-flex justify-content-center">
+                    {{kwargs['samq_form'].samq_submit(class='btn btn-primary')}}
+                    <button class="btn btn-secondary" data-dismiss="modal" type="button">Exit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!--Loading module-->
+    <div id="loading-modal">
+        <div style="text-align:center;">
+            <div class="spinner"></div>
+            <p>Please wait, the system is processing...</p>
+        </div>
+    </div>
+
+<!--Confirm review admin complete modal-->
+<div class="modal" id="manual_check" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Manual Check</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <p>To confirm manual check, please enter the vial position.</p>
+                <input type="text" id="confirm-input">
+            </div>
+            <div class="modal-footer d-flex justify-content-center">
+                <button class="btn btn-primary" disabled id="disabled-confirm">Confirm</button>
+                <a href="{{url_for('batches.manual_check', item_id=item.id)}}" class="btn btn-primary" style="display: none" id="enabled-confirm">Confirm</a>
+                <button class="btn btn-secondary" data-dismiss="modal" type="button">Exit</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Add Pipettes modal-->
+<div class="modal" tabindex="-1" role="dialog" id="pipettes">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Pipettes</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form enctype="multipart/form-data" id="pip-form" method="POST">
+          {{ kwargs['pipette_form'].hidden_tag() }}
+          <div class="form-group">
+            {{ kwargs['pipette_form'].pipettes.label(class="form-label") }}
+            {{ kwargs['pipette_form'].pipettes(class="selectpicker", data_width="20vw", data_height="20vh", multiple=True) }}
+          </div>
+            <div id="selected-items" style="margin-top: 10px;"></div>
+          <div class="modal-footer" style="justify-content: center">
+            {{ kwargs['pipette_form'].pip_submit(class='btn btn-primary') }}
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Delete Pipettes Modal -->
+<div class="modal" tabindex="-1" role="dialog" id="delete-pipettes">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Delete Pipettes</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="delete-pip-form" method="POST">
+          {{ kwargs['delete_pipette_form'].hidden_tag() }}
+          <div class="form-group">
+            {{ kwargs['delete_pipette_form'].pipettes.label(class="form-label") }}
+            {{ kwargs['delete_pipette_form'].pipettes(class="selectpicker", data_width="20vw", data_height="20vh", multiple=True) }}
+          </div>
+          <div id="selected-items" style="margin-top: 10px;"></div>
+          <div class="modal-footer" style="justify-content: center">
+            {{kwargs['delete_pipette_form'].pip_submit(class='btn btn-danger') }}
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Instrument Check Modal -->
+<div class="modal" tabindex="-1" role="dialog" id="instrument-check">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Instrument Check</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form method="POST">
+          {{ kwargs['inst_check_form'].hidden_tag() }}
+          <div class="form-group">
+            {{kwargs['inst_check_form'].instrument_check.label(class="form-label")}}
+            {{kwargs['inst_check_form'].instrument_check(class="selectpicker", data_width="20vw", data_height="20vh")}}
+          </div>
+          <div class="modal-footer" style="justify-content: center">
+            {{kwargs['inst_check_form'].inst_check_submit(class='btn btn-primary') }}
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Extraction Check Modal -->
+<div class="modal" tabindex="-1" role="dialog" id="extraction-check">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Extraction Check</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form method="POST">
+          {{kwargs['ext_check_form'].hidden_tag()}}
+          <div class="form-group">
+            {{kwargs['ext_check_form'].extraction_check.label(class="form-label")}}
+            {{kwargs['ext_check_form'].extraction_check(class="selectpicker", data_width="20vw", data_height="20vh")}}
+          </div>
+          <div class="modal-footer" style="justify-content: center">
+            {{kwargs['ext_check_form'].ext_check_submit(class='btn btn-primary') }}
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Transcribe Check Modal -->
+<div class="modal" tabindex="-1" role="dialog" id="transcribe-check">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Transcribe Check</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id='transcribe_form' method="POST">
+          {{kwargs['transcribe_form'].hidden_tag()}}
+            <p>Please confirm that the transcription of data from CLIO to REF Lab Requisition (e.g., NMS Client Portal) has been checked?</p>
+          <div class="modal-footer" style="justify-content: center">
+            {{kwargs['transcribe_form'].transcribe_check_submit(class='btn btn-primary') }}
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- PA Check Modal -->
+<div class="modal" tabindex="-1" role="dialog" id="pa-check">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">PA Check Change</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form method="POST">
+          {{kwargs['nt_form'].hidden_tag()}}
+          <div class="form-group">
+            {{kwargs['nt_form'].test_id.label(class="form-label")}}
+            {{kwargs['nt_form'].test_id(class='form-control')}}
+            {{kwargs['nt_form'].qr_id.label(class='form-label')}}
+            {{kwargs['nt_form'].qr_id(class='form-control')}}
+          </div>
+          <div class="modal-footer" style="justify-content: center">
+            {{kwargs['nt_form'].nt_submit(class='btn btn-primary') }}
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Confirm clear -->
+<div class="modal" tabindex="-1" role="dialog" id="confirm-clear">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Clear PA Check</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Please confirm you would like to clear the PA check</p>
+        <div class="modal-footer" style="justify-content: center">
+            <a href="" class="btn btn-primary">Confirm</a>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Set Finalized for single REF result (copied from PA Check Modal) -->
+<div class="modal" tabindex="-1" role="dialog" id="ref-result-fin">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Finalize Single REF Result</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form method="POST">
+          {{kwargs['fin_form'].hidden_tag()}}
+          <div class="form-group">
+            {{kwargs['fin_form'].test_id.label(class="form-label")}}
+            {{kwargs['fin_form'].test_id(class='form-control')}}
+          </div>
+          <div class="modal-footer" style="justify-content: center">
+            {{kwargs['fin_form'].fin_submit(class='btn btn-primary') }}
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Switch all checks modal -->
+<div class="modal" tabindex="-1" role="dialog" id="switch_all">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Switch all check inclusion</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <p>Select check inclusion for all batch constituents</p>
+          <div class="modal-footer" style="justify-content: center">
+            <a href="{{url_for('batches.change_all', item_id=item.id, value='t')}}" class="btn btn-primary">True</a>
+            <a href="{{url_for('batches.change_all', item_id=item.id, value='f')}}" class="btn btn-primary">False</a>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Withdraw all results modal -->
+<div class="modal" id="update_status" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Withdraw All Batch Results</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form enctype="multipart/form-data" id="status_form" method="POST">
+                    {{ kwargs.status_form.hidden_tag() }}
+
+                    <div class="form-group">
+                        {{ kwargs.status_form.result_status.label(style='margin-right: 10%') }}
+                        {{ kwargs.status_form.result_status(class='form-control', id='result_status') }}
+                    </div>
+                    <div class="form-group">
+                        {{ kwargs.status_form.result_status_update_reason.label(style='margin-right: 10%') }}
+                        {{ kwargs.status_form.result_status_update_reason(class='form-control', id='result_status_update_reason') }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Delete batch file confirmation -->
+<div class="modal" id="confirm-delete-file" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p style="text-align: center;">This batch has been finalized.</p>
+                {% if kwargs['packets']|length > 0 %}
+                    <p style="text-align: center">
+                        The following cases are in this batch and have had packets prepared:
+                        <ul>
+                            {% for case_num in kwargs['packets'] %}
+                                <li>{{case_num}}</li>
+                            {% endfor %}
+                        </ul> 
+                    </p>
+                {% endif %}
+                <p style="text-align: center;">Confirm you would like to request batch file deletion.</p>
+            </div>
+            <div class="modal-footer" style="justify-content: center;">
+                <a href="#" class="btn btn-primary confirm-delete-record">Confirm</a>
+                <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal" id="missing-files-modal" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Missing Required Files</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body" style="text-align: center;">
+                <p>The following required files are missing:</p>
+
+                <ul id="missing-files-list" style="text-align:left; display:inline-block; margin-top:10px;"></ul>
+            </div>
+
+            <div class="modal-footer" style="justify-content: center;">
+                <button class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+
+
+<script>
+$(document).on("click", ".admin-complete-btn", function () {
+    let id = $(this).data("id");
+    let process = $(this).data("process");
+    document.getElementById('loading-modal').style.display = 'flex';
+
+    $.ajax({
+        url: `/batches/${id}/admin_complete/?process=${process}`,
+        type: "POST",
+        success: function() {
+            window.location.href = `/batches/${id}`;
+        },
+        error: function(xhr) {
+            document.getElementById('loading-modal').style.display = 'none';
+
+            if (xhr.responseJSON && xhr.responseJSON.missing) {
+                // Build list
+                let html = "";
+                xhr.responseJSON.missing.forEach(item => {
+                    html += `<li>${item}</li>`;
+                });
+
+                $('#admin_review').modal('hide');
+
+                $("#missing-files-list").html(html);
+
+                // Show modal
+                $("#missing-files-modal").modal("show");
+
+            }
+        }
+    });
+});
+</script>
+
+
+
+
+<script>
+  const manualCheckBase = "{{ url_for('batches.manual_check', item_id=item.id) }}";
+</script>
+<script>
+    $('#manual_check').on('shown.bs.modal', function () {
+        $('#confirm-input').trigger('focus');
+    });
+
+</script>
+
+<script>
+  $(function() {
+    // Cache the anchor and base URL
+    const $anchorEnable = $('#enabled-confirm');
+    const baseHref      = "{{ url_for('batches.manual_check', item_id=item.id) }}";
+
+    $('#manual_check').on('shown.bs.modal', function(event) {
+      const trigger     = event.relatedTarget;
+      // read both the data-value and the raw aria-valuetext from the trigger
+      const dataValue   = trigger ? $(trigger).data('value') : '';
+      const ariaValue   = trigger ? $(trigger).attr('aria-valuetext') : '';
+
+      console.log('ARIAVALUE', ariaValue);
+      console.log('VALUE', dataValue)
+
+      // split ariaValue on the comma into [check, test]
+      const parts   = String(ariaValue).split(/\s*,\s*/);
+      const checkVal = parts[0] ? parts[0].trim() : '';
+      const testVal  = parts[1] ? parts[1].trim() : '';
+
+      // keep your original conditional target
+      const target1 = String(dataValue).trim();
+
+      // cache input + disabled button
+      const $input       = $('#confirm-input');
+      const $btnDisabled = $('#disabled-confirm');
+
+      // reset input & buttons, wire up validation (unchanged!)
+      $input
+        .val('')                             // clear
+        .attr('aria-valuetext', checkVal)    // now only the "check" part
+        .off('input.manualCheck')
+        .on('input.manualCheck', function() {
+          const val = $(this).val().trim();
+          if (val === target1) {
+            $btnDisabled.hide();
+            $anchorEnable.show();
+          } else {
+            $btnDisabled.show();
+            $anchorEnable.hide();
+          }
+        });
+
+      $btnDisabled.show();
+      $anchorEnable.hide();
+
+      // rebuild href to include both check= and test=
+      const sep     = baseHref.includes('?') ? '&' : '?';
+      const fullUrl = baseHref
+        + sep + 'check=' + encodeURIComponent(checkVal)
+        + '&test='  + encodeURIComponent(testVal);
+      $anchorEnable.attr('href', ariaValue);
+    });
+  });
+</script>
+
+<script>
+  $(document).ready(function() {
+    $('.selectpicker').selectpicker();
+  });
+</script>
+<script>
+  $(document).ready(function() {
+    // Initialize the selectpicker
+    $('.selectpicker').selectpicker();
+
+    // Event listener for changes in the selectpicker
+    $('.selectpicker').on('changed.bs.select', function () {
+      // Get the selected options
+      var selectedOptions = $(this).val();
+
+      // Display the selected items in the #selected-items container
+      if (selectedOptions && selectedOptions.length > 0) {
+        var displayText = selectedOptions.map(function(option) {
+          return '<span class="badge badge-primary m-1">' + option + '</span>';
+        }).join('');
+        $('#selected-items').html('<strong>Selected Pipettes:</strong> ' + displayText);
+      } else {
+        $('#selected-items').html(''); // Clear the container if no items are selected
+      }
+    });
+  });
+</script>
+<script>
+$(document).ready( function () {
+    $('#batch_constituents_table').DataTable({
+        pageLength: -1,
+        scrollX: true,
+        scrollY: '50vh',
+        scrollCollapse: true,
+        lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+        order: [],
+    });
+});
+</script>
+
+<script>
+$(document).ready( function () {
+    $('#tests-table').DataTable({
+        pageLength: -1,
+        scrollX: true,
+        scrollY: '50vh',
+        scrollCollapse: true,
+        lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+        order: [],
+    });
+});
+</script>
+
+<script>
+$(document).ready( function () {
+    $('#results-table').DataTable({
+        pageLength: -1,
+        scrollX: true,
+        scrollY: '50vh',
+        scrollCollapse: true,
+        lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+        order: [],
+    });
+});
+</script>
+
+
+<script>
+$(document).ready( function () {
+    $('#batch-files-table').DataTable({
+        pageLength: -1,
+        scrollX: true,
+        scrollY: '50vh',
+        scrollCollapse: true,
+        lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+        order: [],
+    });
+});
+</script>
+
+<script>
+$(document).ready( function () {
+    $('#batch-comments-table').DataTable({
+        pageLength: -1,
+        scrollX: true,
+        scrollY: '50vh',
+        scrollCollapse: true,
+        lengthMenu: [[10, 50, 100, -1], [10, 50, 100, 'All']],
+        order: [],
+    });
+});
+</script>
+
+<!--<script>-->
+<!--    $(document).ready(function() {-->
+<!--        $('#constituent_scan').on('input', function() {-->
+<!--            // Check if the input is not empty-->
+<!--            if ($(this).val().trim() !== '') {-->
+<!--                var formAction = $('#const_form').attr('action');-->
+<!--                // Use AJAX to submit the form asynchronously-->
+<!--                $.ajax({-->
+<!--                    type: 'POST',-->
+<!--                    url: formAction,  // Replace with the actual URL to submit the form-->
+<!--                    data: $('#const_form').serialize(),  // Serialize form data-->
+<!--                    success: function(response) {-->
+<!--                        // Handle the response from the server-->
+<!--                        // For example, display a success message-->
+<!--                        $('#error-message').text('');-->
+<!--                        if (response.redirect) {-->
+<!--                            // Redirect the browser to the specified URL-->
+<!--                            window.location.href = response.redirect;-->
+<!--                        } else {-->
+<!--                            // Handle other responses, if needed-->
+<!--                            // For example, display a success message-->
+<!--                            $('#error-message').text('Error: MUST SCAN A STANDARD OR SOLUTION');-->
+<!--                        }-->
+<!--                    },-->
+<!--                    error: function(xhr, status, error) {-->
+<!--                        // Handle errors from the server-->
+<!--                        // For example, display the error message-->
+<!--                        $('#error-message').text('Error: MUST SCAN A STANDARD OR SOLUTION');-->
+<!--                        console.error(xhr.responseText);-->
+<!--                        console.error(status);-->
+<!--                        console.error(error);-->
+<!--                    }-->
+<!--                });-->
+<!--            } else {-->
+<!--                // Clear error message if input is empty-->
+<!--                $('#error-message').text('');-->
+<!--            }-->
+<!--        });-->
+<!--    });-->
+<!--</script>-->
+
+<script>
+$(document).ready(function() {
+    var lotRows = {}; // Dictionary to store lot rows
+
+    // Iterate over each row in the table=
+    $('#batch_constituents_table tbody tr').each(function(index, row) {
+        var lot = $(row).find('td:nth-child(3)').text().trim(); // Get the lot value from the current row
+
+        if (lotRows[lot]) {
+            lotRows[lot].push(row); // Add the row to the existing array for this lot
+        } else {
+            lotRows[lot] = [row]; // Create a new array for this lot and add the row
+        }
+    });
+
+    // Highlight rows with exactly matching lots
+    Object.keys(lotRows).forEach(function(lot) {
+        var rows = lotRows[lot];
+        if (rows.length > 1) { // If there are multiple rows with the same lot
+            var allLotsMatch = rows.every(function(row) {
+                return $(row).find('td:nth-child(3)').text().trim() === lot; // Check if lot values are exactly the same
+            });
+            if (allLotsMatch) {
+                rows.forEach(function(row) {
+                    $(row).addClass('highlight-row'); // Add the class to highlight the row
+                });
+            }
+        }
+    });
+});
+
+</script>
+
+
+<script>
+$(document).ready(function() {
+    var targetColor = "rgb(248, 215, 218)";
+    var colorFound = false;
+
+    $('#batch_constituents_table tbody tr').each(function() {
+        // Flag to determine if any cell in this row has the target color
+        var rowHasColor = false;
+
+        $(this).find('td').each(function() {
+            var cellBgColor = $(this).css('background-color');
+            if (cellBgColor === targetColor) {
+                rowHasColor = true;
+                return false; // Break the cell loop
+            }
+        });
+
+        // If any cell in the row had the target color
+        if (rowHasColor) {
+            colorFound = true;
+            return false; // Break the row loop
+        }
+    });
+
+    if (colorFound) {
+        $('#warning').modal('show');
+    }
+});
+
+</script>
+
+<script>
+    $('#cancel_test').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget); // Button that triggered the modal
+        var itemId = button.data('item-id'); // Extract info from data-* attributes
+        var itemName = button.data('item-name');
+
+        var modal = $(this);
+        modal.find('#modal_item_id').text(itemId);
+        modal.find('#cancel_form input[name="test_id"]').val(itemId);
+
+    });
+</script>
+
+<script>
+    $('#reinstate_test').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget); // Button that triggered the modal
+        var itemId = button.data('item-id'); // Extract info from data-* attributes
+        var itemName = button.data('item-name');
+
+        var modal = $(this);
+        modal.find('#reinstate_item_id').text(itemId);
+        modal.find('#reinstate_form input[name="test_id"]').val(itemId);
+    });
+</script>
+<script>
+    $(document).ready(function(){
+    // Function to copy table body values when the anchor tag is clicked
+    $("#copyButton").click(function(event) {
+        // Prevent the default action of the anchor tag
+        event.preventDefault();
+
+        var tableData = "";
+
+        // Loop through the table body rows and cells
+        $("#samqData tbody tr").each(function() {
+            $(this).find('td').each(function() {
+                tableData += $(this).text() + "\t"; // Tab-separated values
+            });
+            tableData += "\n"; // Newline after each row
+        });
+
+        // Create a temporary element to hold the data to be copied
+        var $tempElement = $("<textarea>");
+        $("body").append($tempElement);
+        $tempElement.val(tableData).select();
+
+        // Copy the content to the clipboard
+        document.execCommand("copy");
+
+        // Remove the temporary element
+        $tempElement.remove();
+
+        alert("Table body data copied to clipboard!");
+    });
+});
+</script>
+
+<script>
+
+    $('#case-select').on('change', function() {
+        // Clear the results table
+        var table = $('#results-table').DataTable()
+        table.columns().search("").draw()
+        // Get the id of the test name column which will be searched
+        var colIdx = table.column($('#test-name')).index()
+
+        console.log('COLIDX', colIdx)
+
+        // Get the case number from the select field
+        var case_number = $(this).val()
+        // If the user did not 'All', search the test name column for the case number, else clear the search
+        if (case_number != '0') {
+            table.column(colIdx).search(case_number, true, false).draw()
+        } else {
+            table.columns().search("").draw()
+        }
+
+    })
+</script>
+
+<script>
+    $('#next-case').on('click', function() {
+
+        // Get the case number from the next option in the select field
+        var nextOption = $('#case-select option:selected').next()
+        var case_number = nextOption.val()
+        // Set the select field value as the next case
+        $('#case-select').val(case_number)
+        $('#case-select').selectpicker('refresh')
+
+        // Clear any search terms from the results table
+        var table = $('#results-table').DataTable()
+        table.columns().search("").draw()
+        // Search the test name for the case number
+        var colIdx = table.column($('#test-name')).index()
+        table.column(colIdx).search(case_number, true, false).draw()
+    })
+</script>
+
+<script>
+    $('#previous-case').on('click', function() {
+
+        // Get the previous number from the next option in the select field
+        var prevOption = $('#case-select option:selected').prev()
+        var case_number = prevOption.val()
+        // Set the select field value as the next case
+        $('#case-select').val(case_number)
+        $('#case-select').selectpicker('refresh')
+
+        // Clear any search terms from the results table
+        var table = $('#results-table').DataTable()
+        table.columns().search("").draw()
+        // Search the test name for the case number
+        var colIdx = table.column($('.test-name')).index()
+        table.column(colIdx).search(case_number, true, false).draw()
+
+    })
+</script>
+
+<script>
+
+    // Show the loading modal when the page starts loading
+    window.addEventListener('beforeunload', function () {
+        document.getElementById('loading-modal').style.display = 'flex';
+    });
+
+    // Hide the loading modal once the page has fully loaded
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('loading-modal').style.display = 'none';
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('.trigger-modal').on('click', function () {
+            var itemId = $(this).data('value'); // Get the item ID from the clicked anchor
+            var targetModal = $(this).data('target'); // Get which modal is being triggered
+
+            console.log("Modal Triggered:", targetModal, "with Item ID:", itemId); // Debugging
+
+            // If it's the "confirm-clear" modal, update the href dynamically
+            if (targetModal === "#confirm-clear") {
+                var newUrl = `/batches/clear_pa?test_id=` + itemId;  // Adjust based on Flask route
+                $('#confirm-clear').find('.btn-primary').attr('href', newUrl);
+                console.log("Updated Confirm Button URL:", newUrl); // Debugging
+            }
+
+            // Otherwise, continue normal modal behavior (previous logic)
+            else if (targetModal === "#pa-check") {
+                $('#pa-check').find('[name="test_id"]').val(itemId);
+            }
+
+            // Add additional modal conditions here if needed
+            // ref-result-fin marks the test_status associated with the test of this result as "Finalized"
+            else if (targetModal === "#ref-result-fin") {
+                $('#ref-result-fin').find('[name="test_id"]').val(itemId);
+            }
+        });
+    });
+</script>
+<script>
+  $('#confirm-delete-file').on('show.bs.modal', function (e) {
+    const trigger = $(e.relatedTarget); // the clicked trash icon
+    const href    = trigger.data('href');
+    const fname   = trigger.data('file-name');
+
+    // Set the confirm button to the correct record delete URL
+    $(this).find('.confirm-delete-record').attr('href', href);
+
+    // Optional: show which file is being deleted
+    $(this).find('.file-name').text(fname || '');
+  });
+</script>
+
+<script src = "../../static/js/label_printing.js" type="text/javascript" charset="UTF-8"> </script>
+{% endblock %}

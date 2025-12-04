@@ -1,0 +1,45 @@
+{% extends "form_template.html" %}
+{% block form %}
+
+    <div class="form-group">
+        {{form.batch_template_id.label}}
+        {{form.batch_template_id}}
+    </div>
+    <div class="form-group">
+        {{form.sample_name.label}}
+        {{form.sample_name}}
+    </div>
+    <div class="form-group">
+        {{form.sample_type.label}}
+        {{form.sample_type}}
+    </div>
+    <div class="form-group">
+        {{form.acq_method.label}}
+        {{form.acq_method}}
+    </div>
+    <div class="form-group">
+        {{form.vial_position.label}}
+        {{form.vial_position}}
+    </div>
+    <div class="form-group">
+        {{form.dilution.label}}
+        {{form.dilution}}
+    </div>
+    <div class="form-group">
+        {{form.data_file.label}}
+        {{form.data_file}}
+    </div>
+    <div class="form-group">
+        {{form.comments.label}}
+        {{form.comments}}
+    </div>
+
+
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends "form_template.html" %}
+
+<!-- ALERTS -->
+{% block alerts %}
+{% endblock %}
+
+<!-- HEADER -->
+{% block header %}
+{% endblock %}
+
+{% block form %}
+<div class="form-group">
+    {{form.name.label}}
+    {{form.name}}
+</div>
+<div class="form-group">
+    {{form.synonyms.label}}
+     <a href="#!" data-toggle="tooltip"
+        title="Separate synonyms using semicolon+space (; )"
+     >
+        <i class="fa-solid fa-circle-question" ></i>
+    </a>
+    {{form.synonyms}}
+</div>
+<div class="form-group">
+    {{form.code.label}}
+    <a href="#!" data-toggle="tooltip"
+       title="i.e., A01, B02, C63"
+    >
+        <i class="fa-solid fa-circle-question" ></i>
+    </a>
+    {{form.code}}
+</div>
+<div class="form-group">
+    {{form.drug_class_id.label}}
+    {{form.drug_class_id }}
+</div>
+<div class="form-group">
+    {{form.drug_monograph_id.label}}
+    {{form.drug_monograph_id }}
+</div>
+<div class="form-group">
+    {{form.inventory_add_date.label}}
+    {{form.inventory_add_date}}
+</div>
+<div class="form-group">
+    {{form.iupac.label}}
+
+    {{form.iupac}}
+    <div class="mb-0">
+        <a href="#" id="get-identifiers" style="display: inline-block">Generate identifiers</a>
+        <a href="#!" data-toggle="tooltip"
+           title="Use the OPSIN Parser to get the following for the input IUPAC:
+           <ul>
+               <li>CAS No. (multiple CAS No. can be returned as a comma-separate list)</li>
+               <li>Molecular Formula</li>
+               <li>Exact Mass</li>
+               <li>InChIKey</li>
+               <li>SMILES</li>
+           </ul>
+            ">
+            <i class="fa-solid fa-circle-question" ></i>
+        </a>
+        <div id="fetching-identifiers" style="display: inline-block" hidden>
+            Fetching
+            <div class="spinner-border spinner-border-sm" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+<div class="form-group">
+    {{form.cas_no.label}}
+    {{form.cas_no}}
+    <div style="font-size:0.9rem">
+        <p class="error" style="color: red"></p>
+    </div>
+</div>
+<div class="form-group">
+    {{form.formula.label}}
+    {{form.formula}}
+    <div style="font-size:0.9rem">
+        <p class="error" style="color: red"></p>
+    </div>
+</div>
+<div class="form-group">
+    {{form.mass.label}}
+    {{form.mass}}
+    <div style="font-size:0.9rem">
+        <p class="error" style="color: red"></p>
+    </div>
+</div>
+<div class="form-group">
+    {{form.inchikey.label}}
+    {{form.inchikey}}
+    <div style="font-size:0.9rem">
+        <p class="error" style="color: red"></p>
+    </div>
+</div>
+<div class="form-group">
+    {{form.smiles.label}}
+    {{form.smiles}}
+    <div style="font-size:0.9rem">
+        <p class="error" style="color: red"></p>
+    </div>
+</div>
+
+<div id="structure-div" hidden>
+    <hr>
+    <h5>Is this the correct structure based on the IUPAC name?</h5>
+    <div class="mb-2">
+        <p><b>Structure</b></p>
+        <img src="" id="structure">
+    </div>
+    <div>
+        <p><b>Aliases (<a id="pubchem-url" target="_blank">PubChem</a>)</b></p>
+        <p id="identifiers"></p>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/compounds.js"></script>
+{% endblock %}
+

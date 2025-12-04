@@ -1,0 +1,68 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+    <i class="fa-solid fa-user"></i>
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Status</th>
+    <th>Full Name</th>
+    <th>Initials</th>
+    <th>Email</th>
+    <th>Username</th>
+    <th>Job Class</th>
+    <th>Job Title</th>
+    <th>Background Check</th>
+    <th>Has Signature?</th>
+    <th>Personnel ID</th>
+    <th>Default Printer</th>
+    <th>Permissions</th>
+    <th>Last Login</th>
+    <th>Incorrect Logins</th>
+    <th>Last Incorrect Login</th>
+    <th>Personnel</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td class="user-status">{{item.status}}</td>
+    <td>
+        <a href="{{url_for(table_name~'.view', item_id=item.id)}}">{{item.full_name}}</a>
+    </td>
+    <td>{{item.initials}}</td>
+    <td>
+        <a href="mailto:{{item.email}}">{{item.email}}</a>
+    </td>
+    <td>{{item.username}}</td>
+    <td>{{item.job_class}}</td>
+    <td>{{item.job_title}}</td>
+    <td>{{item.background_check}}</td>
+    <td>{{item.has_signature}}</td>
+    <td>{{item.personnel_id}}</td>
+    <td>{{item.default_printer}}</td>
+    <td>{{item.permissions}}</td>
+    {% if item.last_login == None %}
+    <td></td>
+    {% else %}
+    <td>{{item.last_login.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+    {% endif %}
+    <td>{{item.incorrect_logins}}</td>
+    <td>
+        {% if item.last_incorrect_login%}
+            {{item.last_incorrect_login.strftime('%Y-%m-%d %H:%M:%S')}}
+        {% endif %}
+    </td>
+    <td>{{item.personnel_id}}</td>
+{% endblock %}
+
+{% block scripts %}
+<script src="../static/js/users.js"></script>
+{% endblock %}

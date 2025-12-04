@@ -1,0 +1,30 @@
+{% extends "form_template.html" %}
+{% block form %}
+    <div class="form-group">
+        {{form.batch_id.label}}
+        {{form.batch_id}}
+    </div>
+    <div class="form-group">
+        {{form.reference}}
+    </div>
+    <div class="form-group">
+        {{form.comment_reference.label}}
+        {{form.comment_reference(id="comment_reference")}}
+    </div>
+    <div class="form-group" style="display: none" id="comment_text">
+        {{form.comment_text.label}}
+        {{form.comment_text}}
+    </div>
+    <div class="form-group">
+        <label style="font-weight: bold;">{{form.report.label.text}}</label>
+        {{form.report(class='form-check')}}
+    </div>
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/batch_comments.js"></script>
+{% endblock %}
+

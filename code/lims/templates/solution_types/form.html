@@ -1,0 +1,31 @@
+{% extends "form_template.html" %}
+{% block form %}
+
+    <div class="form-group">
+        {{form.name.label}}
+        {{form.name}}
+    </div>
+
+    <div class="form-group">
+        {{form.constituents.label(class='form-group')}}
+        {{form.constituents(class='form-control '~status)}}
+    </div>
+
+    <div>
+        {{form.expected_fields.label}}
+        {{form.expected_fields(class='form-control')}}
+    </div>
+    <br>
+    <div>
+        {{form.requires_admin.label(style='font-weight: bold')}}
+        {{form.requires_admin(class='form-check')}}
+    </div>
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
+

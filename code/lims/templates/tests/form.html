@@ -1,0 +1,257 @@
+{% extends "form_template.html" %}
+{% block form %}
+
+        {% if function == 'Add' %}
+        <div class="row form-row my-4">
+            <div class="col-md-6">
+                {{form.case_id.label}}
+                {{form.case_id}}
+            </div>
+        </div>
+        <hr style="border-width:3px">
+        <div class="form-group form-inline">
+            <div>
+                <b>Testing Requested:</b>
+            </div>
+            <div style="padding-left:60px">
+                {{form.toxicology_requested.label}}
+            </div>
+            <div class="ml-2">
+                {{form.toxicology_requested}}
+            </div>
+            <div class="ml-2">
+              {{form.biochemistry_requested.label}}
+            </div>
+            <div class="ml-2">
+                 {{form.biochemistry_requested}}
+            </div>
+            <div class="ml-2">
+               {{form.histology_requested.label}}
+            </div>
+            <div class="ml-2">
+                 {{form.histology_requested}}
+            </div>
+            <div class="ml-2">
+               {{form.external_requested.label}}
+            </div>
+            <div class="ml-2">
+                 {{form.external_requested}}
+            </div>
+             <div class="ml-2">
+               {{form.physical_requested.label}}
+            </div>
+            <div class="ml-2">
+                 {{form.physical_requested}}
+            </div>
+             <div class="ml-2">
+               {{form.drug_requested.label}}
+            </div>
+            <div class="ml-2">
+                 {{form.drug_requested}}
+            </div>
+        </div>
+        <div class="form-group form-inline">
+            <div>
+                <b>Testing to be performed:</b>
+            </div>
+            <div style="padding-left: 15px">
+                {{form.toxicology.label}}
+            </div>
+            <div class="ml-2">
+                {{form.toxicology}}
+            </div>
+            <div class="ml-2">
+              {{form.biochemistry.label}}
+            </div>
+            <div class="ml-2">
+                 {{form.biochemistry}}
+            </div>
+            <div class="ml-2">
+               {{form.histology.label}}
+            </div>
+            <div class="ml-2">
+                 {{form.histology}}
+            </div>
+            <div class="ml-2">
+               {{form.external.label}}
+            </div>
+            <div class="ml-2">
+                 {{form.external}}
+            </div>
+           <div class="ml-2">
+               {{form.physical.label}}
+            </div>
+            <div class="ml-2">
+                 {{form.physical}}
+            </div>
+            <div class="ml-2">
+               {{form.drug.label}}
+            </div>
+            <div class="ml-2">
+                 {{form.drug}}
+            </div>
+        </div>
+
+         <hr style="border-width:3px">
+        <div class="row form-row my-4">
+            <div class="col-md-6">
+                 {{form.discipline.label}}
+                {{form.discipline}}
+            </div>
+         </div>
+<div class="row form-row">
+            <div class="col">
+                <div class="collapse show" id="tests-assigned">
+                    <div class="card card-body">
+                        <div class="table">
+                            <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+<!--                                <table class="display table-hover small nowrap" style="width:100%" id="tests">-->
+<!--                                      <thead>-->
+<!--                                        <tr>-->
+<!--                                          <th>Accession Number</th>-->
+<!--                                          <th>Specimen Type</th>-->
+<!--                                          <th>Assay</th>-->
+<!--                                          <th>Test Name</th>-->
+<!--                                          <th>Test ID</th>-->
+<!--                                          <th>Batch ID</th>-->
+<!--                                        </tr>-->
+<!--                                      </thead>-->
+<!--                                      <tbody>-->
+<!--                                          {% for test in kwargs['tests'] %}-->
+<!--                                          <tr>-->
+<!--                                              <td>{{test.specimen.accession_number}}</td>-->
+<!--                                              <td>{{test.specimen.type.code}}</td>-->
+<!--                                              <td>{{test.assay.assay_name}}</td>-->
+<!--                                              <td>{{test.test_name}}</td>-->
+<!--                                              <td>{{test.test_id}}</td>-->
+<!--                                              <td>{{test.batch_id}}</td>-->
+<!--                                          </tr>-->
+<!--                                          {% endfor %}-->
+<!--                                      </tbody>-->
+<!--                                </table>-->
+                                <p><strong>Tests assigned</strong></p>
+                                <table class="display table-hover small nowrap" style="width:100%" id="tests">
+                                    <thead>
+                                    <tr>
+                                        <th>Accession Number</th>
+                                        <th>Code</th>
+                                        <th>Description</th>
+                                        <th>Assay</th>
+                                        <th>Test Name</th>
+                                        <th>Batch ID</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for test in kwargs['tests'] %}
+                                    <tr>
+                                        <td>{{test['accession_number']}}</td>
+                                        <td>{{test['code']}}</td>
+                                        <td>{{test['description']}}</td>
+                                        <td>{{test['assay']}}</td>
+                                        <td>{{test['test_name']}}</td>
+                                        <td>{{test['batch_id']}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+         </div>
+        <div class="row form-row">
+            <div class="col">
+                {{form.specimen_id.label}}
+                {{form.specimen_id}}
+            </div>
+        </div>
+         <div class="row form-row">
+            <div class="col">
+                <div class="table">
+                    <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
+                        <table class="display table-hover small nowrap" style="width:100%; border:1px solid #ced4da" name="table" id="specimens">
+                              <thead>
+                                <tr>
+                                  <th style="width:1.5rem">ID</th>
+                                  <th>Accession Number</th>
+                                  <th>Code</th>
+                                  <th>Description</th>
+                                  <th>Collection Date</th>
+                                  <th>Collection Time</th>
+                                  <th>Current Amount</th>
+                                  <th>Submitted Amount</th>
+                                  <th>Conditions</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                  {% for specimen in kwargs['specimens'] %}
+                                  <tr>
+                                      <td>{{item['id']}}</td>
+                                      <td>{{item['accession_number']}}</td>
+                                      <td>{{item['code']}}</td>
+                                      <td>{{item['description']}}</td>
+                                      <td>{{item['collection_date']}}</td>
+                                      <td>{{item['collection_time']}}</td>
+                                      <td>{{item['current_sample_amount']}}</td>
+                                      <td>{{item['submitted_sample_amount']}}</td>
+                                      <td>{{item['condition']}}</td>
+                                  </tr>
+                                  {% endfor %}
+                              </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+         </div>
+        <div class="row form-row my-4">
+            <div class="col-md-6">
+                {{form.assay_id.label}}
+                {{form.assay_id}}
+            </div>
+         </div>
+        {% endif %}
+        <div class="row form-row my-4">
+            <div class="col-md-6">
+                {{ form.dilution.label }}
+                For HV,enter <a href="#" onclick="setDilution('HV'); return false;">HV</a>.&nbsp;&nbsp;&nbsp; 
+                For d1/2, enter <a href="#" onclick="setDilution('2'); return false;">2</a>.&nbsp;&nbsp;&nbsp;
+                For d1/5, enter <a href="#" onclick="setDilution('5'); return false;">5</a>.
+                {{ form.dilution }}
+            </div>
+        </div>
+        <div class="row form-row my-4">
+            <div class="col-md-6">
+                {{form.directives.label}}
+                {{form.directives}}
+            </div>
+        </div>
+
+
+{% endblock %}
+
+<!--Alerts-->
+{% block alerts %}
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+<script src="/static/js/tests.js"></script>
+<script>
+  function setDilution(val) {
+    // Use the WTForms-generated id to locate the field
+    const input = document.getElementById("{{ form.dilution.id }}");
+    if (input) {
+      input.value = val;
+
+      // Trigger an input/change event so any listeners or validators see the update
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,509 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+
+
+.is-invalid {
+    border: 2px solid red;
+}
+
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.table-responsive {
+    position: relative;
+}
+
+.table-responsive table {
+    width: 100%;
+    border-collapse: collapse; /* Ensures borders are styled properly */
+}
+
+.table-responsive thead {
+    position: sticky; /* Keep the header sticky */
+    top: 0; /* Align with the top */
+    background-color: white; /* Set background color */
+    z-index: 10; /* Ensure it is on top of other elements */
+}
+
+.table-responsive th {
+    text-align: left; /* Optional: Align text to the left */
+    padding: 8px; /* Add padding for better appearance */
+}
+
+.table-responsive tbody {
+    display: block; /* Make tbody block for scroll */
+    max-height: 65vh; /* Adjust as needed */
+    overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.table-responsive tr {
+    display: table; /* Keep rows as table rows */
+    table-layout: fixed; /* Use auto for dynamic widths */
+    width: 100%; /* Allow full width */
+}
+
+.table-responsive td {
+    padding: 8px; /* Add padding to cells */
+    position: relative; /* Needed for absolute positioning */
+}
+
+.selected {
+    background-color: rgba(0, 123, 255, 0.7) !important; /* Stronger blue background */
+    border: 1px solid #0056b3; /* Strong blue outline */
+    color: white; /* Text color to contrast with the blue background */
+}
+
+.modal-body {
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.modal-custom {
+    max-width: 95%; /* Adjust the width as needed (90% of the viewport width) */
+}
+
+.wrap-text {
+    word-wrap: break-word;
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+
+</style>
+
+
+<head>
+    <title>{{item_name}}</title>
+</head>
+
+
+<div style="margin-top:6px">
+    <a href="{{url_for('dashboard.get_dashboard')}}"><i class="fa-solid fa-house"></i></a>
+    > {{item_name}}
+</div>
+<hr style="border-width:5px; margin-top:6px">
+<h1>
+    <!-- ICON BLOCK -->
+
+    {% block icon %}{% endblock %}
+
+    <!-- ######### -->
+    {{item_name}}
+</h1>
+<hr style="border-width:5px">
+<form novalidate="novalidate" method="POST" enctype="multipart/form-data">
+    <div class="row">
+        <!-- First Column: Buttons -->
+        <div id="buttons" class="col-8" style="padding-right: 1%;">
+            {% if current_user.permissions in ['MED-Autopsy', 'Admin', 'Owner', 'MED'] %}
+                {% block buttons %}
+                {% endblock %}
+                {{ form.hidden_tag() }}
+                {{ form.cases_selected(class="form-control", style="display: none") }}
+                <div class="d-flex flex-wrap">
+                    <div>
+                        {{ form.submit_toxicology_print(class="btn btn-primary mb-2 me-2 submitBtnAutopsy", data_action="submit_toxicology_print") }}
+                        {{ form.submit_physical_print(class="btn btn-primary mb-2 me-2 submitBtnAutopsy", data_action="submit_physical_print") }}
+                        {{ form.submit_bundle_print(class="btn btn-primary mb-2 me-2 submitBtnAutopsy", data_action="submit_bundle_print") }}
+                    </div>
+                    <div class="w-100"></div>
+                    <div>
+                        {{ form.submit_histology_print(class="btn btn-primary mb-2 me-2 submitBtnAutopsy", data_action="submit_histology_print") }}
+                        {{ form.submit_histology_sa_print(class="btn btn-primary mb-2 me-2 submitBtnAutopsy", data_action="submit_histology_sa_print") }}
+                    </div>
+                    <div class="w-100"></div>
+                    <div>
+                        {{ form.submit_generic_print(class="btn btn-primary mb-2 me-2 submitBtnAutopsy", data_action="submit_generic_print") }}
+                        {{ form.submit_five_generic(class='btn btn-primary mb-2 me-2 submitBtnAutopsy', data_action="submit_five_generic") }}
+                        <button class="btn btn-primary mb-2 me-2" type="button" id="other-labels" data-toggle="modal" data-target="#other_label_select">
+                            Print Other
+                        </button>
+                        <button class="btn btn-success mb-2 me-2" type="button" id="submit-specimens" data-toggle="modal" data-target="#submit-specimens-modal">Submit Specimens</button>
+                        <a class="btn btn-secondary mb-2" href="{{ url_for(table_name~'.import_fa_cases') }}">Import FA Cases</a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Second Column: Form -->
+        {% if current_user.permissions in ['MED-Autopsy', 'Admin', 'Owner', 'MED'] %}
+        <div class="form-group d-flex align-items-center col-4">
+            <label style="white-space: nowrap; padding-right: 3%; font-weight: bold;">
+                {{ form.initial_label.label.text }}
+            </label>
+            <div style="padding-right: 3%; flex-grow: 1;">
+                {{ form.initial_label(class="form-control") }}
+            </div>
+            {{form.submit_histo_scan(class="btn btn-primary submitBtnAutopsy", data_action="submit_histo_scan")}}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="table display" id="table-div">
+        <div class="table-responsive" id="table-wrapper" style="width: 100%">
+            <table class="display table-striped table-hover small datatable" style="min-width:100%" id="autopsy_view">
+                <thead>
+                <tr>
+                    <th style="display: none">ID</th>
+                    <th>Case Number</th>
+                    <th>Name</th>
+                    <th><a href="" data-toggle="tooltip" title="Unsubmitted Containers / Submitted Containers" style="color: black">Toxicology Containers</a></th>
+                    <th>Toxicology Specimens</th>
+                    <th><a href="" data-toggle="tooltip" title="Unsubmitted Containers / Submitted Containers" style="color: black">Histology Containers</a></th>
+                    <th>Histology Specimens</th>
+                    <th><a href="" data-toggle="tooltip" title="Unsubmitted Containers / Submitted Containers" style="color: black">Physical Containers</a></th>
+                    <th>Physical Specimens</th>
+                    <th><a href="" data-toggle="tooltip" title="Unsubmitted Containers / Submitted Containers" style="color: black">Biochemistry Containers</a></th>
+                    <th>Biochemistry Specimens</th>
+                    <th><a href="" data-toggle="tooltip" title="Unsubmitted Containers / Submitted Containers" style="color: black">Drug Containers</a></th>
+                    <th>Drug Specimens</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                        <tr>
+                            <td style="display: none">{{item.id}}</td>
+                            <td style="font-weight: bold">{{item.case_number}}</td>
+                            <td>
+                                {{item.last_name}}, {{item.first_name}}
+                            </td>
+                            {% for d in lower_disciplines %}
+                                <td>
+                                    {% if open_containers[item.id][d]['code'] | length == 0 and submitted_containers[item.id][d]['code'] | length == 0 %}
+                                    {% else %}
+                                        {{open_containers[item.id][d]['code'] | length}} / {{submitted_containers[item.id][d]['code'] | length}}
+                                        {% for cont in submitted_containers[item.id][d]['code'] %}
+                                            <a href="" data-toggle="tooltip" title="{{submitted_containers[item.id][d]['type'][cont.id]}}">[{{cont.type.code}}]</a>
+                                        {% endfor %}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% for spec in submitted_specimens[item.id][d]['code'] %}
+                                        <a href="" data-toggle="tooltip" title="{{submitted_specimens[item.id][d]['type'][spec.id]}}">[{{ spec.type.code }}]</a>
+                                    {% endfor %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div>
+            Showing <span id="first">{{items.first}}</span> to
+            <span id="last">{{items.last}}</span> of
+            <span id="total">{{items.total}}</span> entries
+            <span id="filtered" hidden>(filtered from {{items.last}} entries)</span>
+        </div>
+        <hr>
+        <div class="row" style="width: 100%">
+            <div class="col" style="display: flex; justify-content: flex-end">
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination">
+                        {% if items.page == 1 %}
+                        <li class="page-item disabled">
+                            {% else %}
+                        <li class="page-item">
+                            {% endif %}
+                            <a class="page-link" href="{{ url_for(table_name~'.autopsy_view', page=items.page-1, length=length) }}" tabindex="-1">Previous</a>
+                        </li>
+
+                        {% for page_num in items.iter_pages(left_edge=1, right_edge=2, left_current=1, right_current=2) %}
+                        {% if page_num %}
+                        {% if items.page == page_num %}
+                        <li class="page-item active">
+                            <a class="page-link">{{ page_num }}</a></li>
+                        {% else %}
+                        <li class="page-item"><a class="page-link" href="{{ url_for(table_name~'.autopsy_view', page=page_num, length=length) }}">{{ page_num }}</a></li>
+                        {% endif %}
+                        {% else %}
+                        <li class="page-item disabled"><a class="page-link">…</a></li>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if items.page == items.pages %}
+                        <li class="page-item disabled">
+                            {% else %}
+                        <li class="page-item">
+                            {% endif %}
+                            <a class="page-link" href="{{ url_for(table_name~'.autopsy_view', page=items.page+1, length=length) }}" tabindex="-1">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+                <div class="pl-2">
+                    <div class="form-inline">
+                        <input class="form-control mr-2" style="width: 10rem" id="page-num" placeholder="Go to page...">
+                        <a class="btn btn-primary" id="go-to-page">Go</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Select Other Label Modal-->
+    <div class="modal" tabindex="-1" role="dialog" id="other_label_select">
+            <div class="modal-dialog modal-lg" role="document" style="height: 80vh; max-height: 80vh;">
+            <div class="modal-content" style="height: 100%; overflow-y: auto;">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Print Other for <span id="modal-case-number"></span>
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Row for discipline and specimen search -->
+                    <div class="row" style="padding-bottom: 5%;">
+                        <div class="col-md-6">
+                            {{ form.specimen_discipline.label(style='font-weight: bold; padding-left: 5%') }}
+                            {{ form.specimen_discipline(class='form-control', id='specimen_discipline') }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.specimen_type.label(style='font-weight: bold; padding-left: 5%') }}
+                            <input type="text" id="specimen_type_search" class="form-control mb-2" placeholder="Search specimen types...">
+                        </div>
+                    </div>
+
+                    <!-- New row for specimen checkboxes -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div id="specimen_type_checkboxes" style="max-height: 450px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+                                <!-- Dynamically loaded checkboxes go here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="justify-content: center">
+                    <button type="button" class="btn btn-primary" id="confirm-other-print">Print</button>
+                    <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#other_label_select">Cancel</button>
+                    <button type="button" class="btn btn-primary submitBtnStockJar">
+                        Print Stock Jar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="modal fade" id="confirm_modal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="confirmModalLabel">Confirm Print?</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body" id="confirm-modal-body">
+        </div>
+        <div class="modal-footer">
+            {{form.submit_other_print(class='btn btn-primary submitBtnOther' , data_action="submit_other_print")}}
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        </div>
+        </div>
+    </div>
+    </div>
+
+
+    <!--Submit Specimens Modal-->
+    <div class="modal" tabindex="-1" role="dialog" id="submit-specimens-modal">
+        <div class="modal-dialog modal-xl modal-custom" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Submit Specimens</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row" id="row-1">
+                        <div class="col">
+                            <label for="barcode1" style="font-weight: bold">Specimen QR Code:</label>
+                            <input type="text" id="barcode1" class="form-control" name="barcode1">
+                        </div>
+                        <div class="col">
+                            <label for="container1" style="font-weight: bold">Container:</label><br>
+                            <select id="container1" name="container1" class="form-control selectpicker" data-size="5">
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label for="discipline1" style="font-weight: bold">Discipline:</label><br>
+                            <select id="discipline1" name="discipline1" class="form-control selectpicker" data-size="5">
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label for="collectionVessel1" style="font-weight: bold">Collection Vessel:</label><br>
+                            <select id="collectionVessel1" name="collectionVessel1" class="form-control selectpicker" data-size="5">
+                            </select>
+                        </div>
+                        <div class="col-sm-1">
+                            <label for="amount1" style="font-weight: bold">Amount:</label>
+                            <a href="#!" data-toggle="tooltip" tabindex="-1" style="padding-top: 0%; vertical-align: top"
+                                title="mLs for fluid, number for tissue">
+                                <i class="fa-solid fa-circle-question"></i>
+                            </a>
+                            <input type="text" id="amount1" name="amount1" class="form-control">
+                        </div>
+                        <div class="col">
+                            <label for="condition1" style="font-weight: bold">Condition:</label>
+                            <br>
+                            <select id="condition1" name="condition1" class="form-control selectpicker" multiple data-live-search="true" data-size="5">
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label for="collectionDate1" style="font-weight: bold">Collection Date:</label>
+                            <input type="date" id="collectionDate1" name="collectionDate1" class="form-control">
+                        </div>
+                        <div class="col">
+                            <label for="collectionTime1" style="font-weight: bold">Collection Time:</label>
+                            <input type="text" id="collectionTime1" name="collectionTime1" class="form-control">
+                        </div>
+                        <div class="col-sm-1">
+                            <label for="collectedBy1" style="font-weight: bold">Collected By:</label><br>
+                            <select id="collectedBy1" name="collectedBy1" class="form-control selectpicker" data-live-search="true" data-size="5">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row" id="row-1-spec-other">
+                        <div class="col">
+                            <label for="specOther1" style="font-weight: bold">Other Description</label>
+                            <input type="text" id="specOther1" name="specOther1" class="form-control" disabled>
+                        </div>
+                    </div>
+                    <div class="row" id="row-1-custody">
+                        <div class="col">
+                            <label for="custodyLocation1" style="font-weight: bold">Custody Location Type:</label><br>
+                            <select id="custodyLocation1" name="custodyLocation1" class="form-control selectpicker" data-live-search="true" data-size="5">
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label for="custody1" style="font-weight: bold">Custody:</label><br>
+                            <select id="custody1" name="custody1" class="form-control selectpicker" data-live-search="true" data-size="5">
+                            </select>
+                            <br>
+                            <i class="bi bi-arrow-clockwise text-primary refresh-row" style="cursor: pointer;" title="Refresh matching rows"></i>
+                        </div>
+                    </div>
+                    <hr style="border-top: 2px solid #ccc">
+                </div>
+
+                <div class="d-flex justify-content-start p-3 pt-0">
+                    <button type="button" id="add-specimen" class="btn p-0" 
+                            style="color: #0d6efd; font-size: 1.25rem; cursor: pointer;" 
+                            title="Add specimen">
+                        <i class="bi bi-plus-square"></i>
+                    </button>
+                </div>
+
+                <div class="modal-footer" style="justify-content: center"> 
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirm-submit-modal" id="confirm-submit-specimens">Submit and Close Containers</button>
+                    <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#submit-specimens-modal" id="cancel-submit-specimens">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<div class="modal" tabindex="-1" role="dialog" id="confirm-submit-modal">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Specimen Submit and Close Container</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+                <div class="modal-body">
+                    <p style="text-align: center">Upon specimen submission,<br>containers for the submitted specimens will be closed.</p>
+                </div>
+                <div class="modal-footer" style="justify-content: center">
+                  {{form.submit_scan(class='btn btn-primary submitBtnAutopsy', data_action="submit_scan")}}
+                  <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#confirm-submit-modal">Cancel</button>
+                </div>
+        </div>
+    </div>
+</div>
+</form>
+<!-- Loading Modal -->
+<div id="loading-modal"
+     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
+    <div style="text-align:center;">
+        <div class="spinner" style="border: 6px solid #f3f3f3; border-top: 6px solid #007bff; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;"></div>
+        <p style="color:white; margin-top:10px;">Please wait, the system is processing...</p>
+    </div>
+</div>
+
+
+<!-- ########## -->
+
+<!-- SCRIPT BLOCK -->
+
+{% block scripts %}
+{% endblock %}
+
+<!-- ########## -->
+
+<script type="text/javascript">
+    let permissions = '{{permissions}}'
+    let table_name = '{{table_name | safe}}'
+</script>
+
+<script>
+$(document).ready(function () {
+    // Initialize DataTables
+    let table = $('.datatable').DataTable({
+        "lengthMenu": [[100, 25, 50, -1], [100, 25, 50, "All"]],
+        "autoWidth": true, // Ensure auto width calculation
+        "fixedHeader": false,
+        "dom": '<<"row"<"col-xl-8"><"col">>>rt',
+        "order": [[1, 'desc']],
+        "initComplete": function(settings, json) {
+            // Make the table visible after initialization
+            $('#table-div').css('opacity', 1);
+            $('.spinner-border').hide();
+            $('#populating').modal('hide')
+        }
+    });
+
+    // Set the page length from kwargs['length']
+    $("#length").val({{kwargs['length']}});
+
+    // Export button event
+    $('#export').on('click', function () {
+        $("#{{table_name}}").table2excel({
+            filename: "{{table_name}}_" + moment().format('YYYYMMDDHHmmss') + ".xls",
+            exclude: ".filters",
+            exclude_links: true,
+        });
+    });
+});
+
+</script>
+
+<script>
+$('#export').on('click', function () {
+    $("#{{table_name}}").table2excel({
+        filename: "{{table_name}}_"+moment().format('YYYYMMDDHHmmss')+".xls",
+        exclude: ".filters",
+        exclude_links: true,
+    });
+})
+</script>
+
+<script>
+    $('#other-labels').click(function() {
+        var selectedRow = $('#autopsy_view tbody tr.selected');
+        var caseNumber = selectedRow.find('td:nth-child(2)').text().trim(); // Assuming 2nd td is case number
+        $('#modal-case-number').text(caseNumber);
+    });
+</script>
+
+
+
+<script type="text/javascript" src="/static/js/autopsy_view.js"></script>
+<script src = "../../static/js/label_printing.js" type="text/javascript" charset="UTF-8"> </script>
+
+{% endblock %}

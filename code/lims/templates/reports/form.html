@@ -1,0 +1,388 @@
+{% extends "form_template.html" %}
+
+{% block style %}
+<style>
+    .rows {
+        line-height: 5px;
+        min-height: 5px;
+        height: 5px;
+    }
+
+    .table-active {
+        background-color: rgba(51, 170, 51, .4) !important;
+    }
+
+    .clicking {
+       cursor: pointer;
+    }
+/* form.html — add inside the existing <style> block */
+.flag-mismatch {
+  color: #bd6800 !important;
+  font-weight: 700 !important;
+}
+
+
+</style>
+
+{% endblock %}
+
+<!-- ALERTS -->
+{% block alerts %}
+{% endblock %}
+
+<!-- HEADER -->
+{% block header %}
+{% endblock %}
+
+{% block form %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<div class="row">
+    <div class="form-group col">
+        {{form.report_type.label}}
+        {{form.report_type}}
+    </div>
+    <div class="form-group col">
+        {{form.case_id.label}}
+        {{form.case_id}}
+        
+    </div>
+    <div class="form-group col">
+        {{form.discipline.label}}
+        {{form.discipline}}
+    </div>
+    <div class="form-group col">
+        {{form.result_status_filter.label}}
+        {{form.result_status_filter}}
+    </div>
+</div>
+<div id="record-template">
+    <div class="form-group">
+        {{form.report_template_id.label}}<span style="color: red">*</span>
+        {{form.report_template_id}}
+    </div>
+</div>
+<div>
+    <div class="form-group">
+        {{form.communications.label}}
+        {{form.communications}}
+    </div>
+</div>
+<div id="file-upload" hidden>
+    <div class="form-group">
+        {{form.report_file.label}}<span style="color: red">*</span>
+        {{form.report_file}}
+    </div>
+</div>
+<div style="display: none;">
+    <div class="form-group">
+        {{form.result_id_order.label}}
+        {{form.result_id_order}}
+    </div>
+    <div class="row">
+        <div class="form-group col-md-3">
+            {{form.result_id.label}}
+            {{form.result_id}}
+        </div>
+        <div class="form-group col-md-3">
+            {{form.primary_result_id.label}}
+            {{form.primary_result_id}}
+        </div>
+        <div class="form-group col-md-3">
+            {{form.supplementary_result_id.label}}
+            {{form.supplementary_result_id}}
+        </div>
+        <div class="form-group col-md-3">
+            {{form.observed_result_id.label}}
+            {{form.observed_result_id}}
+        </div>
+        <div class="form-group col-md-3">
+            {{form.qualitative_result_id.label}}
+            {{form.qualitative_result_id}}
+        </div>
+        <div class="form-group col-md-3">
+            {{form.approximate_result_id.label}}
+            {{form.approximate_result_id}}
+        </div>
+    </div>
+</div>
+{% if kwargs['case_notes'] %}
+<div class="alert alert-primary" role="alert" style="margin-top: 12px">
+    <button type="button" class="close" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+    <p>{{kwargs['case_notes']}}</p>
+</div>
+{% endif %}
+{% if kwargs['items'] %}
+    <div id="results-div">
+        {% for specimen, results in kwargs['items'].items() %}
+            <hr>
+            <div id="{{specimen}}">
+                <div align="center">
+                    {% if results['other'] is not none %}
+                        <a data-toggle="tooltip" title="{{results['other']}}" style="display:inline-block">
+                            <h3 id="specimen-name"><u>{{specimen}}</u></h3>
+                        </a>
+                    {% else %}
+                        <h3 id="specimen-name">{{specimen}}</h3>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <div class="table display" align="center">
+                        <div class="table-responsive">
+                            <table class="display table-striped table-hover small nowrap" style="width: 40%">
+                                <thead>
+                                    <tr class="rows">
+                                        <th>Volume</th>
+                                        <th>Collection Date & Time</th>
+                                        <th>Condition</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="rows">
+                                        <td>
+                                            {{results['specimen'].submitted_sample_amount}}
+                                            {% if results['specimen'].type %}
+                                                {{results['specimen'].type.unit.name}}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if results['specimen'].collection_date %}
+                                                {{results['specimen'].collection_date.strftime('%m/%d/%Y')}}
+                                                {{results['specimen'].collection_time}}
+                                            {% endif %}
+                                        </td>
+                                        <td>{{results['specimen'].condition}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table display">
+                        <div class="table-responsive">
+                        <div class="mb-2">
+                            <a href="#!" class="select-all">Select All</a> |
+                            <a href="#!" class="clear">Clear</a> |
+                            <a href="#!" class="all-supplementary">Check All Supplementary</a> |
+                            <a href="#!" class="clear-supplementary">Uncheck All Supplementary</a>
+                        </div>
+                            <table class="display table-striped table-hover small nowrap" style="width:100%">
+                                <thead>
+                                    <tr class="rows">
+                                        <th style="width:1.5rem">#</th>
+                                        <th style="width:150px">Report As</th>
+                                        <th style="width:100px">Inc. Suppl.</th>
+                                        <th>Status</th>
+                                        <th>Component</th>
+                                        <th>Result</th>
+                                        <th>Supp. Result</th>
+                                        <th>Units</th>
+                                        <th>Assay</th>
+                                        <th>Batch Date</th>
+                                        <th>Dilution</th>
+                                        <!-- <th>Move Up/Down</th> -->
+                                        <th>Test ID</th>
+                                        <th>Result ID</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for result in results['results'] %}
+                                    {% if result['report_as'] == 'Official' %}
+                                        {% set official = 'selected' %}
+                                        {% if result['supplementary'] == 'checked' %}
+                                            {% set checked = 'checked' %}
+                                        {% endif %}
+                                    {% else %}
+                                    {% endif %}
+                                    <td class="order-cell">
+                                        <select class="order-select">
+                                                <option value="{{loop.index}}" selected>
+                                                    {{ loop.index }}
+                                                </option>
+                                        </select>
+                                    </td>
+                                        <td>
+                                            <select class="reported-as" style="width:150px">
+                                                <option value="">---</option>
+                                                <option value="Official" {{official}}>Official</option>
+                                                <option value="Official (Qualitative)">Official (Qualitative)</option>
+                                                <option value="Observed" >Observed</option>
+                                                <option value="Approximate">Approximate</option>
+                                            </select>
+                                        </td>
+                                        <td align="center" style="width:100px; border-right: solid 1px black;">
+                                            {% if result['supp_result'] %}
+                                                <input type="checkbox" class="supplementary" {{checked}} {{disabled}}>
+                                            {% else %}
+                                                <input type="checkbox" class="supplementary" {{disabled}}>
+                                            {% endif %}
+                                        </td>
+                                        <td class="clicking">{{result['result_status']}}</td>
+                                        <td class="clicking">{{result['component_name']}}</td>
+                                        <td class="clicking">{{result['result']}}</td>
+                                        <td class="clicking">{{result['supp_result']}}</td>
+                                        <td class="clicking">{{result['unit']}}</td>
+                                        <td class="clicking">{{result['assay']}}</td>
+                                        <td class="clicking">{{result['batch_date']}}</td>
+                                        <td class="clicking">{{result['dilution']}}</td>
+                                        <!-- <td>
+                                            <a href="#!" class="move-up mr-2"><i class="fa-solid fa-chevron-up my-0"></i></a>
+                                            <a href="#!" class="move-down"><i class="fa-solid fa-chevron-down my-0"></i></a>
+                                        </td> -->
+                                        <td>{{result['test']}}</td>
+                                        <td>{{result['id']}}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% endblock %}
+
+{% block modals %}
+<div class="modal" tabindex="-1" id="fetching-results" data-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="d-flex justify-content-center">
+          <div class="spinner-border" style="width: 10rem; height:10rem" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
+        <div>
+          <h2 align="center">Fetching Results. Please wait....</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  {% if kwargs['pathologist'] is none and kwargs['case_type'] == 7 %}
+  <div class="modal" tabindex="-1" id="missing-pathologist" data-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content p-4">
+        <h5 class="mb-2">Missing Primary Pathologist</h5>
+        <p>Please set the primary pathologist for this case to avoid report generation failure.</p>
+        <div class="text-right">
+          <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/reports.js"></script>
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      $('#missing-pathologist').modal('show');
+    });
+  </script>
+ 
+<script>
+// --- Flag primary vs supplementary mismatches on Drafting screen ---
+(function () {
+
+// NEW: strip a leading "Presumptive " (case-insensitive, optional ':' or '-')
+function stripPresumptivePrefix(text) {
+  if (!text) return '';
+  return String(text).replace(/^\s*presumptive\s*[:\-]?\s*/i, '');
+}
+
+function parseThreshold(text) {
+  if (!text) return null;
+  const t = stripPresumptivePrefix(text).trim();     // ⬅️ use the cleaner
+  const m = t.match(/^((?:>=|<=|>|<|≥|≤))\s*([+-]?\d{1,3}(?:[,\u00A0\u2007\u202F]\d{3})*(?:\.\d+)?|[+-]?\d+(?:\.\d+)?)/);
+  if (!m) return null;
+
+  const rawOp = m[1];
+  const op = rawOp === '≥' ? '>=' : rawOp === '≤' ? '<=' : rawOp;
+  const cleaned = m[2].replace(/[,\u00A0\u2007\u202F]/g, '');
+  const val = parseFloat(cleaned);
+  return Number.isFinite(val) ? { op, val, displayOp: rawOp } : null;
+}
+
+function parsePlainNumber(text) {
+  if (!text) return null;
+  const t = (text + '').trim();
+  if (/[<>≤≥]/.test(t)) return null; // ignore if it's a threshold-like thing
+  const m = t.match(/([+-]?\d{1,3}(?:[,\u00A0\u2007\u202F]\d{3})*(?:\.\d+)?|[+-]?\d+(?:\.\d+)?)/);
+  if (!m) return null;
+  const cleaned = m[1].replace(/[,\u00A0\u2007\u202F]/g, '');
+  const num = parseFloat(cleaned);
+  return Number.isFinite(num) ? num : null;
+}
+
+function flag(cellA, cellB, reason) {
+  [cellA, cellB].forEach((td) => {
+    td.classList.add('flag-mismatch');
+    const prev = td.getAttribute('title');
+    td.setAttribute('title', prev ? `${prev} | ${reason}` : reason);
+  });
+}
+
+function runCheck(root) {
+  const tables = root.querySelectorAll('#results-div table.display tbody');
+  tables.forEach((tbody) => {
+    Array.from(tbody.querySelectorAll('tr')).forEach((tr) => {
+      const tds = tr.querySelectorAll('td');
+      if (tds.length < 7) return;
+
+      const resultCell = tds[5]; // "Result"
+      const suppCell   = tds[6]; // "Supp. Result"
+
+      const primary = parseThreshold(resultCell.textContent || '');
+      const suppNum = parsePlainNumber(suppCell.textContent || '');
+
+      if (!primary || suppNum === null) return;
+
+      const { op, val, displayOp } = primary;
+      let mismatch = false;
+      switch (op) {
+        case '>':  mismatch = !(suppNum >  val); break;
+        case '<':  mismatch = !(suppNum <  val); break;
+        case '>=': mismatch = !(suppNum >= val); break;
+        case '<=': mismatch = !(suppNum <= val); break;
+      }
+      if (mismatch) {
+        flag(resultCell, suppCell, `Mismatch: expected supplementary ${displayOp} ${val}, got ${suppNum}`);
+      }
+    });
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function () { runCheck(document); });
+} else {
+  runCheck(document);
+}
+
+window._recheckReportSuppConflicts = function (el) { runCheck(el || document); };
+
+})();
+</script>
+
+
+{% endblock %}
+
+
+
+
+

@@ -1,0 +1,46 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+    <i class="fa-solid fa-location-dot"></i>
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Zipcode</th>
+    <th>Neighborhood</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        <b>
+            <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+                {{item.zipcode}}
+            </a>
+        </b>
+    </td>
+    <td>
+        <a href="https://www.google.com/maps/?q={{item.zipcode}}" target="_blank">
+            {{item.neighborhood}}
+        </a>
+    </td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}

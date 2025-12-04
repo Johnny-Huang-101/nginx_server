@@ -1,0 +1,30 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+<i class="fa-solid fa-location-arrow"></i>
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Item ID</th>
+    <th>Item Table</th>
+    <th>Location ID</th>
+    <th>Location Table</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>{{item.item_id}}</td>
+    <td>{{item.item_table}}</td>
+    <td>{{item.location_id}}</td>
+    <td>{{item.location_table}}</td>
+{% endblock %}
+
+

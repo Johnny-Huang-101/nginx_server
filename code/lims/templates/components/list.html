@@ -1,0 +1,53 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+
+{% block alerts %}
+    {% if kwargs['missing_compounds'] %}
+    <div class="alert alert-warning" role="alert">
+        <ul class="alert-list">
+            The following components are missing compounds:
+            {% for compound in kwargs['missing_compounds'] %}
+                <li>
+                    {{compound.component.name}}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Component Name</th>
+    <th>Drug Class</th>
+    <th>Rank</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+            {{item.name}}
+        </a>
+    </td>
+    <td>{{item.drug_class.name}}</td>
+    <td>{{item.rank}}</td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}

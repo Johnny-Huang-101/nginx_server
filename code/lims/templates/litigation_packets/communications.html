@@ -1,0 +1,57 @@
+{% extends "form_template.html" %}
+
+
+{% block head %}
+<title>
+    packets/add_communication
+</title>
+
+{% endblock %}
+
+{% block style %}
+<style>
+    .rows {
+        line-height: 5px;
+        min-height: 5px;
+        height: 5px;
+    }
+    .table-active {
+        background-color: rgba(51, 170, 51, .4) !important;
+    }
+    .clicking {
+        cursor: pointer;
+    }
+    .form-group {
+        text-align: left;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 10px;
+    }
+    .form-group textarea {
+        height: 120px; 
+    }
+
+</style>
+{% endblock %}
+
+<!-- ALERTS -->
+{% block alerts %}{% endblock %}
+
+<!-- HEADER -->
+{% block header %}
+<h1>Add Communication</h1>{% endblock %}
+
+{% block form %}
+<div class="row form-group mt-4">
+    <div class="col">
+        {{form.communications.label}}
+        {{form.communications}}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block modals %}{% endblock %}
+
+{% block scripts %}{% endblock %}

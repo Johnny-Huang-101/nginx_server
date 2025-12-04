@@ -1,0 +1,32 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Display Name</th>
+    <th>Type</th>
+    <th>Discipline</th>
+    <th>Name</th>
+
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+      <a href="{{url_for(table_name~'.view', item_id=item.id)}}">
+      {{item.display_name}}
+      </a>
+    </td>
+    <td>{{item.type.display_name}}</td>
+    <td>{{item.discipline}}</td>
+    <td>{{item.name}}</td>
+{% endblock %}

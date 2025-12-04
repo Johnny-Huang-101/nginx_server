@@ -1,0 +1,375 @@
+{% extends "form_template.html" %}
+
+{% block form %}
+
+
+
+<div class="row form-group mb-3">
+        <div class="col-md-4">
+        <div class="form-group">
+            {{form.request_type_id.label}}
+            {{form.request_type_id(id="request_type")}}
+        </div>
+    </div>
+    <div class="col-auto">
+        {{form.case_id.label}}
+        {{form.case_id(class="selectpicker form-control", multiple=True)}}
+        <div class="form-group mb-0" tabindex="-1">
+            {{form.no_case.label}}
+            {{form.no_case(class="")}}
+            {{form.legacy_case_check.label}}
+            {{form.legacy_case_check(class="")}}
+        </div>
+        <div id="legacy_case_string_field" style="display: none;">
+            {{form.legacy_case_number.label}}
+            {{form.legacy_case_number}}
+        </div>
+    </div>
+
+</div>
+<div class="row">
+        <div class="col-md-4">
+        <div class="form-group">
+            {{form.requesting_agency.label}}
+            {{form.requesting_agency(id="requesting_agency")}}
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            {{form.requesting_division.label}}
+            {{form.requesting_division(id="requesting_division")}}
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            {{form.requesting_personnel.label}}
+            {{form.requesting_personnel(id="requesting_personnel")}}
+             <div class="form-group mb-0">
+            <a data-target="#new_personnel" data-toggle="modal" href="" tabindex="-1">Add personnel </a> <a class="text-decoration-none" data-html="true"
+                                                   data-toggle="tooltip" href="#!"
+                                                   title="
+                                                <p>If personnel does not exist in database, use this form.</p>
+                                                    " tabindex="-1"> <i class="fa-solid fa-circle-question" style="font-size:16px"></i></a>
+        </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-4">
+        <div class="form-group">
+
+            {{form.due_date.label}}<a class="text-decoration-none" data-html="true"
+                                                   data-toggle="tooltip" href="#!"
+                                                   title="
+                                                <p>If N/A enter as 7 days</p>
+                                                    " tabindex="-1"><i class="fa-solid fa-circle-question" style="font-size:16px" ></i></a>
+            {{form.due_date}}
+
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            {{form.destination_agency.label}}
+            {{form.destination_agency(id="destination_agency", class="form-control")}}
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            {{form.destination_division.label}}
+            {{form.destination_division(id="destination_division", class="form-control")}}
+        </div>
+    </div>
+
+</div>
+<hr style="border-width:3px">
+<div class="row form-group mt-4">
+    <div class="col">
+        {{form.notes.label}}
+        {{form.notes(id="notes", disabled=True)}}
+    </div>
+    <div class="col">
+        {{form.communications.label}}
+        {{form.communications(id="communications", disabled=True)}}
+    </div>
+</div>
+
+
+{% endblock %}
+
+<!--Alerts-->
+{% block alerts %}
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+<div class="modal" id="new_personnel" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Personnel</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form enctype="multipart/form-data" id="personnel_add_form" method="POST" action="{{ url_for('requests.add_personnel')}}" novalidate>
+                    {{ kwargs.personnel_add_form.hidden_tag() }}
+
+                    <!-- Row for Name and Title Fields -->
+                    <div class="form-row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ kwargs.personnel_add_form.first_name.label(class="form-label") }}
+                                {{ kwargs.personnel_add_form.first_name(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ kwargs.personnel_add_form.middle_name.label(class="form-label") }}
+                                {{ kwargs.personnel_add_form.middle_name(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ kwargs.personnel_add_form.last_name.label(class="form-label") }}
+                                {{ kwargs.personnel_add_form.last_name(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row for Titles and ID -->
+                    <div class="form-row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ kwargs.personnel_add_form.titles.label(class="form-label") }}
+                                {{ kwargs.personnel_add_form.titles(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ kwargs.personnel_add_form.id_number.label(class="form-label") }}
+                                {{ kwargs.personnel_add_form.id_number(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row for Agency and Division -->
+                    <div class="form-row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <!-- Ensure the id is set to "agency_id" exactly as targeted in JavaScript -->
+                                {{ kwargs.personnel_add_form.agency_id.label(class="form-label") }}
+                                {{ kwargs.personnel_add_form.agency_id(class="form-control", id="agency_id", disabled=True) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <!-- Ensure the id is set to "division_id" exactly as targeted in JavaScript -->
+                                {{ kwargs.personnel_add_form.division_id.label(class="form-label") }}
+                                {{ kwargs.personnel_add_form.division_id(class="form-control", id="division_id", disabled=True) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row for Job Title -->
+                    <div class="form-row">
+                        <div class="col">
+                            <div class="form-group">
+                                {{ kwargs.personnel_add_form.job_title.label(class="form-label") }}
+                                {{ kwargs.personnel_add_form.job_title(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row for Email and Phone Numbers -->
+                    <div class="form-row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ kwargs.personnel_add_form.email.label(class="form-label") }}
+                                {{ kwargs.personnel_add_form.email(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ kwargs.personnel_add_form.phone.label(class="form-label") }}
+                                {{ kwargs.personnel_add_form.phone(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ kwargs.personnel_add_form.cell.label(class="form-label") }}
+                                {{ kwargs.personnel_add_form.cell(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer" style="justify-content: center">
+                        {{ kwargs.personnel_add_form.personnel_submit(class='btn btn-primary') }}
+                        <button class="btn btn-secondary" data-dismiss="modal" type="button">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Initialize the selectpicker for case_id
+    $('#case_id').selectpicker('refresh');
+
+    // Variables to hold selected agency and division for destination
+    let selectedAgencyId = null;
+    let selectedDivisionId = null;
+
+    // Populate the requesting division dropdown based on the requesting agency selection
+
+
+    // Populate the personnel dropdown based on the requesting division and agency selection
+    $('#requesting_division').on('change', function() {
+        var division = $(this).val();
+        var agency = $('#requesting_agency').val();
+        var personnel_select = $('#requesting_personnel');
+
+        $.getJSON('/get_all_personnel/', { division: division, agency: agency }, function(data) {
+            var optionHTML = '';
+            data.personnel.forEach(function(person) {
+                optionHTML += `<option value="${person.id}">${person.name}</option>`;
+            });
+            personnel_select.html(optionHTML).selectpicker('refresh');
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            console.error('Error fetching personnel:', textStatus, errorThrown);
+        });
+    });
+
+    // Capture selected agency and division for destination
+    $('#destination_agency').on('change', function() {
+        selectedAgencyId = $(this).val();
+        var division_select = $('#destination_division');
+
+        $.getJSON('/requests/get_divisions/', { agency: selectedAgencyId }, function(data) {
+            var optionHTML = '';
+            data.divisions.forEach(function(division) {
+                optionHTML += `<option value="${division.id}">${division.name}</option>`;
+            });
+            division_select.html(optionHTML).selectpicker('refresh');
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            console.error('Error fetching divisions:', textStatus, errorThrown);
+        });
+    });
+
+    $('#requesting_division').on('change', function() {
+        selectedDivisionId = $(this).val();
+    });
+
+    // Populate the destination personnel dropdown based on destination division and agency selection
+    $('#destination_division').on('change', function() {
+        var division = $(this).val();
+        var agency = $('#destination_agency').val();
+        var personnel_select = $('#destination_personnel');
+
+        $.getJSON('/get_all_personnel/', { division: division, agency: agency }, function(data) {
+            var optionHTML = '';
+            data.personnel.forEach(function(person) {
+                optionHTML += `<option value="${person.id}">${person.name}</option>`;
+            });
+            personnel_select.html(optionHTML).selectpicker('refresh');
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            console.error('Error fetching personnel:', textStatus, errorThrown);
+        });
+    });
+
+    // Open the personnel add modal with agency and division pre-filled
+    $('#new_personnel').on('shown.bs.modal', function() {
+        // Debug to confirm values
+        console.log("Selected Agency ID:", selectedAgencyId);
+        console.log("Selected Division ID:", selectedDivisionId);
+
+        // Set the values and disable dropdowns in the modal
+        $('#agency_id').val(selectedAgencyId).prop('disabled', false).trigger('change');
+        $('#division_id').val(selectedDivisionId).prop('disabled', false).trigger('change');
+    });
+
+    $('#requesting_agency').on('change', function() {
+        var agency = $(this).val();
+        selectedAgencyId = $(this).val();
+        var division_select = $('#requesting_division');
+
+        $.getJSON('/requests/get_divisions/', { agency: agency }, function(data) {
+            var optionHTML = '';
+            data.divisions.forEach(function(division) {
+                optionHTML += `<option value="${division.id}">${division.name}</option>`;
+            });
+            division_select.html(optionHTML).selectpicker('refresh');
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            console.error('Error fetching divisions:', textStatus, errorThrown);
+        });
+    });
+
+    // Toggle case_id selection based on no_case checkbox
+    $('#no_case').on('click', function() {
+        var checked = $(this).prop('checked');
+        if (checked) {
+            $('#case_id').attr('disabled', true).val([]);  // Clear selection when disabled
+        } else {
+            $('#case_id').attr('disabled', false);
+        }
+        $('#case_id').selectpicker('refresh');
+    });
+
+    // Toggle behavior for legacy_case checkbox
+    $('#legacy_case_check').on('click', function() {
+        const checked = $(this).prop('checked');
+        if (checked) {
+            $('#case_id').attr('disabled', true).val([]); // Clear selection when disabled
+            $('#legacy_case_string_field').show(); // Show the legacy case number field
+        } else {
+            $('#case_id').attr('disabled', false);
+            $('#legacy_case_string_field').hide(); // Hide the legacy case number field
+        }
+        $('#case_id').selectpicker('refresh');
+    });
+
+    // Ensure the legacy case field is hidden initially
+    $('#legacy_case_string_field').hide();
+
+    $('#request_type').on('change', function () {
+        let requestType = $(this).val()
+        if (requestType != 1) {
+            $('#destination_agency').attr('disabled', true).val("")
+            $('#destination_division').attr('disabled', true).val("")
+            console.log('success')
+        } else {
+            $('#destination_agency').attr('disabled', false).show()
+            $('#destination_division').attr('disabled', false).show()
+        }
+        $('#destination_agency').selectpicker('refresh')
+        $('#destination_division').selectpicker('refresh')
+
+    })
+
+    // Ensure agency_id and division_id are set correctly before submitting the personnel form
+    $('#personnel_add_form').on('submit', function(event) {
+        $('#agency_id').val(selectedAgencyId);
+        $('#division_id').val(selectedDivisionId);
+    });
+
+    if ("{{ current_user.permissions }}" !== "Admin") {
+        $('#notes').attr('disabled', true)
+        $('#communications').attr('disabled', true)
+        $('#notes').selectpicker('refresh')
+        $('#communications').selectpicker('refresh')
+    } else {
+        $('#notes').attr('disabled', false).show()
+        $('#communications').attr('disabled', false).show()
+        $('#notes').selectpicker('refresh')
+        $('#communications').selectpicker('refresh')
+    }
+});
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    .rows {
+        line-height: 3px;
+        min-height: 3px;
+        height: 3px;
+    }
+    .disabled-link {
+        pointer-events: none;
+        color: gray; /* Optional: style it to look disabled */
+    }
+</style>
+
+<div class="container-fluid">
+    <hr style="border-width:5px">
+    <h1 align="center">
+        All {{item.batch_id}} Tests
+    </h1>
+    <hr style="border-width:5px">
+</div>
+
+<div class="card-body">
+    <div class="table display">
+        <div class="table-responsive">
+            <table class="table-striped table-hover small display nowrap tests" id="tests" style="width:100%">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Vial Position</th>
+                    <th>Test Status</th>
+                    <th>Test Name</th>
+                    <th>Dilution</th>
+                    <th>Source Check</th>
+                    {% if 'GCET' in item.assay.assay_name %}
+                    {% else %}
+                        {% if item.technique == 'Hamilton' %}
+                            <th>Hamilton Load Check</th>
+                        {% endif %}
+                        <th>Transfer Check</th>
+                    {% endif %}
+                    <th>Sequence Check</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for item in tests %}
+                        <tr>
+                            <td>{{item.id}}</td>
+                            <td>{{item.vial_position}}</td>
+                            <td>{{item.test_status}}</td>
+                            <td>{{item.test_name}}</td>
+                            <td>{{item.dilution}}</td>
+                            {% if item.specimen_check == 'Skipped' %}
+                                <td style="background-color: #fdfd96">
+                            {% elif item.specimen_check %}
+                                <td style="background-color: #d4edda">
+                            {% else %}
+                                <td>
+                            {% endif %}
+                            <a class="trigger-modal disabled-link" href="">
+                                {{item.specimen_check}} - {{item.specimen_checker.initials}}
+                                {% if item.checked_date == none %}
+                                {% else %}
+                                    <br>{{item.checked_date.strftime('%Y-%m-%d %H:%M')}}
+                                {% endif %}
+                            </a>
+                                </td>
+                            {% if 'GCET' in item.assay.assay_name %}
+                            {% else %}
+                                {% if item.batch.technique == 'Hamilton' %}
+                                    {% if item.load_check is not none %}
+                                        <td style="background-color: #d4edda">
+                                    {% else %}
+                                        <td>
+                                    {% endif %}
+                                    <a class="trigger-modal disabled-link" href="">
+                                        {{item.load_check}} - {{item.load_checker.initials}}
+                                        {% if item.load_checked_date == none %}
+                                        {% else %}
+                                            <br>{{item.load_checked_date.strftime('%Y-%m-%d %H:%M')}}
+                                        {% endif %}
+                                    </a>
+                                        </td>
+                                {% endif %}
+                                {% if item.transfer_check is not none %}
+                                    <td style="background-color: #d4edda">
+                                        <a class="trigger-modal disabled-link" href="">
+                                        {{item.transfer_check}} - {{item.transfer_checker.initials}}
+                                        {% if item.transfer_check_date is not none %}
+                                            <br>{{item.transfer_check_date.strftime('%Y-%m-%d')}}
+                                        {% endif %}
+                                        </a>
+                                {% else %}
+                                    <td>
+                                {% endif %}
+
+                                </td>
+                            {% endif %}
+                            {% if item.sequence_check is not none %}
+                                <td style="background-color: #d4edda">
+                                    <a class="trigger-modal disabled-link" href="">
+                                        {{item.sequence_check}} - {{item.sequence_checker.initials}}
+                                        {% if item.sequence_check_date == none %}
+                                        {% else %}
+                                            <br>{{item.sequence_check_date.strftime('%Y-%m-%d %H:%M')}}
+                                        {% endif %}
+                                    </a>
+                            {% else %}
+                                <td>
+                            {% endif %}
+
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!--Checks will be cleared warning modal-->
+<div class="modal" id="confirmModal" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Checks Will Be Cleared</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <p>The relevant checks will be cleared and you will be redirected to the relevant check form</p>
+                <p>Are you sure you would like to continue?</p>
+            </div>
+            <div class="modal-footer d-flex justify-content-center">
+                <button class="btn btn-primary" id="confirmButton" type="button">Yes</button>
+                <button class="btn btn-secondary" data-dismiss="modal" type="button">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function(){
+    var targetUrl = '';
+
+    // When any anchor tag with class 'trigger-modal' is clicked
+    $('a.trigger-modal').on('click', function(e){
+        e.preventDefault(); // Prevent the default action (following the link)
+
+        // Get the href attribute of the clicked anchor tag
+        targetUrl = $(this).attr('href');
+
+        // Show the modal
+        $('#confirmModal').modal('show');
+    });
+
+    // When the confirm button in the modal is clicked
+    $('#confirmButton').on('click', function(){
+        // Redirect to the URL stored in targetUrl
+        window.location.href = targetUrl;
+    });
+});
+</script>
+
+{% endblock %}

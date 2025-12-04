@@ -1,0 +1,46 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+    <i class="fa-solid fa-location-dot"></i>
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Report</th>
+    <th>Comment</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        {% if item.report.report_name %}
+        <a href="{{url_for('reports.view', item_id=item.report.id)}}">{{item.report.report_name}}</a>
+        {% endif %}
+    </td>
+{% if item.comment.comment %}
+    <td>{{item.comment.comment.comment}}</td>
+{% else %}
+    <td>
+        {{item.comment.comment_text}}
+    </td>
+{% endif %}
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}

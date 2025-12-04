@@ -1,0 +1,811 @@
+{% extends "view_template.html" %}
+
+{% block alerts %}
+{% endblock %}
+
+{% block style %}
+<style>
+     @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+         .spinner {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #007bff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+    #loading-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .loading-modal-content {
+        text-align: center;
+    }
+    .alert-warning {
+        background-color: rgb(221, 204, 238);
+        color: black;
+        border-color: #8b53e6
+    }
+      /* Strong blur + block interaction behind modal */
+  #content-wrap.restrict-blur {
+    filter: blur(10px) saturate(0.6);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* Fullscreen overlay */
+  .restrict-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999; /* above everything */
+  }
+
+  /* Centered modal box */
+  .restrict-modal-box {
+    max-width: 560px;
+    width: calc(100% - 2rem);
+    background: #fff;
+    padding: 1.25rem 1.25rem 1rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  }
+
+  .restrict-actions {
+    margin-top: 0.75rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .restrict-exit {
+    display: inline-block;
+    padding: .6rem 1rem;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    background: #111;
+    color: #fff;
+  }
+  .restrict-exit:focus-visible { outline: 2px solid #000; outline-offset: 2px; }
+</style>
+
+{% endblock %}
+
+{% block buttons %}
+{% if item.communications %}
+<div class="alert alert-warning" role="alert" style="margin-top:6px">
+    {{ item.communications | replace('\n', '<br>') | safe }}
+</div>
+
+{% endif %}
+{% if current_user.permissions != 'MED' %}
+        {% if item.report_status == 'Finalized' %}
+  <a class="btn btn-primary" href="{{ url_for('reports.backfill', item_id=item.id) }}">
+    Backfill
+  </a>
+
+
+<a class="btn btn-secondary" href="{{ url_for('reports.check_results', item_id=item.id) }}">
+  Check Results
+</a>
+{% endif %}
+    {% if view_only %}
+    {% if item.report_status == 'Ready for CR' %} 
+                <a class="btn btn-primary" data-toggle="modal" data-target="#assign-cr-modal">
+                    Assign CR
+                </a>
+            {% endif %}
+            {% if item.report_status == 'Ready for DR'%}
+            <a class="btn btn-primary" data-toggle="modal" data-target="#assign-dr-modal">
+                Assign DR
+            </a>
+            {% endif %}
+    {% else %}
+            
+        {% if current_user.permissions not in ['FLD-MethodDevelopment', 'ADM-Management', 'Developer'] %}
+
+
+            {% if item.report_status in ['Created', 'Ready for CR'] %}
+            <form id="generate-report-form" action="{{ url_for('reports.generate_report_route', item_id=item.id) }}" method="POST" style="display: inline;">
+                <button type="submit" class="btn btn-success">Generate Report</button>
+            </form>
+
+            {% endif %}
+            {% if item.report_status != 'Finalized' %}
+                {% if item.report_status in ['Ready for CR'] %}
+                <a class="btn btn-primary" data-toggle="modal" data-target="#revise-modal">Revise</a>
+
+                <a class="btn btn-primary" href="../static/filesystem/{{table_name}}/{{item.file_name}}.docx" target="_blank">
+                    <i class="fa-solid fa-file-arrow-down"></i> Word Doc
+                </a>
+                {% endif %}
+            {% endif %}
+            {% if item.report_status in ['Ready for CR'] %}
+                <a class="btn btn-primary" data-toggle="modal" data-target="#cr_modal"  href="{{url_for(table_name~'.cr', item_id=item.id)}}" >
+                    CR
+                </a>
+            {% elif item.report_status == 'Ready for DR' and item.case_reviewer.initials != current_user.initials %}
+                <a class="btn btn-primary" data-toggle="modal" data-target="#dr_modal"  href="{{url_for(table_name~'.cr', item_id=item.id)}}" >
+                    DR
+                </a>
+            {% endif %}
+            {% if item.report_status != 'Finalized' %}
+            
+                        <a class="btn btn-primary" href="{{url_for(table_name~'.communications', item_id=item.id)}}">
+                Add Communication
+            </a>
+            <a class="btn btn-primary" href="{{url_for('comment_instances.add', comment_item_type='Reports', comment_item_id=item.id, redirect_url=kwargs.redirect_url)}}">
+                Add Comment
+            </a>
+            {% if item.report_status == 'Ready for CR' %} 
+                <a class="btn btn-primary" data-toggle="modal" data-target="#assign-cr-modal">
+                    Assign CR
+                </a>
+            {% endif %}
+            {% if item.report_status == 'Ready for DR'%}
+            <a class="btn btn-primary" data-toggle="modal" data-target="#assign-dr-modal">
+                Assign DR
+            </a>
+            {% endif %}
+
+            {% endif %}
+            {% if item.report_status == 'Ready for DR' %}
+            <a class="btn btn-primary" data-toggle="modal" data-target="#revert_modal"><i class="fa fa-undo" aria-hidden="true"></i></i> Revert</a>
+            {% endif %}
+            <a class="btn btn-primary" href="{{url_for(table_name~'.unlock', item_id=item.id)}}" ><i class="fa-solid fa-unlock"></i> Unlock</a>
+        {% endif %}
+    {% endif %}
+    <a class="btn btn-danger" data-toggle="modal" data-target="#remove-modal">Remove</a>
+    {% if item.remove_reason and current_user.permissions in ['Admin', 'Owner'] %}
+        {% if item.db_status == 'Removed' %}
+            <a class="btn btn-secondary" href="{{ url_for(table_name~'.restore', item_id=item.id) }}">Restore</a>
+        {% elif current_user.initials != item.modified_by %}
+            <a class="btn btn-success" href="{{ url_for(table_name~'.approve_remove', item_id=item.id) }}">Approve Removal</a>
+            <a class="btn btn-danger" href="{{ url_for(table_name~'.reject_remove', item_id=item.id) }}">Reject Removal</a>
+        {% endif %}
+    {% endif %}
+{% endif %}
+
+{% endblock %}
+
+{% block view %}
+{# --- Simple access check (finalized + restricted + not allowed) --- #}
+{% set _perms_str = (current_user.permissions|string)|upper %}
+{% set _has_role = 'ADMIN' in _perms_str or 'OWNER' in _perms_str %}
+{% set _is_whitelisted_initials = current_user.initials in ['CSL', 'DSS'] %}
+{% set _must_block = (item.report_status == 'Finalized') and (item.case.sensitivity == 'Restricted') and (not _has_role) and (not _is_whitelisted_initials) %}
+
+<div id="content-wrap" class="{% if _must_block %}restrict-blur{% endif %}">
+  {% if current_user.permissions != 'MED' %}
+  <div style="display: flex; gap: 2rem; align-items: center; flex-wrap: wrap;">
+      <div>
+          Case Number:
+          <strong><a href="{{ url_for('cases.view', item_id=item.case_id, view_only=True) }}" target="_blank">
+              {{ item.case.case_number }}
+          </a></strong>
+      </div>
+      <div>
+          Assigned CR: <strong>{{ item.assigned_cr_user.initials }}</strong>
+      </div>
+      <div>
+          Assigned DR: <strong>{{ item.assigned_dr_user.initials }}</strong> 
+      </div>
+  </div>
+  {% endif %}
+
+  {% if kwargs.file_exists == True %}
+      <a href="../static/filesystem/{{table_name}}/{{item.file_name}}.pdf" target="_blank">{{item.file_name}}</a>
+      <div class="my-3" align="center">
+          <embed src="../static/filesystem/{{table_name}}/{{item.file_name}}.pdf" width="100%" height="1000px"/>
+      </div>
+  {% endif %}
+</div>
+
+{# Non-dismissable overlay modal (only rendered when blocked) #}
+{% if _must_block %}
+  <div class="restrict-overlay" role="dialog" aria-modal="true" aria-labelledby="restrictTitle">
+    <div class="restrict-modal-box">
+      <h3 id="restrictTitle" style="margin:0 0 .5rem 0;">Restricted Finalized Report</h3>
+      <p style="margin:0 0 1rem 0;">
+        See management for access to this report.
+      </p>
+      <div class="restrict-actions">
+        <a class="restrict-exit" href="{{ url_for('reports.view_list') }}">Exit</a>
+      </div>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block accordion %}
+{% endblock %}
+
+
+{% block modals %}
+<!-- Report Generation Spinner Modal -->
+<div class="modal fade" id="report-loading-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content text-center p-4">
+      <div class="modal-body">
+        <div class="spinner-border text-primary mb-3" role="status" style="width: 4rem; height: 4rem;">
+          <span class="sr-only">Loading...</span>
+        </div>
+        <p class="mb-0">Generating report... Please wait</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="cr_modal" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm CR?</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <p id="cr_text">By clicking accept, your <b>({{current_user.initials}})</b> details and signature will be affixed
+                    onto the report as the CR.</p>
+
+                <div id="loading_spinner" class="spinner-border text-primary" role="status" style="display: none; width: 4rem; height: 4rem;">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-dismiss="modal" type="button">Cancel</button>
+                <a class="btn btn-primary" href="{{url_for(table_name~'.cr', item_id=item.id)}}" id="cr_accept_btn">Accept</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal" id="dr_modal" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm DR?</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="dr_text">By clicking accept, your <b>({{current_user.initials}})</b> details and signature will be affixed
+                    onto the report as the DR.</p>
+
+                    <div id="dr_loading_spinner" class="spinner-border text-primary" role="status" style="display: none; width: 4rem; height: 4rem;">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-dismiss="modal" type="button">Cancel</button>
+                <a class="btn btn-primary" href="{{url_for(table_name~'.dr', item_id=item.id)}}" id="dr_accept_btn">Accept</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal For Revert -->
+<div class="modal" id="revert_modal" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Are you sure you want to revert {{item.report_name}}?</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="cr_text">Once reverted, please press "Revise" to make any necessary changes.</p>
+
+                <div id="loading_spinner" class="spinner-border text-primary" role="status" style="display: none; width: 4rem; height: 4rem;">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-dismiss="modal" type="button">Cancel</button>
+                <a class="btn btn-primary" href="{{url_for(table_name~'.revert', item_id=item.id)}}" id="cr_accept_btn">Accept</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Pop Up-->
+{# https://getbootstrap.com/docs/4.1/components/modal/ #}
+{# Notice how the link with the id to the button above! #}
+<div class="modal" id="del_modal" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete {{alias}}?</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <b>{{alias}}</b>?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-dismiss="modal" type="button">Cancel</button>
+
+                <form action="{{ url_for(table_name~'.delete', item_id= item.id) }}" method="POST">
+                    <input class="btn btn-danger" type="submit" value="Delete">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- modal for report generation -->
+<div class="modal" id="generate-report-modal" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Generate Report</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="cr_text">Are you sure you want to generate a report for <b>{{ item.report_name }}</b>?</p>
+
+                <div id="loading_spinner" class="spinner-border text-primary" role="status" style="display: none; width: 4rem; height: 4rem;">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content: center">
+                <form method="POST" action="{{ url_for('reports.generate_report_route', item_id=item.id) }}">
+                    <button type="submit" class="btn btn-primary" id="cr_accept_btn">Continue</button>
+                </form>
+                <button class="btn btn-secondary" data-dismiss="modal" type="button">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for revision  -->
+
+
+<div class="modal" id="revise-modal" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Revise Report?</h5>
+                <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="cr_text">Are you sure you want to revise <b>{{ item.report_name }}</b>?</p>
+
+                <div id="loading_spinner" class="spinner-border text-primary" role="status" style="display: none; width: 4rem; height: 4rem;">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content: center">
+                <a class="btn btn-primary" href="{{ url_for(table_name~'.update', item_id = item.id, report_type='manual', discipline=item.discipline, revise='True')}}" role="button">Revise</a>
+                <button class="btn btn-secondary" data-dismiss="modal" type="button">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- GENRATE REPORT LOADING MODAL -->
+<!-- Progress Modal for Report Generation -->
+<div id="progress-modal" class="modal" tabindex="-1" role="dialog" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content text-center">
+        <div class="modal-header">
+          <h5 class="modal-title">Generating Report...</h5>
+        </div>
+        <div class="modal-body">
+          <div class="progress" style="height: 25px;">
+            <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%;">
+              <span id="progressText">0%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- REMOVE ITEM -->
+<div class="modal" tabindex="-1" role="dialog" id="remove-modal">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Remove {{alias}}?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="{{ url_for(table_name~'.remove', item_id=item.id) }}" method="POST">
+                <div class="modal-body">
+                    <p>Are you sure you want to remove <b>{{alias}}</b>?</p>
+                    <label>Please enter the reason for removal.</label>
+                    <div class="form-group">
+                        <textarea class="form-control" name="reason" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <input class="btn btn-danger" type="submit" value="Remove">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Assign DR modal -->
+<div class="modal" id="assign-dr-modal" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Assign DR for {{ alias }}</h5>
+          <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form enctype="multipart/form-data" id="assigned_dr" method="POST">
+          {{ kwargs.assigned_dr.hidden_tag() }}
+          <div class="modal-body">
+            <div class="form-group">
+              {{ kwargs.assigned_dr.assigned_dr.label(class="form-label") }}
+              {{ kwargs.assigned_dr.assigned_dr(class="form-control") }}
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button class="btn btn-primary" type="submit">Assign</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Assign CR modal -->
+
+  <div class="modal" id="assign-cr-modal" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Assign CR for {{ alias }}</h5>
+          <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form enctype="multipart/form-data" id="assigned_cr" method="POST">
+          {{ kwargs.assigned_cr.hidden_tag() }}
+          <div class="modal-body">
+            <div class="form-group">
+              {{ kwargs.assigned_cr.assigned_cr.label(class="form-label") }}
+              {{ kwargs.assigned_cr.assigned_cr(class="form-control") }}
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button class="btn btn-primary" type="submit">Assign</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+
+
+{% endblock %}
+  
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("generate-report-form");
+    const loadingModal = $("#report-loading-modal");
+
+    if (form && loadingModal) {
+        form.addEventListener("submit", function () {
+            loadingModal.modal({
+                backdrop: 'static',
+                keyboard: false,
+                show: true
+            });
+        });
+    }
+});
+</script>
+
+<script>
+  $(document).ready(function () {
+    // Bind ONLY inside the CR modal to avoid duplicate-ID issues
+    $('#cr_modal').on('click', '#cr_accept_btn', function (event) {
+      event.preventDefault();
+
+      const modal = $("#cr_modal");
+      const href = $(this).attr("href");
+
+      // Lock the modal UI
+      modal.find("#cr_accept_btn").hide();
+      modal.find("#loading_spinner").show();
+      modal.data('bs.modal')._config.backdrop = 'static';
+      modal.data('bs.modal')._config.keyboard = false;
+      setTimeout(() => { modal.find(".modal-header .close").remove(); }, 50);
+      modal.find(".modal-footer .btn-secondary").remove();
+
+      // Start CR
+      $.ajax({
+        type: "POST",
+        url: href,
+        success: function (data) {
+          const reportId = data && data.report_id;
+          const redirectUrl = data && (data.redirect || data.redirect_url);
+
+          if (!reportId || !redirectUrl) {
+            alert("Missing report id or redirect URL.");
+            modal.find("#loading_spinner").hide();
+            window.location.reload();
+            return;
+          }
+
+          // Poll queue status
+          const timeoutMs = 2 * 60 * 1000; // 2 minutes
+          const start = Date.now();
+          const pollEvery = 5000; // 5s
+
+          const timer = setInterval(function () {
+            const elapsed = Date.now() - start;
+            if (elapsed > timeoutMs) {
+              clearInterval(timer);
+              alert("Report generation timed out. Try again later.");
+              window.location.reload();
+              return;
+            }
+
+            $.getJSON("/check_report_status", { report_id: reportId }, function (statusData) {
+              if (!statusData) return;
+
+              if (statusData.status === "ready") {
+                clearInterval(timer);
+                window.location.href = redirectUrl;
+              } else if (statusData.status === "error" || statusData.status === "unknown") {
+                clearInterval(timer);
+                alert("Report generation failed.");
+                window.location.reload();
+              }
+              // else "working": keep polling
+            }).fail(function(){
+              // transient error: keep polling
+            });
+
+          }, pollEvery);
+        },
+        error: function () {
+          alert("Failed to start CR. Try again later.");
+          modal.find("#loading_spinner").hide();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Hide the loading modal initially.
+        document.getElementById('loading-modal').style.display = 'none';
+
+        // Attach an event listener to the form submission.
+        const form = document.querySelector('form'); // Adjust if your form has a specific id or class.
+        if (form) {
+            form.addEventListener('submit', function () {
+                document.getElementById('loading-modal').style.display = 'flex';
+            });
+        }
+    });
+</script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const form = document.getElementById("generate-report-form")
+        const loadingModal = document.getElementById("loading-modal")
+
+        if(form) {
+            form.addEventListener("submit", function() {
+                // loadingModal.style.display="flex"
+                $('#processing').modal('show')
+            })
+        }
+
+    })
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById("generate-report-form"); // use this for Generate/CR/DR form
+  if (!form) return;
+
+  const loadingModal = document.getElementById("loading-modal");
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    if (loadingModal) loadingModal.style.display = "flex";
+
+    const formData = new FormData(form);
+    const action = form.action;
+
+    fetch(action, { method: "POST", body: formData })
+      .then((res) => {
+        if (!res.ok) throw new Error("Server responded with an error.");
+        return res.json();
+      })
+      .then((data) => {
+        const reportId = data && data.report_id;
+        const redirectUrl = data && (data.redirect || data.redirect_url); // tolerate old key just in case
+
+        if (!reportId) {
+          throw new Error("No report_id returned; cannot poll status.");
+        }
+        if (!redirectUrl) {
+          throw new Error("No redirect URL returned from server.");
+        }
+
+        let interval = null;
+        const start = Date.now();
+        const maxSeconds = 120;
+
+        const stopPolling = (cb) => {
+          if (interval) clearInterval(interval);
+          interval = null;
+          if (typeof cb === "function") cb();
+        };
+
+        // Stop polling if user leaves the page or tab becomes hidden for too long
+        const beforeUnload = () => stopPolling();
+        window.addEventListener("beforeunload", beforeUnload);
+
+        interval = setInterval(() => {
+          const elapsed = (Date.now() - start) / 1000;
+          if (elapsed > maxSeconds) {
+            stopPolling();
+            window.removeEventListener("beforeunload", beforeUnload);
+            if (loadingModal) loadingModal.style.display = "none";
+            alert("Report generation timed out. Please try again.");
+            // optional: location.reload();
+            return;
+          }
+
+          // If the page is hidden, pause polling to be gentle on server (optional)
+          if (document.hidden) return;
+
+          fetch(`/check_report_status?report_id=${encodeURIComponent(reportId)}`)
+            .then((r) => r.json())
+            .then((status) => {
+              const s = status && status.status;
+              if (s === "ready") {
+                stopPolling(() => {
+                  window.removeEventListener("beforeunload", beforeUnload);
+                  if (loadingModal) loadingModal.style.display = "none";
+                  window.location.href = redirectUrl;
+                });
+              } else if (s === "error" || s === "unknown") {
+                stopPolling(() => {
+                  window.removeEventListener("beforeunload", beforeUnload);
+                  if (loadingModal) loadingModal.style.display = "none";
+                  alert("Report generation failed. Please try again.");
+                  // optional: location.reload();
+                });
+              }
+              // else keep polling on "working"
+            })
+            .catch((err) => {
+              // network hiccup: keep polling unless it repeats
+              console.warn("Status check failed:", err);
+            });
+        }, 5000);
+      })
+      .catch((err) => {
+        console.error(err);
+        alert(err.message || "Failed to start report generation.");
+      })
+      .finally(() => {
+        // Keep the modal up while polling; if we threw before polling, hide it.
+        // (The 'ready'/'error' branches above also hide it.)
+        // If you prefer: comment this out to always keep spinner during polling.
+        // If an early error occurred (no polling started), hide now:
+        // if (!document.querySelector("._polling-active")) { if (loadingModal) loadingModal.style.display = "none"; }
+      });
+  });
+});
+</script>
+
+<script>
+    $(document).ready(function () {
+    $("#dr_accept_btn").click(function (event) {
+        event.preventDefault();
+
+        // Only find elements inside the DR modal
+        const modal = $("#dr_modal");
+        modal.find("#dr_accept_btn").hide();
+        modal.find("#dr_loading_spinner").show();
+        modal.find(".modal-footer .btn-secondary").remove()
+        // setTimeout(() => {
+        //     window.location.href = $(this).attr("href");
+        // }, 500);
+        // window.location.href = $(this).attr("href");
+        // Disable backdrop and ESC closing
+        modal.data('bs.modal')._config.backdrop = 'static';
+        modal.data('bs.modal')._config.keyboard = false;
+        setTimeout(() => {
+            modal.find(".modal-header .close").remove();
+        }, 50);
+
+        $.ajax({
+            type: "POST",
+            url: $(this).attr("href"),
+            success: function (data) {
+                const reportId = data.report_id;
+                let interval;
+                const timeout = 2 * 60 * 1000; // 2 minutes
+                const startTime = Date.now();
+
+
+                interval = setInterval(function () {
+
+                    const elapsed = Date.now() - startTime;
+
+                    if (elapsed > timeout) {
+                        alert("Report generation timed out. Try again later.");
+                        clearInterval(interval);
+                        window.location.reload();
+                        return;
+                    }
+
+
+                    $.getJSON("/check_report_status", { report_id: reportId }, function (statusData) {
+                        if (statusData.status === "ready") {
+                            clearInterval(interval);
+                            window.location.href = '/reports';  // or redirect to a report view page
+                        } else if (statusData.status === "error" || statusData.status === "unknown") {
+                            alert("Report generation failed.");
+                            clearInterval(interval);
+                            window.location.reload();
+                        }
+                    });
+                }, 15000);  // poll every 5 seconds
+            },
+            error: function () {
+                alert("Failed to start report. Try again later.");
+                $("#dr_loading_spinner").hide();
+                $("#dr_text").show();
+            }
+        });
+
+
+
+    });
+});
+</script>
+
+
+
+{% endblock %}

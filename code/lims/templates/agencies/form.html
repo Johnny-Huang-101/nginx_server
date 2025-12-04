@@ -1,0 +1,40 @@
+{% extends "form_template.html" %}
+
+<!-- ALERTS -->
+{% block alerts %}
+{% endblock %}
+
+<!-- HEADER -->
+{% block header %}
+{% endblock %}
+
+<!-- FORM -->
+{% block form %}
+
+    <div class="form-group">
+        {{form.name.label}}
+        {{form.name}}
+    </div>
+    <div class="form-group">
+        {{form.abbreviation.label}}
+        {{form.abbreviation}}
+    </div>
+    <div class="form-group">
+        {{form.vendor.label}} - Supplier of materials or services.
+        {{form.vendor}}
+    </div>
+    <div class="form-group">
+        {{form.manufacturer.label}}
+        {{form.manufacturer}}
+    </div>
+
+{% endblock %}
+
+
+<!--MODALS-->
+{% block modals %}
+{% endblock %}
+
+<!--SCRIPTS-->
+{% block scripts %}
+{% endblock %}

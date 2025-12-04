@@ -1,0 +1,55 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+{% endblock %}
+
+<!--Custom Buttons-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% block buttons %}
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+     <th>Batch ID</th>
+     <th>Standard/Solution Name</th>
+     <th>Constituent Type</th>
+    <th>Vial Position</th>
+    <th>Label Made</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        <a href="{{url_for('batches.view', item_id=item.batch_id)}}">
+            {{item.batch.batch_id}}
+        </a>
+    </td>
+    {% if item.constituent is not none %}
+        <td>{{item.constituent.constituent.name}}</td>
+    {% elif item.reagent is not none %}
+        <td>{{item.reagent.const.name}}</td>
+    {% else %}
+        <td></td>
+    {% endif %}
+    {% if item.constituent_type is not none %}
+        <td>{{item.constituent_type}}</td>
+    {% else %}
+        <td></td>
+    {% endif %}
+    <td>{{item.vial_position}}</td>
+    <td>{{item.label_made}}</td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}
+

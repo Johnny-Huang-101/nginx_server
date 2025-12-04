@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+{% block content %}
+
+<head>
+    <title>{{item_name}}</title>
+</head>
+
+
+    <div style="margin-top:6px">
+        <a href="{{url_for('dashboard.get_dashboard')}}"><i class="fa-solid fa-house"></i></a>
+        > {{item_name}}
+    </div>
+    <hr style="border-width:5px; margin-top:6px">
+    <h1>
+        <!-- ICON BLOCK -->
+
+        {% block icon %}{% endblock %}
+
+        <!-- ######### -->
+        {{item_name}}
+    </h1>
+
+    <hr style="border-width:5px">
+    {% if query in ['locked', 'pending'] %}
+        <div class="alert alert-warning" role="alert">
+            <b><a href="{{url_for(table_name~'.view_list')}}">Show all results</a></b>
+        </div>
+    {% endif %}
+    {% if n_pending or n_locked  %}
+    <div class="alert alert-warning" role="alert">
+        There are currently:
+        <ul class="alert-list">
+            {% if n_pending %}
+            <li>
+                <a href="{{url_for(table_name~'.view_list', query='pending') }}"><strong>{{n_pending}} items</strong></a> requiring action.
+            </li>
+            {% endif %}
+            {% if n_locked %}
+            <li>
+                <a href="{{url_for(table_name~'.view_list', query='locked') }}"><strong>{{n_locked}} items</strong></a> that are locked.
+            </li>
+            {% endif %}
+
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- ALERT BLOCK -->
+
+    {% block alerts %}
+    {% endblock %}
+
+    <!-- ########## -->
+
+
+    <div class="d-flex justify-content-center" id="spinner-div">
+        <div class="spinner-border" role="status" style="width: 3rem; height: 3rem;">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+
+    <div id="buttons">
+        {% if not view_only %}
+            <a class="btn btn-primary mb-2" href="{{url_for(table_name~'.add')}}">Add {{item_type}}</a>
+        {% endif %}
+        {% block buttons %}
+        {% endblock %}
+        <div class="dropdown" style="display:inline-block">
+          <button class="btn btn-secondary dropdown-toggle mb-2" type="button" id="export-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <i class="fa-solid fa-file-export"></i> Export
+          </button>
+          <div class="dropdown-menu" aria-labelledby="export-button">
+            <a class="dropdown-item" href="#" id="export">Current Page ({{kwargs['length']}} rows)</a>
+            <a class="dropdown-item" href="{{url_for(table_name~'.export')}}">All {{item_name}} Data</a>
+          </div>
+        </div>
+        {% if current_user.permissions in ['Admin', 'Owner'] %}
+            <a class="btn btn-secondary mb-2" href="{{url_for(table_name~'.import_file')}}">Import {{item_name}}</a>
+        {% endif %}
+    </div>
+    <div class="table display" id="table-div" style="opacity:0;">
+        <div class="table-responsive">
+            <table class="display table-striped table-hover nowrap small datatable" style="width:100%;" id="{{table_name}}">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    {% if permissions in ['Admin', 'Owner'] or delete_ok %}
+                        <th>Delete</th>
+                    {% endif %}
+                    <th>Locked</th>
+                    <!-- HEADER BLOCK -->
+
+                    {% block header %}
+                    {% endblock %}
+
+                    <!-- ########## -->
+                    <th>Date Created</th>
+                    <th>Created By</th>
+                    <th>Date Modified</th>
+                    <th>Modified By</th>
+                    {% if permissions in ['Admin', 'Owner'] %}
+                        <th>Remove Reason</th>
+                        <th>Pending Submitter</th>
+                        <th>DB STATUS</th>
+                    {% endif %}
+                </tr>
+                </thead>
+
+                <tbody>
+
+                {% for item in items %}
+                <tr>
+                    <td>{{item.id}}</td>
+
+                    {% if permissions in ['Admin', 'Owner'] or delete_ok %}
+                        <td><a href="{{url_for(table_name~'.delete', item_id=item.id)}}" class="btn btn-danger btn-size"><i class="fa fa-trash-o btn-icon"></i></a></td>
+                    {% endif %}
+                    <td>
+                        {% if item.locked %}
+                            {% if item.locked_by == current_user.initials %}
+                                <a id="lock" href="{{url_for(table_name~'.unlock', item_id=item.id)}}"><i class="fa-solid fa-unlock"></i></a>
+                            {% else %}
+                                <i class="fa-solid fa-lock"></i>
+                            {% endif %}
+                            {{item.locked_by}}
+                        {% endif %}
+                    </td>
+                    <!-- BODY BLOCK -->
+
+                    {% block loop_item scoped %}
+                        {% block body %}
+                        {% endblock %}
+                    {% endblock %}
+
+                    <!-- ########## -->
+                    <td>
+                        {% if item.create_date %}
+                            {{item.create_date.strftime('%m/%d/%Y %H:%M')}}
+                        {% endif %}
+                    </td>
+                    <td>{{item.created_by}}</td>
+                    <td>
+                        {% if item.modify_date %}
+                        {{item.modify_date.strftime('%m/%d/%Y %H:%M')}}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.modified_by %}
+                        {{item.modified_by}}
+                        {% endif %}
+                    </td>
+                    {% if permissions in ['Admin', 'Owner'] %}
+                        <td>{{item.remove_reason}}</td>
+                        <td>{{item.pending_submitter}}</td>
+                        <td>{{item.db_status}}</td>
+                    {% endif %}
+                </tr>
+
+                {% endfor %}
+                </tbody>
+
+            </table>
+            <div>
+                Showing <span id="first">{{items.first}}</span> to
+                <span id="last">{{items.last}}</span> of
+                <span id="total">{{items.total}}</span> entries
+                <span id="filtered" hidden>(filtered from {{items.last}} entries)</span>
+            </div>
+            <hr>
+            <div class="row" style="width: 100%">
+                <div class="col">
+                    <form action="{{ url_for(table_name~'.view_list')}}" method="POST">
+                        Show
+                        <div class="form-group px-0" style="display:inline-block">
+                            <select class="form-control" name="length" id="length" onchange="this.form.submit()">
+                                <option value=100>100</option>
+                                <option value="500">500</option>
+                                <option value="1000">1000</option>
+                                <option value="5000">5000</option>
+                                <option value="-1">All</option>
+                            </select>
+                        </div>
+                        entries per page
+                    </form>
+                </div>
+                <div class="col" style="display: flex; justify-content: flex-end">
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination">
+                            {% if items.page == 1 %}
+                            <li class="page-item disabled">
+                                {% else %}
+                            <li class="page-item">
+                                {% endif %}
+                                <a class="page-link" href="{{ url_for(table_name~'.view_list', page=items.page-1, length=length) }}" tabindex="-1">Previous</a>
+                            </li>
+
+                            {% for page_num in items.iter_pages(left_edge=1, right_edge=2, left_current=1, right_current=2) %}
+                            {% if page_num %}
+                            {% if items.page == page_num %}
+                            <li class="page-item active">
+                                <a class="page-link">{{ page_num }}</a></li>
+                            {% else %}
+                            <li class="page-item"><a class="page-link" href="{{ url_for(table_name~'.view_list', page=page_num, length=length) }}">{{ page_num }}</a></li>
+                            {% endif %}
+                            {% else %}
+                            <li class="page-item disabled"><a class="page-link">…</a></li>
+                            {% endif %}
+                            {% endfor %}
+
+                            {% if items.page == items.pages %}
+                            <li class="page-item disabled">
+                                {% else %}
+                            <li class="page-item">
+                                {% endif %}
+                                <a class="page-link" href="{{ url_for(table_name~'.view_list', page=items.page+1, length=length) }}" tabindex="-1">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                    <div class="pl-2">
+                        <div class="form-inline">
+                            <input class="form-control mr-2" style="width: 10rem" id="page-num" placeholder="Go to page...">
+                            <a class="btn btn-primary" id="go-to-page">Go</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<!-- MODAL BLOCK -->
+
+{% block modals %}
+{% endblock %}
+
+<!-- ########## -->
+
+<!-- SCRIPT BLOCK -->
+
+{% block scripts %}
+{% endblock %}
+
+<!-- ########## -->
+
+<script type="text/javascript">
+    let permissions = '{{permissions}}'
+    let table_name = '{{table_name | safe}}'
+</script>
+
+<script>
+
+$(document).ready(function () {
+    $("#length").val({{kwargs['length']}});
+    initDataTable($('#{{table_name}}'), {{kwargs['length']}})
+});
+</script>
+
+<script>
+$('#export').on('click', function () {
+    $("#{{table_name}}").table2excel({
+        filename: "{{table_name}}_"+moment().format('YYYYMMDDHHmmss')+".xls",
+        exclude: ".filters",
+        exclude_links: true,
+    });
+})
+</script>
+
+{% endblock %}

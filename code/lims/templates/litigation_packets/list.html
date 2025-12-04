@@ -1,0 +1,160 @@
+{% extends "list_template.html" %}
+
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+{% block alerts %}
+{% if kwargs['lp_nums'] or kwargs['lr_nums'] != 0 %}
+    <div class="alert alert-warning" role="alert">
+        There are currently:
+        <ul class="alert-list">
+            {% if kwargs['lp_Nums'] != 0 %}
+                <li>
+                    <a href="#"><strong>{{kwargs['lp_nums']}}
+                        </strong></a>Ready for PP.
+                </li>
+                {% endif %}
+                {% if kwargs['lr_nums'] != 0 %}
+                <li>
+                    <a href="#"><strong>{{kwargs['lr_nums']}}
+                        </strong></a>Ready for PR.
+                </li>
+                {% endif %}
+
+                </ul>
+            </div>
+            {% endif %}
+{% endblock %}
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+<a href="{{ url_for('litigation_packets.view_schedule') }}" class="btn btn-outline-primary">
+    <i class="fa fa-calendar"></i> View Scheduled Packets
+</a>
+
+{% if kwargs['scheduled_lit_docs_exist'] %}
+    <span style="color: darkred; font-weight: bold; vertical-align: middle;">
+        Warning: There are packets scheduled for tonight at 7:30 PM. Do not run packet generations after 7 PM or packets will break. You may still add to the schedule before 7 PM today.
+    </span>
+{% endif %}
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Packet Name</th>
+    <th>Status</th>
+    <th>Requested Agency</th>
+    <th>Requested Division</th>
+    <th>Requested Personnel</th>
+    <th>Requested Date</th>
+    <th>Due Date</th>
+    <th>Packets Ready</th>
+    <th>Delivery Date</th>
+    <th>Delivered Agency</th>
+    <th>Delivered Division</th>
+    <th>Delivered Personnel</th>
+    <th>Number of Pages</th>
+    <th>Postage and Delivery</th>
+    <th>Additional Costs</th>
+    <th>Total Costs</th>
+    <th>Paid Date</th>
+    <th>PP</th>
+    <th>PR</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        <a href="/litigation_packets/{{ item.id }}"
+            data-toggle="tooltip"
+            title="{{ item.discipline_statuses | replace('\n','<br>') | safe }}"
+            style="{% if 'Ready for Dissemination' not in item.discipline_statuses %}color: orange;{% endif %}">
+            {{ item.packet_name }}
+        </a>
+    </td>
+    <td class="packet_status">{{item.packet_status}}</td>
+    <td>{{ item.agency.name }}</td>
+    <td>{{ item.division.name }}</td>
+    <td>{{ item.personnel.full_name }}</td>
+    <td>{{ item.requested_date.strftime('%Y-%m-%d') if item.requested_date else '' }}</td>
+    <td>{{ item.due_date.strftime('%Y-%m-%d') if item.due_date else '' }}</td>
+
+    {% if item.id in kwargs.packet_info_map %}
+        {% set packet_info = kwargs.packet_info_map[item.id] %}
+        <td>
+            {% if packet_info.zip_files and packet_info.zip_files|length > 0 %}
+                {% for zip_file in packet_info.zip_files %}
+                    {% if item.packet_status != "Finalized" and item.packet_status != "Canceled" %}
+                        <a class="btn btn-sm btn-success" href="{{ url_for('download_packet', packet_name=packet_info.packet_name, file_name=zip_file) }}" class="btn btn-primary btn-sm">
+                            <i class="fa fa-download"></i> Download
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </td>
+    {% else %}
+    <td></td>
+    {% endif %}
+
+    <td>{{ item.delivery_date.strftime('%Y-%m-%d') if item.delivery_date else '' }}</td>
+    <td>{{ item.del_agency.name }}</td>
+    <td>{{ item.del_division.name }}</td>
+    <td>{{ item.del_personnel.full_name }}</td>
+    <td>{{ item.n_pages }}</td>
+    <td>{{ item.postage_and_delivery }}</td>
+    <td>{{ item.additional_costs }}</td>
+    <td>{{ item.total_costs }}</td>
+    <td>{{ item.paid_date }}</td>
+
+    <td>{% if item.litigation_preparer  %}
+        {{ item.prep_user.initials }} {{ item.litigation_prepare_date.strftime('%Y-%m-%d %H:%M') if item.litigation_prepare_date else 'N/A' }}
+        {% endif %}
+    </td>
+
+    <td>{% if item.litigation_reviewer %}
+        {{ item.rev_user.initials }} {{ item.litigation_review_date.strftime('%Y-%m-%d %H:%M') if item.litigation_review_date else 'N/A' }}
+        {% endif %}
+    </td>
+{% endblock %}
+
+{% block modals %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let rows = document.querySelectorAll('tr')
+
+        rows.forEach( function (row, index) {
+            let statusCell = row.querySelector('.packet_status')
+
+            if (statusCell) {
+                let statusText = statusCell.textContent.trim()
+                console.log(statusText)
+            }
+
+        })
+
+    })
+
+    let add_button = document.getElementById('litigation_packets-add')
+    let import_button = document.getElementById('litigation_packets-import')
+    let hyper_link = document.getElementById('litigation_packets-span')
+    let title = document.getElementById('litigation_packets-page-title')
+
+    add_button.innerText = "Add Packet"
+    import_button.innerText = "Import Packet"
+    hyper_link.innerText = "Packets"
+    title.innerText = "Packets"
+
+</script>
+<script>
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+  });
+</script>
+{% endblock %}

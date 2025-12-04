@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+{% block style %}
+{% endblock %}
+</style>
+{% block head %}
+<head>
+    {% if function in ['Edit', 'Approve', 'Update'] %}
+        <title>{{config['SYSTEM_NAME']}}/{{item_name}}/{{item_dict['id']}}/{{function}}</title>
+    {% else %}
+        <title>{{config['SYSTEM_NAME']}}/{{item_name}}/{{function}}</title>
+    {% endif %}
+</head>
+{% endblock %}
+{% if item_dict and item_dict['communications'] and function == 'Approve' %}
+    <div class="alert alert-warning" role="alert" style="margin-top:6px; background-color:rgb(221, 204, 238); color: black; border-color: #8b53e6">
+        {% if item_dict['modified_by'] %}
+            {% set date = item_dict['modify_date'].strftime('%m/%d/%Y %H:%M') %}
+            {% set submitter = item_dict['modified_by'] %}
+        {% else %}
+            {% set date = item_dict['create_date'].strftime('%m/%d/%Y %H:%M') %}
+            {% set submitter = item_dict['created_by'] %}
+        {% endif %}
+        <b>{{submitter}}</b> left the following communication
+        on <b>{{date}}</b>:
+        <ul>
+            <li>{{item_dict['communications']}}</li>
+        </ul>
+    </div>
+{% endif %}
+
+{% if errors.unique_failed  %}
+    <div class="alert alert-danger mt-3" role="alert" style="margin-top:6px">
+        <p class="my-0">{{errors['unique_failed']}}</p>
+    </div>
+{% endif %}
+
+<!-- ALERT BLOCK -->
+
+{% block alerts %}
+{% endblock %}
+
+<!--#############-->
+<div>
+    <div style="margin-top:6px">
+        {% if current_user.permissions not in ['INV', 'MED', 'MED-Autopsy', 'ADM'] %}
+            <a href="{{url_for('dashboard.get_dashboard')}}"><i class="fa-solid fa-house"></i></a>
+        {% else %}
+            <a href="{{url_for('cases.view_list')}}"><i class="fa-solid fa-house"></i></a>
+        {% endif %}
+        > <a href="#">{{item_name}}</a>
+        {% if function not in ['Edit', 'Approve', 'Update', 'Attach'] %}
+            > {{function}}
+        {% else %}
+            > {{alias}}
+            > {{function}}
+        {% endif %}
+     </div>
+    <hr style="border-width:5px; margin-top: 6px">
+    <h1>
+        {% if default_header %}
+            {% if function in ['Edit', 'Approve', 'Update'] %}
+              {{function}} <a class="link-unstyled">{{alias}}</a>
+            {% elif function == 'Attach' %}
+              {{function}} Files To <a class="link-unstyled">{{alias}}</a>
+            {% elif function == 'Import' %}
+                {{function}} <a class="link-unstyled">{{item_name}}</a>
+            {% elif function == 'Add' %}
+              Add <a class="link-unstyled">{{item_type}}</a>
+            {% else %}
+                {{function}}
+            {% endif %}
+        {% endif %}
+
+        {% block header %}
+        {% endblock %}
+    </h1>
+    <hr style="border-width:5px; margin-top: 6px">
+    <form method="POST" id="form" novalidate="novalidate" enctype="multipart/form-data" autocomplete="off">
+        {{ form.hidden_tag() }}
+    
+        <!--FORM BLOCK-->
+        {% block form %}
+            <div class="row">
+                <div class="col">
+                    {{form.solution_type_id.label}}
+                    {{form.solution_type_id(class='form-control')}}
+                </div>
+                <div class="col">
+                    {{form.name.label}}
+                    {{form.name(class='form-control')}}
+                </div>
+                <div class="col">
+                    {{form.lot.label}}
+                    {{form.lot(class='form-control')}}
+                </div>
+                <div class="col">
+                    {{form.description.label}}
+                    {{form.description(class='form-control')}} &nbsp&nbsp<i>For pre-defined:</i>&nbsp&nbsp<a href="javascript:void(0);" onclick="insertText('n-Propanol (0.60 mL) + NaCl (40 mg) in dH2O (4 L, QS)')">GCET ISTD</a>
+                    &nbsp|&nbsp&nbsp<a href="javascript:void(0);" onclick="insertText('Ammonium Formate (1.576 g) + Formic Acid (pH 4.50 ±0.03) in dH2O (5 L, QS)')">MPA</a>
+                    &nbsp|&nbsp&nbsp<a href="javascript:void(0);" onclick="insertText('Formic Acid (5 mL) in Acetonitrile (5 L)')">MPB</a>
+                    &nbsp|&nbsp&nbsp<a href="javascript:void(0);" onclick="insertText('LCQ Mobile Phase A (200 mL) + Methanol (50 mL)')">LCQ Recon</a>
+                    &nbsp|&nbsp&nbsp<a href="javascript:void(0);" onclick="insertText('Ammonium Formate (3.152 g) + Formic Acid (pH 4.50 ±0.03) in dH2O (5 L, WS)')">QTON MPA</a>
+                    &nbsp|&nbsp&nbsp<a href="javascript:void(0);" onclick="insertText('Formic Acid (2 mL) in Methanol (2 L)')">QTON MPB</a>
+                    &nbsp|&nbsp&nbsp<a href="javascript:void(0);" onclick="insertText('QTON Mobile Phase A (90 mL) + QTON Mobile Phase B (10 mL)')">QTON Recon</a>
+                    &nbsp|&nbsp&nbsp<a href="javascript:void(0);" onclick="insertText('Acetonitrile (1 L) + Isopropyl Alcohol (3 L) + Methanol (1 L)')">Needle Wash</a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    {{form.assay.label}}
+                    {{form.assay(class='form-control selectpicker')}}
+                </div>
+                <div class="col">
+                    {{form.prepared_by.label}}
+                    {{form.prepared_by(class='form-control')}}
+                </div>
+                <div class="col">
+                    {{form.prepared_date.label}}
+                    {{form.prepared_date(class='form-control')}}
+                </div>
+                <div class="col">
+                    {{form.retest_date.label}}
+                    {{form.retest_date(class='form-control')}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    {{form.location_table.label}}
+                    {{form.location_table(class='form-control')}}
+                    <div class="form-check mt-2">
+                        {{form.no_location}}
+                        {{form.no_location.label}}
+                    </div>
+                </div>
+                <div class="col">
+                    {{form.location_id.label}}
+                    {{form.location_id(class='form-control')}}
+                </div>
+            </div>
+        {% endblock %}
+        <!--###########-->
+    
+        <hr>
+    
+        <div class="form-group d-flex gap-2 align-items-center">
+            {% if 'submit' in form and (module_name not in ['containers', 'specimens'] or function != 'Add') %}
+                {{ form.submit(class='btn btn-primary mr-2') }}
+                {{form.submit_additional(class=('btn btn-primary mr-2'))}}
+            {% endif %}
+    
+            {% block buttons %}{% endblock %}
+    
+            {% if exit_route %}
+                <a type="button" class="btn btn-secondary mr-2" href="{{exit_route}}" id="exit">Exit</a>
+            {% else %}
+                <a type="button" class="btn btn-secondary mr-2" href="{{url_for(table_name~'.view_list')}}">Exit</a>
+            {% endif %}
+        </div>
+    </form>
+    
+        
+    {% block text %}
+    {% endblock %}
+</div>
+
+
+<!--MODAL BLOCK-->
+
+{% block modals %}
+{% endblock %}
+
+<!--###########-->
+
+<!-- SCRIPT BLOCK -->
+
+{% block scripts %}
+<script src="/static/form.js"></script>
+<script>
+    $(function () {
+        const $noLocation   = $('#no_location');      // checkbox
+        const $locationTable = $('#location_table');  // e.g., select/input
+        const $locationId    = $('#location_id');     // e.g., select/input
+
+        function updateLocationControls() {
+            const isNoLocation = $noLocation.prop('checked');
+            $locationTable.prop('disabled', isNoLocation);
+            $locationId.prop('disabled', isNoLocation);
+
+            // (Optional) Clear values when disabling
+            // if (isNoLocation) {
+            //   $locationTable.val('');
+            //   $locationId.val('');
+            //   $locationTable.trigger('change');
+            //   $locationId.trigger('change');
+            // }
+        }
+
+        // Trigger on change
+        $noLocation.on('change', updateLocationControls);
+
+        // Set correct state on page load
+        updateLocationControls();
+    });
+</script>
+<script>
+    function insertText(text) {
+        let field = document.getElementById("description");
+        field.value = text;
+    }
+</script>
+
+<script src="/static/js/standards_and_solutions.js"></script>
+<script src="/static/js/locations.js"></script>
+
+{% endblock %}
+
+<!--##############-->
+
+<!--<script type="text/javascript">-->
+<!--    let item_id = '{{item_id | safe}}'-->
+<!--</script>-->
+
+
+{% endblock %}

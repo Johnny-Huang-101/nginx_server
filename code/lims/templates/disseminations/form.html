@@ -1,0 +1,29 @@
+{% extends "form_template.html" %}
+{% block form %}
+    <div class="form-group">
+        {{form.record_id.label}}
+        {{form.record_id}}
+    </div>
+
+<div class="form-group">
+        {{form.disseminated_to.label}}
+        {{form.disseminated_to}}
+    </div>
+
+<div class="form-group">
+        {{form.disseminated_by.label}}
+        {{form.disseminated_by}}
+    </div>
+
+<div class="form-group">
+        {{form.date.label}}
+        {{form.date}}
+    </div>
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!-- Custom Buttons -->
+{% block buttons %}
+<!--put custom buttons here-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+<th>Code</th>
+<th>Name</th>
+<th>State</th>
+<th>Discipline</th>
+<th>Default Collection Vessel</th>
+<th>Default Units</th>
+<th>Default Assays</th>
+<th>Notes</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>{{item.code}}</td>
+    <td>
+        <b>
+            <a href="{{url_for(table_name~'.view', item_id=item.id)}}" class="admin-owner-only">
+                {{item.name}}
+            </a>
+        </b>
+    </td>
+    <td>{{item.state.name}}</td>
+    <td>{{item.discipline}}</td>
+    <td>{{item.collection_container.display_name}}</td>
+    <td>{{item.unit.name}}</td>
+    <td>
+        {% if item.default_assays %}
+            {% set lst = item.default_assays.split(", ") %}
+            {% for assay in lst %}
+                <a href="{{ url_for('assays.view', item_id=assay) }}" class="admin-owner-only">
+                    {% if lst.index(assay) == lst|length - 1 %}
+                    {{kwargs['Assays'].query.get(assay).assay_name}}
+                    {% else %}
+                    {{kwargs['Assays'].query.get(assay).assay_name~", "}}
+                    {% endif %}
+                </a>
+            {% endfor %}
+        {% else %}
+            {{item.default_assays}}
+        {% endif %}
+    </td>
+    <td>{{item.notes}}</td>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// When user is not admin or owner, prevent interaction for fields where class="admin-owner-only"
+const userPermission = "{{ current_user.permissions }}";
+document.addEventListener("DOMContentLoaded", () => {
+  if (userPermission !== "Owner" && userPermission !== "Admin") {
+    document.querySelectorAll(".admin-owner-only").forEach(link => {
+      link.addEventListener("click", e => e.preventDefault());
+      link.classList.add("disabled-link");
+    });
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+
+.btn-delete {
+    width: 24px;
+    height: 24px;
+    padding: 0px;
+}
+
+.btn-edit {
+    width: 24px;
+    height: 24px;
+    padding: 0px;
+}
+
+
+</style>
+    <head>
+        <title>{{item_name}}</title>
+    </head>
+    <hr style="border-width:5px">
+    <h1><i class="fa-solid fa-briefcase"></i> {{item_name}}</h1>
+    <hr style="border-width:5px">
+    {% if session[item_name.upper()~'_PENDING'] != 0 %}
+    <div class="alert alert-warning" role="alert">
+      There are currently <a href="#"><strong>{{session[item_name.upper()~'_PENDING']}} items</strong></a> requiring review.
+    </div>
+    {% endif %}
+
+ <div class="d-flex justify-content-center" id="spinner-div">
+    <div class="spinner-border" role="status" style="width: 3rem; height: 3rem;">
+        <span class="sr-only">Loading...</span>
+    </div>
+</div>
+<!--
+<a href="#" id="testing">Testing</a>
+-->
+
+<div class="table display" id="table-div" style="opacity:0">
+    <form action="{{ url_for(table_name~'.view_list')}}" method="POST">
+        Show
+        <div class="form-group px-0" style="display:inline-block">
+            <select class="form-control" name="length" id="length" onchange="this.form.submit()">
+                <option value="10">10</option>
+                <option value=100>100</option>
+                <option value="1000">1000</option>
+                <option value="-1">All</option>
+            </select>
+        </div>
+        entries per page
+    </form>
+        <div class="table-responsive">
+            <table class="display table-striped table-hover small nowrap" style="width:100%" id="{{table_name}}">
+              <thead>
+                <tr>
+                  <th>Actions</th>
+                  <th>Status</th>
+                  <th>String Field</th>
+                  <th>Text Field</th>
+                  <th>Select Field (int)</th>
+                  <th>Select Field (str)</th>
+                  <th>Select Multiple Field</th>
+                  <th>Date Field</th>
+                  <th>File Field</th>
+                  <th>Communications</th>
+                  <th>Revision</th>
+                  <th>Date Created</th>
+                  <th>Created By</th>
+                  <th>Date Modified</th>
+                  <th>Modified By</th>
+                </tr>
+              </thead>
+              <tbody id="body">
+              {% for item in items %}
+                   {% if item.db_status in ['Pending', 'Active with pending changes'] %}
+                    <tr class="table-warning">
+                  {% elif item.db_status == 'Deletion Pending' %}
+                    <tr class="table-danger">
+                  {% elif item.db_status == 'Removed' %}
+                    <tr class="table-secondary">
+                  {% else %}
+                    <tr class="table-default">
+                  {% endif %}
+                  <td>
+                      {% if item.db_status != 'Active' %}
+                        {% if current_user.initials in submitters_pending.values() %}
+                            <a href="{{url_for(table_name~'.edit', item_id=item.id)}}" class="btn btn-primary btn-edit"><i class="fa-solid fa-pen-to-square"></i></a>
+                        {% else %}
+                            <a href="{{ url_for(table_name~'.approve', item_id=item.id)}}" class="btn btn-primary btn-edit"><i class="fa-solid fa-check"></i></a>
+                        {% endif %}
+                      {% endif %}
+                      <a href="{{url_for(table_name~'.delete', item_id=item.id)}}" class="btn btn-danger btn-delete"><i class="fa fa-trash-o"></i></a>
+                  </td>
+                  <th scope="row">
+                      {{item.db_status}}
+                  </th>
+                  <td>
+                      <a href="{{ url_for('test_table.view', item_id=item.id) }}">
+                          {{item.string_field}}
+                      </a>
+                  </td>
+                  <td>{{item.text_field}}</td>
+                  <td>{{item.int_select_field}}</td>
+                  <td>{{item.str_select_field}}</td>
+                  <td>{{item.select_multiple_field}}</td>
+                  <td>{{item.date_field}}</td>
+                  <td>{{item.file_field}}</td>
+                  <td>{{item.communications}}</td>
+                  <td>{{item.revision}}</td>
+                  {% if item.create_date == None %}
+                     <td></td>
+                  {% else %}
+                    <td>{{item.create_date.strftime('%m/%d/%Y %H:%M')}}</td>
+                  {% endif %}
+                  <td>{{item.created_by}}</td>
+
+                  {% if item.modify_date == None %}
+                    <td></td>
+                  {% else %}
+                    <td>{{item.modify_date.strftime('%m/%d/%Y %H:%M')}}</td>
+                  {% endif %}
+                  {% if item.modified_by == None %}
+                    <td></td>
+                  {% else %}
+                    <td>{{item.modified_by}}</td>
+                  {% endif %}
+              </tr>
+
+              {% endfor %}
+
+               </tbody>
+             </table>
+            <div>
+                Showing <span id="first">{{items.first}}</span> to
+                <span id="last">{{items.last}}</span> of
+                <span id="total">{{items.total}}</span> entries
+                <span id="filtered" hidden>(filtered from {{items.last}} entries)</span>
+            </div>
+            <div style="display: flex; justify-content: flex-end">
+                <nav aria-label="Page navigation example">
+                     <ul class="pagination">
+                         {% if items.page == 1 %}
+                         <li class="page-item disabled">
+                         {% else %}
+                         <li class="page-item">
+                          {% endif %}
+                            <a class="page-link" href="{{ url_for(table_name~'.view_list', page=items.page-1, length=kwargs['length']) }}" tabindex="-1">Previous</a>
+                        </li>
+
+                         {% for page_num in items.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                         {% if page_num %}
+                             {% if items.page == page_num %}
+                                <li class="page-item active">
+                                    <a class="page-link">{{ page_num }}</a></li>
+                             {% else %}
+                                <li class="page-item"><a class="page-link" href="{{ url_for(table_name~'.view_list', page=page_num, length=kwargs['length']) }}">{{ page_num }}</a></li>
+                             {% endif %}
+                         {% else %}
+                              <li class="page-item disabled"><a class="page-link">…</a></li>
+                         {% endif %}
+                      {% endfor %}
+
+                        {% if items.page == items.pages %}
+                        <li class="page-item disabled">
+                        {% else %}
+                         <li class="page-item">
+                          {% endif %}
+                            <a class="page-link" href="{{ url_for(table_name~'.view_list', page=items.page+1, length=kwargs['length']) }}" tabindex="-1">Next</a>
+                        </li>
+                     </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+<script>
+
+    $(document).ready(function () {
+    // Setup - add a text input to each footer cell
+
+     $("#length").val({{kwargs['length']}});
+
+     var buttons = []
+
+     buttons.push({
+            className: 'btn btn-primary mb-3',
+            text: 'Add {{item_type}}',
+            action: function (e, dt, node, config) {
+            window.location.href = "{{url_for(table_name~'.add')}}";
+            }
+            })
+
+     buttons.push({
+            extend: 'csvHtml5',
+            className: 'btn btn-secondary mb-3',
+            text: 'Export',
+            autoFilter: true,
+            title: '{{item_name}}_'+moment().format('YYYYMMDDHHmmss'),
+            sheetName: 'export'
+            })
+
+
+    $('#{{table_name}} thead tr')
+        .clone(true)
+        .addClass('filters')
+        .appendTo('#{{table_name}} thead');
+
+    var start = Date.now();
+    var table = $('#{{table_name}}').DataTable({
+        dom: 'Brt',
+        scrollX: true,
+        scrollY: "60vh",
+        scrollCollapse: true,
+        buttons: buttons,
+        orderCellsTop: true,
+        fixedHeader: true,
+        //select: true,
+        order: [],
+        pageLength: {{kwargs['length']}},
+
+        initComplete: function () {
+            var api = this.api();
+
+            // For each column
+            api
+                .columns()
+                .eq(0)
+                .each(function (colIdx) {
+                    // Set the header cell to contain the input element
+                    var cell = $('.filters th').eq(
+                        $(api.column(colIdx).header()).index()
+                    );
+                    var title = $(cell).text();
+                    $(cell).html('<input type="text" placeholder="' + title + '" style="width: 100%; border: 1px solid lightgray; border-radius: 5px;  "/>');
+
+                    // On every keypress in this input
+                    $(
+                        'input',
+                        $('.filters th').eq($(api.column(colIdx).header()).index())
+                    )
+                        .off('keyup change')
+                        .on('change', function (e) {
+                            // Get the search value
+                            $(this).attr('title', $(this).val());
+                            var regexr = '({search})'; //$(this).parents('th').find('select').val();
+
+                            var cursorPosition = this.selectionStart;
+                            // Search the column for that value
+
+                             if (this.value != ' ' && this.value != '*') {
+                            api
+                                .column(colIdx)
+                                .search(
+                                    this.value != ''
+                                        ? regexr.replace('{search}', '(((' + this.value + ')))')
+                                        : '',
+                                    this.value != '',
+                                    this.value == ''
+                                )
+                                .draw();
+                            } else if (this.value == ' ') {
+                                api
+                                .column(colIdx)
+                                .search('^$', true, false )
+                                .draw();
+                            } else if (this.value == '*') {
+                                api
+                                .column(colIdx)
+                                .search('^(?!\s*$).+', true, false )
+                                .draw();
+                            }
+
+                            $('#first').html('1');
+                            $('#last').html(api.page.info().recordsDisplay);
+
+                            if (api.page.info().recordsDisplay != {{kwargs['length']}}) {
+                                $('#filtered').removeAttr('hidden');
+                            } else if (api.page.info().recordsDisplay == -1) {
+                                $('#filtered').attr('hidden', true);
+                            } else {
+                                $('#filtered').attr('hidden', true);
+                             }
+                        })
+                        .on('keyup', function (e) {
+                            e.stopPropagation();
+
+                            $(this).trigger('change');
+                            $(this)
+                                .focus()[0]
+                                .setSelectionRange(cursorPosition, cursorPosition);
+                        });
+                });
+        $('#table-div').css('opacity',1);
+        $('.spinner-border').hide();
+        }
+    });
+
+    $('#testing').on('click',  function () {
+        alert('hello');
+    });
+
+});
+
+</script>
+
+
+
+{% endblock %}

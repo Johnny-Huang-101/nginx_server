@@ -1,0 +1,16 @@
+{% extends "form_template.html" %}
+
+<head>
+    <title>{{config['SYSTEM_NAME']}}/{{item_name}}/Import</title>
+</head>
+{% block form %}
+
+<div>
+    {{form.changes_dict}}
+    <p>The following vial position changes have been detected. Please confirm.</p>
+    {% for k, v in changes.items() %}
+        <p>{{v['prev']}} <i class="fa fa-arrow-right" aria-hidden="true"></i> {{v['new']}}</p>
+    {% endfor %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "form_template.html" %}
+{% block header %}
+    <div class="row">
+        <div class="col" style="font-weight: bold; font-size: 20px">File Name</div>
+        <div class="col" style="font-weight: bold; font-size: 20px">Sort Order</div>
+        <div class="col"></div>
+        <div class="col"></div>
+    </div>
+{% endblock %}
+{% block form %}
+    {% for file, field in zip(files.values(), form) %}
+        <div class="row form-group mb-4">
+            <div class="col">
+                {{file.file_name}}
+            </div>
+            <div class="col">
+                {{field(class="sort-order", style='width: 20%; text-align: center')}}
+            </div>
+            <div class="col"></div>
+            <div class="col"></div>
+        </div>
+    {% endfor %}
+
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        $(document).ready(function(){
+            // Bind change event to all select fields with class "sort-order"
+            $('.sort-order').on('change', function(){
+                var newValue = $(this).val();
+                // For every other field with the same class...
+                $('.sort-order').not(this).each(function(){
+                    if ($(this).val() == newValue) {
+                        // Set its value to 0 if it already has the new value
+                        $(this).val(0);
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

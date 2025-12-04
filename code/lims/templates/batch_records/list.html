@@ -1,0 +1,51 @@
+{% extends "list_template.html" %}
+
+<!-- Icon to use next to heading -->
+{% block icon %}
+{% endblock %}
+
+<!--Any custom alerts can be inserted here-->
+{% block alerts %}
+{% endblock %}
+
+<!--Custom Buttons-->
+<!--They will be inserted between the "Add" and "Export" buttons-->
+{% block buttons %}
+{% endblock %}
+
+<!-- Header -->
+{% block header %}
+    <th>Batch</th>
+    <th>Title</th>
+    <th>File Type</th>
+    <th>File</th>
+{% endblock %}
+
+<!-- Body -->
+{% block body scoped %}
+    <td>
+        {% if item.batch is not none %}
+        <a href="{{ url_for('batches.view', item_id=item.batch.id)}}">
+            {{item.batch.batch_id}}
+        </a>
+        {% else %}
+        <a></a>
+        {% endif %}
+    </td>
+    <th>
+        <a href="../static/filesystem/batch_records/{{item.batch.batch_id}}/{{item.file_name}}" target="_blank">
+            {{item.title}}
+        </a>
+    </th>
+    <td>{{item.file_type}}</td>
+    <td>{{item.file_path}}</td>
+{% endblock %}
+
+<!--Modals-->
+{% block modals %}
+{% endblock %}
+
+<!--Scripts-->
+{% block scripts %}
+{% endblock %}
+

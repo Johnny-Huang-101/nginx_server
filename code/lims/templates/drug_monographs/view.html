@@ -1,0 +1,135 @@
+{% extends "view_template.html" %}
+
+{% block alerts %}
+{% endblock %}
+
+{% block buttons %}
+{% endblock %}
+
+{% block view %}
+{% endblock %}
+
+{% block accordion %}
+<div class="card">
+    <div class="card-header" id="details" style="height:50px; padding:0px; display:flex;align-items:center;">
+        <button class="btn btn-link chevron-btn" data-toggle="collapse" data-target="#details-coll" aria-expanded="false" aria-controls="details">
+            <span><i class="fa-solid fa-chevron-down mr-2 chevron" style="border: '#FF0000'"></i></span>
+            Drug Monograph Details
+        </button>
+    </div>
+    <div id="details-coll" class="collapse show" aria-labelledby="details">
+        <div class="card-body">
+            <div class="my-3">
+                <table class="table table-hover table-striped details-table" style="width:100%">
+                    <tr>
+                        <th>Formulation/Trade Names </th>
+                        <td>{{item.formulation_tradename}}</td>
+                    </tr>
+                    <tr>
+                        <th>Pharm Class</th>
+                        <td>{{item.pharm_class}}</td>
+                    </tr>
+                    <tr>
+                        <th>Intended Use</th>
+                        <td>{{item.intended_use}}</td>
+                    </tr>
+                    <tr>
+                        <th>Mechanism of Action</th>
+                        <td>{{item.mech_of_action}}</td>
+                    </tr>
+                    <tr>
+                        <th>Effects and Toxicity</th>
+                        <td>{{item.effects_and_tox}}</td>
+                    </tr>
+                    <tr>
+                        <th>Impairment</th>
+                        <td>{{item.impairment}}</td>
+                    </tr>
+                    <tr>
+                        <th>Elimination Half-life</th>
+                        <td>{{item.half_life}}</td>
+                    </tr>
+                    <tr>
+                        <th>Time to Peak Concentration</th>
+                        <td>{{item.time_to_peak_conc}}</td>
+                    </tr>
+                    <tr>
+                        <th>AM Non-toxic Blood or Serum Concentration</th>
+                        <td>{{item.am_nontox_blood_serum_conc}}</td>
+                    </tr>
+                    <tr>
+                        <th>AM Non-toxic Blood or Serum Concentration Information</th>
+                        <td>{{item.am_nontox_information}}</td>
+                    </tr>
+                    <tr>
+                        <th>PM Toxic/Lethal Blood or Serum Concentration</th>
+                        <td>{{item.pm_tox_blood_serum_conc}}</td>
+                    </tr>
+                    <tr>
+                        <th>AM and PM Toxic/Lethal Blood or Serum Concentration Information</th>
+                        <td>{{item.ampm_tox_lethal_coc_info}}</td>
+                    </tr>
+                    <tr>
+                        <th>Blood to Serum Ratio</th>
+                        <td>{{item.blood_to_serum_ratio}}</td>
+                    </tr>
+                    <tr>
+                        <th>ADME: Absorption, Distribution, Metabolism, Excretion</th>
+                        <td>{{item.adme}}</td>
+                    </tr>
+                    <tr>
+                        <th>PK Variability</th>
+                        <td>{{item.pk_variability}}</td>
+                    </tr>
+                    <tr>
+                        <th>DDI (Drug-Drug Interactions)</th>
+                        <td>{{item.drug_interaction}}</td>
+                    </tr>
+                    <tr>
+                        <th>DDI Reference</th>
+                        <td>{{item.drug_interaction_ref}}</td>
+                    </tr>
+                    <tr>
+                        <th>Postmortem Redistribution</th>
+                        <td>{{item.pm_redistributions}}</td>
+                    </tr>
+                    <tr>
+                        <th>Postmortem Considerations</th>
+                        <td>{{item.pm_considerations}}</td>
+                    </tr>
+                    <tr>
+                        <th>Human Performance Considerations</th>
+                        <td>{{item.hp_considerations}}</td>
+                    </tr>
+                    <tr>
+                        <th>References</th>
+                        <td>{{item.references}}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+    $(document).ready(function() {
+        $.each($('.details-table td'), function () {
+            var text = $(this).html()
+            var regex = /\[(\d+(?:,\d+)*)\]/g;
+            const matches = text.matchAll(regex)
+            for (const match of matches) {
+              var text = text.replace(match[0], '<a class="link-unstyled">'+match[0].sup()+'</span>')
+            }
+
+            $(this).html(text);
+        });
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends "form_template.html" %}
+{% block header %}
+<div class="mt-5">
+    <h5>
+        Add a delay to scheduled FA Exports when generating one ad-hoc.
+    </h5>
+    <h6>
+        Alternate: Manually <a href="{{url_for('cases.import_fa_cases')}}">Import FA Cases</a> with FA Management Report
+    </h6>
+</div>
+    <hr style="border-width:10px">
+<h4>Scheduled Export Controls</h4>
+<table class="table table-sm">
+  <thead>
+    <tr><th>Frequency</th><th>delayUntil</th><th>lastRun</th></tr>
+  </thead>
+  <tbody>
+    {% for freq, data in control_files.items() %}
+      <tr>
+        <td>{{ freq }}</td>
+        <td>{{ data.delayUntil if data.delayUntil else 'none' }}</td>
+        <td>{{ data.lastRun if data.lastRun else 'never' }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+
+{% block form %}
+    <div class="row form-row my-4">
+        <div class="col-md-4">
+            {{ form.run_now.label }} &nbsp&nbsp&nbsp Wait ~2 minutes for changes to be reflected in LIMS.
+            <ul>{{ form.run_now() }}</ul><br>
+        </div>
+    </div>
+        <strong>Filter by FA Case Entry Date (LIMS) aka Case Create Date (FA)</strong>
+    <div class="row form-row my-4">
+        <div class="col-md-2">
+            {{ form.start_date.label }}
+            {{ form.start_date() }}
+        </div>
+        <div class="col-md-2">
+            {{ form.end_date.label }}
+            {{ form.end_date() }}
+        </div>
+    </div>
+    <hr style="border: none; border-top: 2px dashed #ccc; margin: 0.5rem 0;">
+    <div class="row form-row my-4">
+        <div class="col-md-4">
+            {{ form.delay_until.label }} <br>This will update for ALL frequencies (i.e., .json configurations).
+            {{ form.delay_until(type="datetime-local") }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block text %}
+<div class="mt-5">
+    <hr style="border-width:10px">
+    <h5>Recent Log Entries for FA Exports</h5>
+    <table class="table table-sm table-striped">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Status</th>
+          <th>Type</th>
+          <th>Start Date</th>
+          <th>End Date</th>
+          <th>Output File</th>
+          <th>Error Message</th>
+          <th>LIMS_Imported</th>
+          <th>LIMS_Error</th>
+          <th>LIMS_Completed</th>
+
+        </tr>
+      </thead>
+      <tbody>
+        {% set latest_date = log_rows | map(attribute='LIMS_Completed') | max %}
+        {% for row in log_rows %}
+          <tr
+              class="{{ 'table-success' if row['LIMS_Completed'] else 'table' }}"
+              style="{{ 'font-weight: bold;' if row['LIMS_Completed'] == latest_date else '' }}"
+            >
+            <td>{{ row['Timestamp'] }}</td>
+            <td>{{ row['Status'] }}</td>
+            <td>{{ row['Type'] }}</td>
+            <td>{{ row['StartDate'] }}</td>
+            <td>{{ row['EndDate'] }}</td>
+            <td>{{ row['OutputFile'] }}</td>
+            <td>{{ row['ErrorMessage'] }}</td>
+            <td>{{ row['LIMS_Imported'] }}</td>
+            <td>{{ row['LIMS_Error'] }}</td>
+            <td>{{ row['LIMS_Completed'] }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+    $('#form').on('submit', function() {
+        $('#submit').prop('disabled', false)
+        $('#processing').modal('hide');
+        window.location.href="/cases"
+    });
+</script>
+{% endblock %}
