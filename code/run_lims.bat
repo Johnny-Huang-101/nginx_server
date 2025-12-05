@@ -33,7 +33,9 @@ start nginx.exe
 
 ::echo Launching Background Services...
 cd /d D:\NGINX_SERVER\code
-::start "LIMS Services" /min "%PYTHON_PATH%" services.py
+start "LIMS Services" /min "%PYTHON_PATH%" services.py
+start "LIMS Worker" /min "%PYTHON_PATH%" pdf_generation.py
+
 
 echo Launching Web Workers...
 

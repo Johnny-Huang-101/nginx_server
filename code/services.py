@@ -2,12 +2,13 @@ from lims import app
 import time
 import os
 import sys
+import threading
 
 # Import your background workers
 from lims.background.background_auto_import import background_import_watcher
 from lims.background.autopsy_reports_worker import autopsy_worker
 from lims.background.business_record_worker import start_r1_daily_scheduler
-from lims.background.lit_packet_scheduler import background_worker
+from lims.background.lit_packet_scheduler import lit_packet_loop
 
 if __name__ == "__main__":
     print("--- STARTING BACKGROUND SERVICES (Scheduler/Watcher) ---")
@@ -29,11 +30,12 @@ if __name__ == "__main__":
             print(f"Error starting watcher: {e}")
         
         print("Initializing litpacket generator...")
-        try:
-            background_worker()
-        except Exception as e:
-            print(f"Error starting report generator: {e}")
-
+        scheduler_thread = threading.Thread(
+            target=lit_packet_loop, 
+            name="LitPacketScheduler", 
+            daemon=True
+        )
+        scheduler_thread.start()
 
         # 3. WILL WRITE TO PROD
         # autopsy_worker()

@@ -1,157 +1,142 @@
 import time
-from datetime import datetime
-from multiprocessing import Process
-from multiprocessing.pool import Pool
-from flask import current_app
-from lims.models import LitigationPacketRequest, db, LitigationPackets
-from lims.pdf_redacting.functions import lit_packet_generation_templates
-# from app import process_lock
-import traceback
-from threading import Thread
+import os
 import sys
+import logging
+import traceback
+from logging.handlers import TimedRotatingFileHandler
+from datetime import datetime
+from flask import current_app
 
-
+# Import the NEW queue submitter
+from lims.queue import submit
+from lims.models import LitigationPacketRequest, db, LitigationPackets
+# We import the actual generator function here so we can call it in process_job
+from lims.pdf_redacting.functions import lit_packet_generation_templates
 
 CYAN = "\033[96m"
-YELLOW = "\033[93m"
-GREEN = "\033[92m"
-RED = "\033[91m"
 RESET = "\033[0m"
 
-
-def process_job(job):
-    from app import app  # Import inside the subprocess
+# ------------------------------------------------------------------
+# PART 1: THE WORKER LOGIC
+# This function is called by run_worker.py when it picks up a ticket
+# ------------------------------------------------------------------
+def process_job(job_data):
+    """
+    Generates the Lit Packet PDF.
+    This runs inside the 'run_worker.py' process.
+    """
     import pythoncom
-    import logging
-    from logging.handlers import TimedRotatingFileHandler
-    import os
-    pythoncom.CoInitialize()
-
+    
+    # 1. Setup Logging (Specific to this job type)
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     LOG_DIR = os.path.abspath(os.path.join(BASE_DIR, '../../lims_logs'))
     os.makedirs(LOG_DIR, exist_ok=True)
-
-    # 🔑 give litpacket its own log file
     log_file = os.path.join(LOG_DIR, 'lit_packet_worker.log')
 
-    file_handler = TimedRotatingFileHandler(
-        filename=log_file,
-        when='midnight',
-        interval=1,
-        backupCount=7,
-        encoding='utf-8'
-    )
-    formatter = logging.Formatter(
-        '[%(asctime)s] [%(levelname)s] %(message)s', 
-        '%m/%d/%Y %H:%M:%S'
-    )
-    file_handler.setFormatter(formatter)
-
-    logger = logging.getLogger("litpacket")  # use a named logger
-    logger.setLevel(logging.INFO)
-    logger.handlers = []  # clear any inherited handlers
-    logger.addHandler(file_handler)
-
-
-    # Optional: redirect stdout/stderr (just like in app.py)
-    class StreamToLogger:
-        def __init__(self, logger, level):
-            self.logger = logger
-            self.level = level
-        def write(self, message):
-            if message:
-                for line in message.rstrip().splitlines():
-                    self.logger.log(self.level, line.rstrip())
-        def flush(self): pass
+    # (Simple logger setup for brevity, your existing setup is fine too)
+    logging.basicConfig(filename=log_file, level=logging.INFO, 
+                        format='[%(asctime)s] %(message)s')
     
-    sys.stdout = StreamToLogger(logging.getLogger("litpacket.STDOUT"), logging.INFO)
-    sys.stderr = StreamToLogger(logging.getLogger("litpacket.STDERR"), logging.ERROR)
+    print(f"{CYAN}[WORKER] Starting Lit Packet {job_data['item_id']}...{RESET}")
 
-    with app.app_context():
-        try:
-            from lims.models import LitigationPacketRequest, db, LitigationPackets
-            from lims.pdf_redacting.functions import lit_packet_generation_templates
-            from app import process_lock
+    # 2. Run the Logic
+    # Note: run_worker.py already initialized COM and App Context, 
+    # but nested context/init is safe.
+    try:
+        # Call your existing PDF generation function
+        path = lit_packet_generation_templates(
+            job_data["item_id"],
+            job_data["template_id"],
+            job_data["redact"],
+            job_data["packet_name"],
+            job_data["remove_pages"],
+            True # Flatten/Finalize
+        )
 
-            def lit_packet_generation_templates_safe(*args, **kwargs):
-                with process_lock:
-                    return lit_packet_generation_templates(*args, **kwargs)
-
-            path = lit_packet_generation_templates_safe(
-                job["item_id"],
-                job["template_id"],
-                job["redact"],
-                job["packet_name"],
-                job["remove_pages"],
-                True
-            )
-
-            packet = LitigationPackets.query.filter_by(id=job["packet_id"]).first()
-            if packet:
-                packet.packet_status = "Ready for PP"
-                db.session.commit()
-
-            job_record = LitigationPacketRequest.query.get(job['id'])
-            if job_record:
-                job_record.status = 'Success'
-                job_record.zip = path
-                db.session.commit()
-
-            print(f"{CYAN}[PROCESS] Packet {job['item_id']} generated successfully{RESET}")
+        # 3. Update DB (Success)
+        # We need to re-fetch the objects because we are in a new transaction
+        packet = LitigationPackets.query.filter_by(id=job_data["packet_id"]).first()
+        if packet:
+            packet.packet_status = "Ready for PP"
         
-        except Exception as e:
-            error_msg = traceback.format_exc()
-            print(f"[PROCESS] Error in job {job['id']}: {error_msg}")
-            job_record = LitigationPacketRequest.query.get(job['id'])
-            if job_record:
-                job_record.status = 'Fail'
-                db.session.commit()
-        finally:
-            db.session.remove()
-            pythoncom.CoUninitialize()
+        job_record = LitigationPacketRequest.query.get(job_data['id'])
+        if job_record:
+            job_record.status = 'Success'
+            job_record.zip = path
+            
+        db.session.commit()
+        print(f"{CYAN}[WORKER] Packet {job_data['item_id']} SUCCESS{RESET}")
+        return path
 
+    except Exception as e:
+        error_msg = traceback.format_exc()
+        print(f"[WORKER] ERROR: {error_msg}")
+        logging.error(f"Job {job_data['id']} Failed: {error_msg}")
+        
+        # Update DB (Fail)
+        db.session.rollback() # clear previous failed transaction
+        job_record = LitigationPacketRequest.query.get(job_data['id'])
+        if job_record:
+            job_record.status = 'Fail'
+            db.session.commit()
+        raise e # Re-raise so Redis marks job as failed
 
+# ------------------------------------------------------------------
+# PART 2: THE SCHEDULER LOGIC
+# This runs in your 'services.py' or a separate background thread
+# ------------------------------------------------------------------
 def lit_packet_loop():
+    """
+    Checks DB for scheduled packets and PUSHES them to Redis.
+    Does NOT generate them itself.
+    """
     from app import app
+    
+    print(f"{CYAN}[Scheduler] Lit Packet Scheduler Active{RESET}")
+    
     with app.app_context():
         while True:
-            print(f"{CYAN}[Worker] Checking for scheduled litigation packets...{RESET}")
-            now = datetime.now()
-            rows = LitigationPacketRequest.query.filter(
-                LitigationPacketRequest.status == 'Scheduled',
-                LitigationPacketRequest.scheduled_exec <= now
-            ).all()
+            try:
+                now = datetime.now()
+                # Find jobs that need to run
+                rows = LitigationPacketRequest.query.filter(
+                    LitigationPacketRequest.status == 'Scheduled',
+                    LitigationPacketRequest.scheduled_exec <= now
+                ).all()
 
-            jobs = []
-            for row in rows:
-                row.status = 'Processing'
-                jobs.append({
-                    "id": row.id,
-                    "item_id": row.item_id,
-                    "template_id": row.template_id,
-                    "redact": row.redact,
-                    "packet_name": row.packet_name,
-                    "remove_pages": row.remove_pages,
-                    "packet_id": row.packet_id
-                })
-            db.session.commit()
+                for row in rows:
+                    print(f"{CYAN}[Scheduler] Enqueuing Packet {row.id}{RESET}")
+                    
+                    # 1. Mark as Processing so we don't pick it up again
+                    row.status = 'Processing'
+                    db.session.commit() # Commit status change immediately
 
-            print(f"\033[96m Scheduled {len(jobs)} jobs fetched and marked as processed!\033[0m")
-            
-            if jobs:
-                with Pool(processes=1) as pool:
-                    pool.map(process_job, jobs)
+                    # 2. Prepare Data (Must be JSON serializable)
+                    job_payload = {
+                        "id": row.id,
+                        "item_id": row.item_id,
+                        "template_id": row.template_id,
+                        "redact": row.redact,
+                        "packet_name": row.packet_name,
+                        "remove_pages": row.remove_pages,
+                        "packet_id": row.packet_id
+                    }
 
-            # Sleep in chunks to allow responsiveness to Ctrl+C
-            print(f"{CYAN}[Worker] Sleeping for 5 minutes...{RESET}")
+                    # 3. Submit to Redis (Priority 10 = Low/Default) 
+                    #TODO IDK if we need to change the priority of lit packets
+                    # We pass the STRING path to the function above
+                    submit(
+                        "lims.background.lit_packet_scheduler:process_job", 
+                        priority=9, 
+                        job_data=job_payload # passed as kwarg to process_job
+                    )
+
+                if len(rows) > 0:
+                    print(f"{CYAN}[Scheduler] Pushed {len(rows)} jobs to Redis.{RESET}")
+
+            except Exception as e:
+                print(f"[Scheduler] Error: {e}")
+                db.session.rollback()
+
+            # Sleep 5 minutes
             time.sleep(300)
-
-
-
-def background_worker():
-    thread = Thread(target=lit_packet_loop, daemon=False)
-    thread.start()
-
-# # to run, open a new terminal and go to the code folder then python -m lims.background.lit_packet_scheduler
-# if __name__ == "__main__":
-#     background_worker()
