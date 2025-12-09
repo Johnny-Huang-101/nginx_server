@@ -1162,7 +1162,7 @@ def generate_report(case_id, discipline, report_id, template_path, report_name, 
     Returns a concurrent.futures.Future compatible with your /check_report_status.
     """
     return submit(
-        "lims.reports.functions:gen_rep_worker",  # wrapper below
+        "lims.reports.functions:gen_rep",  # wrapper below
         priority=0,                               # <-- highest priority
         case_id=case_id,
         discipline=discipline,
@@ -1170,18 +1170,19 @@ def generate_report(case_id, discipline, report_id, template_path, report_name, 
         template_path=template_path,
         report_name=report_name,
         file_name=file_name,
+        report_status=None,
         cr=cr,
         dr=dr,
     )
 
-def gen_rep_worker(case_id, discipline, report_id, template_path, report_name, file_name, cr=None, dr=None):
-    """
-    Runs inside the queue worker process. Gives DB/app context to gen_rep.
-    """
-    with app.app_context():
-        # gen_rep is your existing function that actually builds the docx/pdf
-        return gen_rep(case_id, discipline, report_id, template_path, report_name, file_name,
-                       report_status=None, cr=cr, dr=dr)
+# def gen_rep_worker(case_id, discipline, report_id, template_path, report_name, file_name, cr=None, dr=None):
+#     """
+#     Runs inside the queue worker process. Gives DB/app context to gen_rep.
+#     """
+#     with app.app_context():
+#         # gen_rep is your existing function that actually builds the docx/pdf
+#         return gen_rep(case_id, discipline, report_id, template_path, report_name, file_name,
+#                        report_status=None, cr=cr, dr=dr)
 
 
 
