@@ -848,7 +848,7 @@ def cr(item_id):
     db.session.commit()
     return jsonify({
         "report_id": job_id,
-        "redirect": url_for(f"{table_name}.view", item_id=item.id, _external=True, view_only=True)
+        "redirect": url_for(f"{table_name}.view", item_id=item.id, view_only=True)
     })
 
 
@@ -900,7 +900,7 @@ def dr(item_id):
     # DO NOT return a report_id → no polling for DR
     return jsonify({
         "report_id": job_id,
-        "redirect": url_for(f"{table_name}.view", item_id=item.id, _external=True)
+        "redirect": url_for(f"{table_name}.view", item_id=item.id)
     })
 
 
@@ -983,10 +983,9 @@ def generate_report_route(item_id):
 
     return jsonify({
         "report_id": getattr(fut, "job_id", None),
-        "redirect": url_for(f"{table_name}.view", item_id=item.id, _external=True)
+        "redirect": url_for(f"{table_name}.view", item_id=item.id)
     })
 
-    # return jsonify(url_for(f"{table_name}.view", item_id=item.id, _external = True))
 
 
 @blueprint.route(f'/{table_name}/<int:item_id>/revert', methods=['GET', 'POST'])

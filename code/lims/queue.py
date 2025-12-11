@@ -194,7 +194,7 @@ def submit(callable_path: str, *, priority: int = 10, **kwargs) -> Job:
         _execute_task, 
         args=(callable_path, kwargs),
         job_timeout='1h',
-        result_ttl=120, # Keep result for 2min        meta={'original_priority': priority}
+        result_ttl=600, # Keep result for 10min        meta={'original_priority': priority}
     )
     
     # 3. Compatibility Patch

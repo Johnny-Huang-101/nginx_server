@@ -4,7 +4,8 @@ import sys
 import os
 
 # Import SimpleWorker to force Single-Process execution (Crucial for COM/Word)
-from rq import SimpleWorker, Queue, Connection
+from rq import Queue, Connection
+from rq_win import WindowsWorker
 from app import app  # Import your Flask app for DB context
 
 # Priority Order: Worker looks at 'high' first. If empty, looks at 'low'.
@@ -33,7 +34,7 @@ def start_worker():
             # 3. Create the Worker
             # SimpleWorker means: No forking. No multiprocessing. 
             # One job finishes completely before the next begins.
-            worker = SimpleWorker(map(Queue, listen))
+            worker = WindowsWorker(map(Queue, listen))
             
             # 4. Run Loop
             worker.work()

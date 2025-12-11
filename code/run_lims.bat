@@ -7,7 +7,6 @@ echo ========================================================
 set ENV_PATH=D:\envs\sflims
 set PYTHON_PATH=%ENV_PATH%\python.exe
 
-:: --- CRITICAL FIX: MANUALLY ACTIVATE ENVIRONMENT ---
 :: We add the folders where Conda hides DLLs (like sqlite3.dll) to the Windows PATH
 :: This stops the "DLL load failed" error.
 set PATH=%ENV_PATH%;%ENV_PATH%\Library\mingw-w64\bin;%ENV_PATH%\Library\usr\bin;%ENV_PATH%\Library\bin;%ENV_PATH%\Scripts;%PATH%
@@ -48,6 +47,9 @@ echo Launching Web Workers...
 
 start "Worker 1" /min "%PYTHON_PATH%" -m waitress --port=8001 --threads=64 app:app
 start "Worker 2" /min "%PYTHON_PATH%" -m waitress --port=8002 --threads=64 app:app
+start "Worker 3" /min "%PYTHON_PATH%" -m waitress --port=8003 --threads=64 app:app
+start "Worker 4" /min "%PYTHON_PATH%" -m waitress --port=8004 --threads=64 app:app
+
 :: start "Worker 3" /min "%PYTHON_PATH%" -m waitress --port=8003 --threads=4 app:app
 :: start "Worker 4" /min "%PYTHON_PATH%" -m waitress --port=8004 --threads=4 app:app
 :: Uncomment these lines if you need more power later:
@@ -55,5 +57,5 @@ start "Worker 2" /min "%PYTHON_PATH%" -m waitress --port=8002 --threads=64 app:a
 :: start "Worker 6" /min "%PYTHON_PATH%" -m waitress --port=8006 --threads=4 app:app
 
 echo.
-echo SYSTEM LIVE AT: http://localhost:8000
+echo SYSTEM LIVE AT: http://localhost:8000 and http://10.183.216.30:8000
 pause
