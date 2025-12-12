@@ -352,7 +352,7 @@ def print_labels(item_id):
     # return redirect(url_for(f'{table_name}.view', item_id=item.id))
     print(f"PRINTING LABELS {attributes_list}")
 
-    return jsonify([(attributes_list, printer, None, None, url_for(f'{table_name}.view', item_id=item.id, _external=True))])
+    return jsonify([(attributes_list, printer, None, None, url_for(f'{table_name}.view', item_id=item.id, True))])
 
 
 @blueprint.route(f'/{table_name}/<int:item_id>/update_in_use', methods=['GET', 'POST'])

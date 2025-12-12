@@ -81,7 +81,7 @@ def _case_url(case_id):
     Adjust endpoint if needed.
     """
     try:
-        return url_for("cases.view", case_id=case_id, _external=True)
+        return url_for("cases.view", case_id=case_id, True)
     except Exception:
         base = flask_request.host_url.rstrip("/")
         return f"{base}/cases/{case_id}"

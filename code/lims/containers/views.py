@@ -131,11 +131,11 @@ def add():
                                                                      submission_time=form.submission_time.data,
                                                                      submission_date=form.submission_date.data,
                                                                      discipline=form.discipline.data,
-                                                                     _external=True
+                                                                     True
                                                                      ))])
                 else:
                     return jsonify([(None, None, None, None,
-                                     url_for(f'cases.view', item_id=case.id, view_only=True, _external=True))])
+                                     url_for(f'cases.view', item_id=case.id, view_only=True, True))])
 
             else:
                 container = Containers.query.filter_by(accession_number=kwargs['accession_number']).first()
@@ -178,11 +178,11 @@ def add():
                                                                                    submission_time=form.submission_time.data,
                                                                                    submission_date=form.submission_date.data,
                                                                                    discipline=form.discipline.data,
-                                                                                   _external=True
+                                                                                   True
                                                                                    ))])
                 else:
                     return jsonify([(attributes_list, printer, None, None,
-                                     url_for(f'cases.view', item_id=case.id, view_only=True, _external=True))])
+                                     url_for(f'cases.view', item_id=case.id, view_only=True, True))])
                 # print_label(printer, attributes_list)
         else:
             print(f"FORM NOT VALID with {form.errors}")
@@ -802,14 +802,14 @@ def print_container_label(item_id):
 
     if from_autopsy:
 
-        return jsonify(attributes_list, printer, True, 1, url_for(f'cases.autopsy_view', _external=True))
+        return jsonify(attributes_list, printer, True, 1, url_for(f'cases.autopsy_view', True))
         # print_label(printer, attributes_list, True, 1)
         # return redirect(url_for(f'cases.autopsy_view'))
 
     else:
 
         return jsonify(attributes_list, printer, None, None,
-                       url_for(f'{table_name}.view', item_id=item_id, _external=True))
+                       url_for(f'{table_name}.view', item_id=item_id, True))
     #     print_label(printer, attributes_list)
 
     # return redirect(url_for(f'{table_name}.view', item_id=item_id))

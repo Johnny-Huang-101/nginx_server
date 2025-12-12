@@ -2589,7 +2589,7 @@ def autopsy_view():
             # print_label(printer, attributes_list, True, 1)
 
             print(attributes_list)
-            return jsonify([(attributes_list, printer, True, 1, url_for('cases.autopsy_view', _external=True))])
+            return jsonify([(attributes_list, printer, True, 1, url_for('cases.autopsy_view', True))])
 
             # return redirect(url_for('cases.autopsy_view'))
         elif 'submit_histo_scan' in request.form:
@@ -2600,7 +2600,7 @@ def autopsy_view():
             if discipline_letter != 'H':
                 flash('Only histology specimens should be submitted using this workflow', 'error')
 
-                return jsonify([(None, None, None, None, url_for('cases.autopsy_view', _external=True))])
+                return jsonify([(None, None, None, None, url_for('cases.autopsy_view', True))])
                 # return redirect(url_for('cases.autopsy_view'))
 
             # case_id = int(form.initial_label.data.split(';')[0].split(': ')[1].strip())
@@ -2633,7 +2633,7 @@ def autopsy_view():
                 return jsonify([(None, None, None, None,
                                  url_for('specimens.add', case_id=case_id, accession_number=accession_number,
                                          container_id=container_id, discipline=discipline, from_autopsy=True,
-                                         histology=True, _external=True))])
+                                         histology=True, True))])
                 # return redirect(url_for('specimens.add', case_id=case_id, accession_number=accession_number,
                 #                         container_id=container_id, discipline=discipline, from_autopsy=True,
                 #                         histology=True))
@@ -2643,7 +2643,7 @@ def autopsy_view():
 
                 print(f"NO ACCESSION NUMBER")
                 flash('Only histology specimens should be submitted using this workflow', 'warning')
-                return jsonify([(None, None, None, None, url_for('cases.autopsy_view', _external=True))])
+                return jsonify([(None, None, None, None, url_for('cases.autopsy_view', True))])
                 # return redirect(url_for('cases.autopsy_view'))
         elif 'submit_generic_print' in request.form:
             # Generic label

@@ -457,7 +457,7 @@ def add():
                                                                                     custody=custody,
                                                                                     discipline=discipline,
                                                                                     histology=histology,
-                                                                                    _external=True
+                                                                                    True
                                                                                     ))])
                     # subit and attach
                     elif request.form.get('submit_attach'):
@@ -466,16 +466,16 @@ def add():
                             [(attributes_list, printer, True, 1, url_for('containers.attach', item_id=container_id,
                                                                          redirect_url=url_for('cases.view',
                                                                                               item_id=form.case_id.data),
-                                                                         _external=True))])
+                                                                         True))])
                     # submit exit
                     else:
                         if from_autopsy:
                             return jsonify(
-                                [(attributes_list, printer, True, 1, url_for('cases.autopsy_view', _external=True))])
+                                [(attributes_list, printer, True, 1, url_for('cases.autopsy_view', True))])
                         else:
                             return jsonify([(attributes_list, printer, True, 1,
                                              url_for('cases.view', item_id=form.case_id.data, view_only=True,
-                                                     _external=True))])
+                                                     True))])
                 else:
 
                     if not request.form.get('submit_exit') and not request.form.get('submit_attach'):
@@ -490,7 +490,7 @@ def add():
                                                                                        custody=custody,
                                                                                        discipline=discipline,
                                                                                        histology=histology,
-                                                                                       _external=True
+                                                                                       True
                                                                                        ))])
                     elif request.form.get('submit_attach'):
 
@@ -498,19 +498,19 @@ def add():
                             [(attributes_list, printer, None, None, url_for('containers.attach', item_id=container_id,
                                                                             redirect_url=url_for('cases.view',
                                                                                                  item_id=form.case_id.data),
-                                                                            _external=True))])
+                                                                            True))])
 
                     else:
                         if from_autopsy:
 
                             return jsonify(
-                                [(attributes_list, printer, None, None, url_for('cases.autopsy_view', _external=True))])
+                                [(attributes_list, printer, None, None, url_for('cases.autopsy_view', True))])
 
                         else:
 
                             return jsonify([(attributes_list, printer, None, None,
                                              url_for('cases.view', item_id=form.case_id.data, view_only=True,
-                                                     _external=True))])
+                                                     True))])
             else:
                 print(f"IN ELSE")
                 # TODO NOT RETURNED
@@ -631,12 +631,12 @@ def add():
                         if current_user.permissions == 'MED-Autopsy':
 
                             return jsonify(
-                                [(attributes_list, printer, True, 1, url_for('cases.autopsy_view', _external=True))])
+                                [(attributes_list, printer, True, 1, url_for('cases.autopsy_view', True))])
                             # return redirect(url_for('cases.autopsy_view'))
                         else:
 
                             return jsonify(
-                                [(attributes_list, printer, True, 1, url_for('cases.view_list', _external=True))])
+                                [(attributes_list, printer, True, 1, url_for('cases.view_list', True))])
                             # return redirect(url_for('cases.view_list'))
 
                         # print_label(printer, attributes_list, True, 1)
@@ -645,11 +645,11 @@ def add():
                         if current_user.permissions == 'MED-Autopsy':
 
                             return jsonify(
-                                [(attributes_list, printer, None, None, url_for('cases.autopsy_view', _external=True))])
+                                [(attributes_list, printer, None, None, url_for('cases.autopsy_view', True))])
                             # return redirect(url_for('cases.autopsy_view'))
                         else:
                             return jsonify(
-                                [(attributes_list, printer, None, None, url_for('cases.view_list', _external=True))])
+                                [(attributes_list, printer, None, None, url_for('cases.view_list', True))])
                             # return redirect(url_for('cases.view_list'))
 
                         # print_label(printer, attributes_list)
@@ -765,11 +765,11 @@ def add():
                         if from_autopsy:
                             print(f"FROM AUTOPSY IN POST REQUEST")
                             return jsonify(
-                                [(attributes_list, printer, True, 1, url_for('cases.autopsy_view', _external=True))])
+                                [(attributes_list, printer, True, 1, url_for('cases.autopsy_view', True))])
                             # return redirect(url_for('cases.autopsy_view'))
                         else:
                             return jsonify(
-                                [(attributes_list, printer, True, 1, url_for('cases.view_list', _external=True))])
+                                [(attributes_list, printer, True, 1, url_for('cases.view_list', True))])
                             # return redirect(url_for('cases.view_list'))
 
                         # print_label(printer, attributes_list, True, 1)
@@ -777,11 +777,11 @@ def add():
 
                         if from_autopsy:
                             return jsonify(
-                                [(attributes_list, printer, None, None, url_for('cases.autopsy_view', _external=True))])
+                                [(attributes_list, printer, None, None, url_for('cases.autopsy_view', True))])
                             # return redirect(url_for('cases.autopsy_view'))
                         else:
                             return jsonify(
-                                [(attributes_list, printer, None, None, url_for('cases.view_list', _external=True))])
+                                [(attributes_list, printer, None, None, url_for('cases.view_list', True))])
                             # return redirect(url_for('cases.view_list'))
                         # print_label(printer, attributes_list)
 
@@ -898,7 +898,7 @@ def add():
                                                                                         from_autopsy=from_autopsy,
                                                                                         discipline=discipline,
                                                                                         histology=histology,
-                                                                                        _external=True
+                                                                                        True
                                                                                         ))])
                         elif request.form.get('submit_attach') is not None:
 
@@ -906,7 +906,7 @@ def add():
                                 [(attributes_list, printer, True, 1, url_for('containers.attach', item_id=container_id,
                                                                              redirect_url=url_for('cases.view',
                                                                                                   item_id=form.case_id.data),
-                                                                             _external=True))])
+                                                                             True))])
 
                         else:
 
@@ -920,7 +920,7 @@ def add():
                                                                                         custody=custody,
                                                                                         discipline=discipline,
                                                                                         histology=histology,
-                                                                                        _external=True
+                                                                                        True
                                                                                         ))])
 
                         # print_label(printer, attributes_list, True, 1)
@@ -939,7 +939,7 @@ def add():
                                                                                            from_autopsy=from_autopsy,
                                                                                            discipline=discipline,
                                                                                            histology=histology,
-                                                                                           _external=True
+                                                                                           True
                                                                                            ))])
 
                         elif request.form.get('submit_attach') is not None:
@@ -947,7 +947,7 @@ def add():
                             return jsonify([(attributes_list, printer, None, None,
                                              url_for('containers.attach', item_id=container_id,
                                                      redirect_url=url_for('cases.view', item_id=form.case_id.data),
-                                                     _external=True))])
+                                                     True))])
 
                         else:
 
@@ -961,13 +961,13 @@ def add():
                                                                                            custody=custody,
                                                                                            discipline=discipline,
                                                                                            histology=histology,
-                                                                                           _external=True
+                                                                                           True
                                                                                            ))])
 
                         # print_label(printer, attributes_list)
 
             if from_autopsy:
-                return jsonify([(None, None, None, None, url_for('cases.autopsy_view', _external=True))])
+                return jsonify([(None, None, None, None, url_for('cases.autopsy_view', True))])
                 # return redirect(url_for('cases.autopsy_view'))
 
             # if a new container is added to the case, set the case to pending.
@@ -2100,11 +2100,11 @@ def print_specimen_label(item_id):
     if printer == r'\\OCMEG9M056.medex.sfgov.org\DYMO LabelWriter 450 Twin Turbo':
         # print_label(printer, attributes_list, True, 1)
         return jsonify(attributes_list, printer, True, 1,
-                       url_for(f'{table_name}.view', item_id=item_id, _external=True))
+                       url_for(f'{table_name}.view', item_id=item_id, True))
     else:
         # print_label(printer, attributes_list)
         return jsonify(attributes_list, printer, None, None,
-                       url_for(f'{table_name}.view', item_id=item_id, _external=True))
+                       url_for(f'{table_name}.view', item_id=item_id, True))
 
     # print_specimen(current.case, current)
 

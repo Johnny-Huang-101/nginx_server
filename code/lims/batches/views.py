@@ -3726,7 +3726,7 @@ def print_labels(item_id):
     # dual_printer = True
     # roll = 0
     # return True
-    return jsonify(attributes_list, printer, None, None, url_for(f'{table_name}.view', item_id=item_id, _external=True))
+    return jsonify(attributes_list, printer, None, None, url_for(f'{table_name}.view', item_id=item_id, True))
 
 
 @blueprint.route(f'/{table_name}/<int:item_id>/hamilton', methods=['GET', 'POST'])
