@@ -919,7 +919,7 @@ def print_ex_label(item_id):
 
     # return redirect(url_for(f'batches.view', item_id=batch.id))
 
-    return jsonify(attributes_list, printer, None, None, url_for(f'batches.view', item_id=batch.id, True))
+    return jsonify(attributes_list, printer, None, None, url_for(f'batches.view', item_id=batch.id, ))
 
 
 @blueprint.route(f'/{table_name}/<int:item_id>/set_result_status', methods=['GET', 'POST'])
