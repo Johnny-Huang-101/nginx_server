@@ -2,11 +2,60 @@ import redis
 import pythoncom
 import sys
 import os
+# import logging
+# from datetime import datetime
+# from logging.handlers import TimedRotatingFileHandler
 
 # Import SimpleWorker to force Single-Process execution (Crucial for COM/Word)
 from rq import Queue, Connection
 from rq_win import WindowsWorker
 from app import app  # Import your Flask app for DB context
+
+# # --- LOGGING SETUP ---
+# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# LOG_DIR = os.path.join(BASE_DIR, 'lims_logs')
+# os.makedirs(LOG_DIR, exist_ok=True)
+
+# # Append Process ID (pid) to filename
+# pid = os.getpid()
+# log_file = os.path.join(LOG_DIR, f'PDF_lims_worker_{pid}_{datetime.now().date()}.log')
+
+# file_handler = TimedRotatingFileHandler(
+#     filename=log_file,
+#     when='midnight',
+#     interval=1,
+#     backupCount=7,
+#     encoding='utf-8'
+# )
+# file_handler.setLevel(logging.INFO)
+
+# formatter = logging.Formatter('[%(asctime)s] [PID:%(process)d] [%(levelname)s] %(message)s', '%m/%d/%Y %H:%M:%S')
+# file_handler.setFormatter(formatter)
+
+# # Console handler
+# console = logging.StreamHandler()
+# console.setFormatter(formatter)
+
+# # Root logger
+# logger = logging.getLogger()
+# logger.setLevel(logging.INFO)
+# logger.addHandler(file_handler)
+# logger.addHandler(console)
+
+# # Redirect stdout/stderr to logger
+# class StreamToLogger:
+#     def __init__(self, logger, level):
+#         self.logger = logger
+#         self.level = level
+#     def write(self, message):
+#         if message and message.strip(): # Skip empty lines
+#             self.logger.log(self.level, message.rstrip())
+#     def flush(self): pass
+
+# # sys.stdout = StreamToLogger(logging.getLogger("STDOUT"), logging.INFO)
+# # sys.stderr = StreamToLogger(logging.getLogger("STDERR"), logging.ERROR)
+# logging.captureWarnings(True)
+
 
 # Priority Order: Worker looks at 'high' first. If empty, looks at 'low'.
 listen = ['high', 'low']

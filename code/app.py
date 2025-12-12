@@ -25,7 +25,7 @@ os.makedirs(LOG_DIR, exist_ok=True)
 # This ensures Worker 1 writes to log_1234.log and Worker 2 writes to log_5678.log
 # preventing Windows file locking crashes.
 pid = os.getpid()
-log_file = os.path.join(LOG_DIR, f'lims_server_{pid}.log')
+log_file = os.path.join(LOG_DIR, f'WORKER_lims_server_{pid}_{datetime.now().date()}.log')
 
 file_handler = TimedRotatingFileHandler(
     filename=log_file,
@@ -40,14 +40,14 @@ formatter = logging.Formatter('[%(asctime)s] [PID:%(process)d] [%(levelname)s] %
 file_handler.setFormatter(formatter)
 
 # Console handler
-console = logging.StreamHandler()
+console = logging.StreamHandler(stream=sys.__stdout__) 
 console.setFormatter(formatter)
 
 # Root logger
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 logger.addHandler(file_handler)
-logger.addHandler(console)
+logger.addHandler(console)  # Now safe to add this back!
 
 # Redirect stdout/stderr to logger
 class StreamToLogger:
@@ -55,12 +55,14 @@ class StreamToLogger:
         self.logger = logger
         self.level = level
     def write(self, message):
-        if message and message.strip(): # Skip empty lines
+        if message and message.strip(): 
             self.logger.log(self.level, message.rstrip())
     def flush(self): pass
 
+# NOW ENABLE THESE LINES (They capture 'print' statements)
 sys.stdout = StreamToLogger(logging.getLogger("STDOUT"), logging.INFO)
 sys.stderr = StreamToLogger(logging.getLogger("STDERR"), logging.ERROR)
+
 logging.captureWarnings(True)
 
 # --- WEB APP ENTRY POINT ---
