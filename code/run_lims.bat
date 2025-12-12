@@ -32,8 +32,8 @@ start nginx.exe
 
 ::echo Launching Background Services...
 cd /d D:\NGINX_SERVER\code
-start "LIMS Services" /min "%PYTHON_PATH%" services.py
-start "LIMS Worker" /min "%PYTHON_PATH%" pdf_generation.py
+start "LIMS Services" /min cmd /K "%PYTHON_PATH%" services.py
+start "LIMS Worker" /min cmd /K "%PYTHON_PATH%" pdf_generation.py
 
 
 echo Launching Web Workers...
@@ -45,8 +45,8 @@ echo Launching Web Workers...
 
 
 
-start "Worker 1" /min "%PYTHON_PATH%" -m waitress --port=8001 --threads=64 app:app
-start "Worker 2" /min "%PYTHON_PATH%" -m waitress --port=8002 --threads=64 app:app
+start "Worker 1" /min cmd /K "%PYTHON_PATH%" -m waitress --port=8001 --threads=64 app:app
+start "Worker 2" /min cmd /K "%PYTHON_PATH%" -m waitress --port=8002 --threads=64 app:app
 :: start "Worker 3" /min "%PYTHON_PATH%" -m waitress --port=8003 --threads=64 app:app
 :: start "Worker 4" /min "%PYTHON_PATH%" -m waitress --port=8004 --threads=64 app:app
 
