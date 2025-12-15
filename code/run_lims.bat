@@ -47,8 +47,8 @@ echo Launching Web Workers...
 
 start "Worker 1" /min cmd /K "%PYTHON_PATH%" -m waitress --port=8001 --threads=64 app:app
 start "Worker 2" /min cmd /K "%PYTHON_PATH%" -m waitress --port=8002 --threads=64 app:app
-:: start "Worker 3" /min "%PYTHON_PATH%" -m waitress --port=8003 --threads=64 app:app
-:: start "Worker 4" /min "%PYTHON_PATH%" -m waitress --port=8004 --threads=64 app:app
+start "Worker 3" /min "%PYTHON_PATH%" -m waitress --port=8003 --threads=64 app:app
+start "Worker 4" /min "%PYTHON_PATH%" -m waitress --port=8004 --threads=64 app:app
 
 :: start "Worker 3" /min "%PYTHON_PATH%" -m waitress --port=8003 --threads=4 app:app
 :: start "Worker 4" /min "%PYTHON_PATH%" -m waitress --port=8004 --threads=4 app:app
